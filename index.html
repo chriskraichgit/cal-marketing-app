@@ -1118,6 +1118,54 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <main class="main">
 <!-- ============ SCREEN: HOME ============ -->
 <div class="screen" id="s-home">
+  <!-- Simplified admin-first view -->
+  <div id="home-admin-view" style="display:none">
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <p style="font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Account Health</p>
+        <p style="font-size:13px;color:var(--ink);font-weight:700;margin-top:2px">Your campaigns are performing above benchmark.</p>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div class="admin-money-total" id="admin-health-score" style="font-size:38px">78</div>
+        <p style="font-size:10px;font-weight:900;color:var(--green);letter-spacing:.5px">HEALTHY</p>
+      </div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:14px">
+      <div class="card-head"><span class="card-title">Where Your Money Is Going</span><span class="pill pill-gold">THIS MONTH</span></div>
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin:10px 0 18px">
+        <span class="admin-money-total">$4,200</span>
+        <span style="font-size:13px;color:var(--muted);font-weight:700;padding-bottom:7px">invested · <span style="color:var(--green);font-weight:900">$18,400 revenue generated</span></span>
+      </div>
+      <div class="health-row">
+        <div class="h-row"><div class="h-row-top"><span>Google Ads</span><span>$1,200</span></div><div class="bar-wrap"><div class="bar-fill" style="width:29%;--bar-col:var(--green)"></div></div></div>
+        <div class="h-row"><div class="h-row-top"><span>Meta Ads</span><span>$900</span></div><div class="bar-wrap"><div class="bar-fill" style="width:21%;--bar-col:#1877f2"></div></div></div>
+        <div class="h-row"><div class="h-row-top"><span>SEO / Local</span><span>$600</span></div><div class="bar-wrap"><div class="bar-fill" style="width:14%;--bar-col:var(--gold)"></div></div></div>
+        <div class="h-row"><div class="h-row-top"><span>Content &amp; Social</span><span>$800</span></div><div class="bar-wrap"><div class="bar-fill" style="width:19%;--bar-col:var(--blue)"></div></div></div>
+        <div class="h-row"><div class="h-row-top"><span>Account Management</span><span>$700</span></div><div class="bar-wrap"><div class="bar-fill" style="width:17%;--bar-col:var(--muted)"></div></div></div>
+      </div>
+      <button class="btn-ghost" style="margin-top:16px;width:100%" onclick="nav('billing')">View Billing &amp; Invoices</button>
+    </div>
+
+    <p class="admin-section-label">Quick Actions</p>
+    <div class="grid g3">
+      <button class="card card-pad admin-cta" onclick="nav('leads')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><p class="admin-cta-title">New Leads</p><p class="admin-cta-sub">4 new this week</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('reports')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><p class="admin-cta-title">Monthly Report</p><p class="admin-cta-sub">See your results</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('billing')"><div class="admin-cta-ico" style="background:var(--green)"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><p class="admin-cta-title">Billing</p><p class="admin-cta-sub">Invoices &amp; payments</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('reviews')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg></div><div><p class="admin-cta-title">Reviews</p><p class="admin-cta-sub">4.8★ rating</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('inbox')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div><p class="admin-cta-title">Messages</p><p class="admin-cta-sub">Talk to your team</p></div></button>
+      <button class="card card-pad admin-cta" onclick="openAiPanel()"><div class="admin-cta-ico" style="background:var(--ink)"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><div><p class="admin-cta-title">Ask CAL AI</p><p class="admin-cta-sub">Get instant answers</p></div></button>
+    </div>
+
+    <div class="card card-pad" style="margin-top:18px">
+      <div class="card-head"><span class="card-title">Latest from Your Team</span></div>
+      <div class="update-item"><div class="update-dot"></div><div><span class="update-text"><strong>CAL Team:</strong> New leads report uploaded to your Files section. Highlights 14% YoY growth.</span></div><span class="update-time">Jun 18</span></div>
+      <div class="update-item"><div class="update-dot" style="background:var(--green)"></div><div><span class="update-text"><strong>CAL Team:</strong> Google Ads campaign optimized — expect improved CPL over next 7 days.</span></div><span class="update-time">Jun 15</span></div>
+    </div>
+  </div>
+
+  <!-- Full (agency/test) view -->
+  <div id="home-full-view">
   <div class="hero">
     <div class="hero-eyebrow">Performance Overview</div>
     <div class="hero-score" id="h-score">78</div>
@@ -1194,6 +1242,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div class="update-item"><div class="update-dot" style="background:var(--blue)"></div><div><span class="update-text"><strong>CAL Team:</strong> Monthly strategy call recap posted in Reports.</span></div><span class="update-time">Jun 10</span></div>
     </div>
   </div>
+  </div><!-- /home-full-view -->
 </div>
 
 <!-- ============ SCREEN: GOALS ============ -->
@@ -3997,6 +4046,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 @media(max-width:600px){.modal{border-radius:20px 20px 0 0!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;transform:none!important;max-width:100%!important;width:100%!important;margin:0!important}}
 @media(max-width:400px){.grid.g2,.grid.g3,.grid.g4,.grid.g5{grid-template-columns:1fr!important}}
 .btn-primary,.btn-view,.tab-btn,.f-btn,.nav-btn{min-height:44px}
+.admin-cta{display:flex;align-items:center;gap:14px;text-align:left;cursor:pointer;border:1px solid var(--border);width:100%;transition:transform .12s ease,box-shadow .12s ease}
+.admin-cta:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.admin-cta-ico{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+.admin-cta-ico svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.admin-cta-title{font-size:15px;font-weight:800;color:var(--ink)}
+.admin-cta-sub{font-size:12px;color:var(--muted);font-weight:600}
+.admin-money-total{font-family:'Barlow Condensed',sans-serif;font-size:46px;font-weight:900;color:var(--ink);line-height:1}
+.admin-section-label{font-size:13px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:22px 0 10px}
 </style>
 
 <!-- GOOGLE OAUTH COMING SOON MODAL -->
@@ -6037,6 +6094,7 @@ function healthBadge(score){
     var sbn=document.getElementById('sb-company-name'); if(sbn) sbn.textContent=m.name;
     var pageSub=document.getElementById('page-sub'); if(pageSub){ pageSub.textContent=m.name; pageSub.style.display=''; }
     var score=document.getElementById('h-score'); if(score) score.textContent=d.health;
+    if(typeof applyHomeForRole==='function') applyHomeForRole();
     applyAccountBranding();
     if(window.currentScreen==='social') loadSocialConnections();
     if(window.currentScreen==='job-logging') renderJobLogs();
@@ -6565,11 +6623,32 @@ function healthBadge(score){
     setTimeout(cleanAdminNav,0);
   };
 
+  window.applyHomeForRole=function(){
+    var admin=(window.currentRole==='admin');
+    var av=document.getElementById('home-admin-view');
+    var fv=document.getElementById('home-full-view');
+    if(av) av.style.display=admin?'block':'none';
+    if(fv) fv.style.display=admin?'none':'block';
+    if(admin){
+      var hs=document.getElementById('h-score');
+      var ahs=document.getElementById('admin-health-score');
+      if(hs&&ahs) ahs.textContent=hs.textContent;
+    }
+  };
+
   var priorSetupRoleUI=window.setupRoleUI;
   window.setupRoleUI=function(){
     if(priorSetupRoleUI) priorSetupRoleUI();
     ensureScreensAndNav();
     cleanAdminNav();
+    applyHomeForRole();
+  };
+
+  var priorNavHome=window.nav;
+  window.nav=function(s){
+    var ret = priorNavHome ? priorNavHome(s) : undefined;
+    if(s==='home') applyHomeForRole();
+    return ret;
   };
 
   var priorLaunch=window.launchApp;
