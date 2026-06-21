@@ -46,7 +46,7 @@ a{text-decoration:none}
 
 /* LOGIN */
 #login-view{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:32px 18px;background:radial-gradient(ellipse at 50% 0,rgba(201,168,76,.12),transparent 55%),var(--page)}
-.login-card{width:100%;max-width:420px}
+.login-card{width:100%;max-width:580px}
 .login-logo-wrap{text-align:center;margin-bottom:32px}
 .login-logo{width:min(180px,55vw);height:auto}
 .login-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(32px,8vw,44px);font-weight:900;text-align:center;color:var(--ink);margin-bottom:6px}
@@ -78,7 +78,7 @@ a{text-decoration:none}
 .login-footer a{color:var(--blue);font-weight:800}
 @media(min-width:600px){
   #login-view{padding:60px 40px}
-  .login-card{padding:40px 58px 50px;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:0 4px 28px rgba(0,0,0,.07)}
+  .login-card{padding:48px 72px 56px;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:0 4px 28px rgba(0,0,0,.07)}
 }
 
 /* APP */
@@ -943,7 +943,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Permissions
     </button>
     <button class="nav-btn" id="nav-job-logging-btn" onclick="nav('job-logging')">
-      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Job Logging
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Job Tracker
+    </button>
+    <button class="nav-btn" id="nav-leaderboard-btn" onclick="nav('leaderboard')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg>Review Leaderboard
     </button>
     <button class="nav-btn" id="nav-social-btn" onclick="nav('social')">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Social Media
@@ -963,10 +966,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button class="nav-btn" id="nav-revenue-btn" onclick="nav('revenue')" style="display:none">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Revenue
     </button>
-    <button class="nav-btn" id="nav-nps-btn" onclick="nav('nps')" style="display:none">
+    <button class="nav-btn" id="nav-nps-btn" onclick="nav('nps')">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Satisfaction
     </button>
-    <button class="nav-btn" id="nav-referrals-btn" onclick="nav('referrals')" style="display:none">
+    <button class="nav-btn" id="nav-referrals-btn" onclick="nav('referrals')">
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Referrals
     </button>
     <button class="nav-btn" id="nav-booking-btn" onclick="nav('booking')" style="display:none">
@@ -3152,34 +3155,78 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============================================================ -->
 <div class="screen" id="s-nps">
   <div class="sec-head">
-    <div><h2>Client Satisfaction</h2><p>Net Promoter Score tracking</p></div>
-    <button class="btn-primary" onclick="openModal('send-nps-modal')">Send Survey</button>
+    <div><h2>Client Satisfaction</h2><p>NPS tracking, survey responses and customer sentiment</p></div>
+    <button class="btn-primary" onclick="showToast('Survey sent to all active clients.','green')">Send Survey</button>
   </div>
-  <div class="card" style="text-align:center;padding:32px;margin-bottom:16px;background:linear-gradient(135deg,var(--blue),#1a4a90)">
-    <p style="font-family:'Barlow Condensed',sans-serif;font-size:80px;font-weight:900;color:var(--gold);line-height:1">72</p>
-    <p style="font-size:14px;font-weight:800;color:rgba(255,255,255,.7);margin-bottom:6px">Net Promoter Score</p>
-    <span class="pill" style="background:rgba(46,125,50,.25);color:#7ef57e">▲ +8 this month</span>
+  <!-- Hero NPS card -->
+  <div class="card" style="text-align:center;padding:36px 32px;margin-bottom:16px;background:linear-gradient(135deg,var(--blue) 0%,#1a4a90 100%)">
+    <p style="font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px">Net Promoter Score</p>
+    <p style="font-family:'Barlow Condensed',sans-serif;font-size:90px;font-weight:900;color:var(--gold);line-height:.95;margin-bottom:8px">72</p>
+    <span class="pill" style="background:rgba(46,125,50,.28);color:#7ef57e;font-size:11px">▲ +8 pts from last month</span>
+    <p style="font-size:12px;font-weight:700;color:rgba(255,255,255,.5);margin-top:10px">Based on 18 responses · Last sent Jun 1</p>
   </div>
-  <div class="grid g3" style="gap:14px;margin-bottom:20px">
-    <div class="card" style="text-align:center;padding:20px"><p style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:var(--green)">3</p><p style="font-size:13px;font-weight:800;color:var(--ink)">Promoters</p><p style="font-size:12px;color:var(--muted);font-weight:600">Score 9–10 · 75%</p></div>
-    <div class="card" style="text-align:center;padding:20px"><p style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:var(--gold)">1</p><p style="font-size:13px;font-weight:800;color:var(--ink)">Passives</p><p style="font-size:12px;color:var(--muted);font-weight:600">Score 7–8 · 25%</p></div>
-    <div class="card" style="text-align:center;padding:20px"><p style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:var(--red)">0</p><p style="font-size:13px;font-weight:800;color:var(--ink)">Detractors</p><p style="font-size:12px;color:var(--muted);font-weight:600">Score 0–6 · 0%</p></div>
+  <!-- KPI row -->
+  <div class="grid g4" style="gap:14px;margin-bottom:20px">
+    <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Promoters</p><p class="kpi-value" style="color:var(--green)">75%</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Score 9–10</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Passives</p><p class="kpi-value" style="color:var(--gold)">19%</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Score 7–8</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--red)"><p class="kpi-label">Detractors</p><p class="kpi-value" style="color:var(--red)">6%</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Score 0–6</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Response Rate</p><p class="kpi-value">78%</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">18 of 23 sent</p></div>
   </div>
+  <!-- Trend + Responses -->
+  <div class="grid g2" style="gap:16px;margin-bottom:16px">
+    <div class="card">
+      <p class="card-label" style="margin-bottom:16px">Satisfaction Trend</p>
+      <div style="display:grid;gap:14px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Response Rate</span><span style="font-size:12px;font-weight:900;color:var(--blue)">78%</span></div>
+          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:78%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Positive Sentiment</span><span style="font-size:12px;font-weight:900;color:var(--blue)">91%</span></div>
+          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:91%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Follow-Up Completion</span><span style="font-size:12px;font-weight:900;color:var(--blue)">88%</span></div>
+          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:88%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Promoter Conversion</span><span style="font-size:12px;font-weight:900;color:var(--blue)">62%</span></div>
+          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:62%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-label" style="margin-bottom:12px">Recent Responses</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Client</th><th>Score</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>Apex Legal Group</td><td><strong style="color:var(--green)">10 / 10</strong></td><td><span class="pill pill-blue">Followed Up</span></td></tr>
+            <tr><td>Green Collar Roofing</td><td><strong style="color:var(--green)">9 / 10</strong></td><td><span class="pill pill-blue">Followed Up</span></td></tr>
+            <tr><td>Willy Diamond Tree Care</td><td><strong style="color:var(--gold)">7 / 10</strong></td><td><span class="pill" style="background:rgba(217,45,32,.1);color:var(--red)">Needs Attention</span></td></tr>
+            <tr><td>Houses Auto Body</td><td><strong style="color:var(--green)">10 / 10</strong></td><td><span class="pill pill-green">Promoter</span></td></tr>
+            <tr><td>United Sewer &amp; Septic</td><td><strong style="color:var(--green)">9 / 10</strong></td><td><span class="pill pill-green">Promoter</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <!-- Full response table -->
   <div class="card">
-    <p class="card-label" style="margin-bottom:12px">Responses</p>
+    <p class="card-label" style="margin-bottom:12px">Full Survey Responses</p>
     <div class="table-wrap">
       <table class="data-table">
-        <thead><tr><th>Client</th><th>Score</th><th>Feedback</th><th>Date</th><th>Status</th></tr></thead>
+        <thead><tr><th>Client</th><th>Score</th><th>Feedback</th><th>Date</th><th>Action</th></tr></thead>
         <tbody>
-          <tr><td>Apex Legal Group</td><td><span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--green)">10</span></td><td style="max-width:200px;font-size:12px;color:var(--muted);font-weight:600">"CAL Marketing has transformed our lead volume. Incredible team."</td><td>Jun 1</td><td><span class="pill pill-blue">FOLLOWED UP</span></td></tr>
-          <tr><td>Green Collar Roofing</td><td><span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--green)">9</span></td><td style="max-width:200px;font-size:12px;color:var(--muted);font-weight:600">"Great results. Communication could be a bit faster."</td><td>Jun 1</td><td><span class="pill pill-blue">FOLLOWED UP</span></td></tr>
-          <tr><td>Willy Diamond Tree Care</td><td><span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--gold)">7</span></td><td style="max-width:200px;font-size:12px;color:var(--muted);font-weight:600">"Good so far. Waiting to see more lead growth."</td><td>Jun 1</td><td><span class="pill" style="background:rgba(217,45,32,.1);color:var(--red)">NEEDS ATTENTION</span></td></tr>
-          <tr><td>Houses Auto Body</td><td><span style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--green)">10</span></td><td style="max-width:200px;font-size:12px;color:var(--muted);font-weight:600">"Best marketing agency we've ever worked with."</td><td>Jun 1</td><td><span class="pill pill-blue">FOLLOWED UP</span></td></tr>
+          <tr><td>Apex Legal Group</td><td><strong style="color:var(--green)">10</strong></td><td style="font-size:12px;color:var(--muted);font-weight:600;max-width:240px">"CAL has transformed our lead volume."</td><td>Jun 1</td><td><button class="btn-view" onclick="showToast('Follow-up logged.','green')">Log Follow-Up</button></td></tr>
+          <tr><td>Green Collar Roofing</td><td><strong style="color:var(--green)">9</strong></td><td style="font-size:12px;color:var(--muted);font-weight:600;max-width:240px">"Great results, faster comms would help."</td><td>Jun 1</td><td><button class="btn-view" onclick="showToast('Follow-up logged.','green')">Log Follow-Up</button></td></tr>
+          <tr><td>Willy Diamond Tree Care</td><td><strong style="color:var(--gold)">7</strong></td><td style="font-size:12px;color:var(--muted);font-weight:600;max-width:240px">"Good so far. Waiting on more leads."</td><td>Jun 1</td><td><button class="btn-primary" onclick="showToast('Action plan sent to account manager.','gold')">Action Plan</button></td></tr>
+          <tr><td>Houses Auto Body</td><td><strong style="color:var(--green)">10</strong></td><td style="font-size:12px;color:var(--muted);font-weight:600;max-width:240px">"Best marketing agency we've worked with."</td><td>Jun 1</td><td><button class="btn-view" onclick="showToast('Follow-up logged.','green')">Log Follow-Up</button></td></tr>
+          <tr><td>United Sewer &amp; Septic</td><td><strong style="color:var(--green)">9</strong></td><td style="font-size:12px;color:var(--muted);font-weight:600;max-width:240px">"Great dashboard visibility and support."</td><td>Jun 1</td><td><button class="btn-view" onclick="showToast('Follow-up logged.','green')">Log Follow-Up</button></td></tr>
         </tbody>
       </table>
     </div>
   </div>
-  <!-- Backend note: POST /api/nps/surveys to create records in Supabase nps_surveys table (company_id, triggered_by, sent_at). POST /api/nps/responses with score+feedback on submit. NPS = (promoters% - detractors%) * 100. Trigger survey auto on 1st of month via Railway cron. Score ≤6 → create coaching alert in nps_alerts + notify account manager. -->
 </div>
 
 <!-- ============================================================ -->
@@ -3187,58 +3234,128 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============================================================ -->
 <div class="screen" id="s-referrals">
   <div class="sec-head">
-    <div><h2>Referral Program</h2><p>Earn $100 credit for every client you refer</p></div>
+    <div><h2>Referral Program</h2><p>Manage referrals, track conversions and reward advocates</p></div>
+    <button class="btn-primary" onclick="showToast('New referral invite created and copied.','green')">+ Create Referral</button>
   </div>
-  <div class="card" style="margin-bottom:16px">
-    <p class="card-label" style="margin-bottom:12px">Your Referral Link</p>
-    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-      <div style="flex:1;padding:12px 16px;background:var(--page);border-radius:10px;border:2px solid var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold)">calmarketing.com/ref/apexlegal</div>
-      <button class="btn-primary" onclick="navigator.clipboard.writeText('calmarketing.com/ref/apexlegal');showToast('Link copied!','green')">Copy Link</button>
+  <!-- KPI row -->
+  <div class="grid g4" style="gap:14px;margin-bottom:20px">
+    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Invites Sent</p><p class="kpi-value">28</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Referral Leads</p><p class="kpi-value">9</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Converted</p><p class="kpi-value" style="color:var(--green)">3</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Credits Issued</p><p class="kpi-value" style="color:var(--gold)">$300</p></div>
+  </div>
+  <!-- Referral link widget -->
+  <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(27,58,107,.06))">
+    <p class="card-label" style="margin-bottom:12px">Your Client Shareable Link</p>
+    <p style="font-size:13px;color:var(--muted);font-weight:700;margin-bottom:12px">Give this link to your customers so they can refer other businesses to CAL Marketing. You earn $100 credit per qualified sign-up.</p>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div style="flex:1;padding:12px 16px;background:var(--surface);border-radius:10px;border:2px dashed var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);overflow-wrap:anywhere">cal.marketing/ref/client</div>
+      <button class="btn-primary" onclick="showToast('Referral link copied to clipboard!','green')">Copy Link</button>
     </div>
-    <div style="display:flex;gap:10px;margin-top:12px">
-      <button class="btn-view" onclick="showToast('Share link copied!','green')">📧 Share via Email</button>
-      <button class="btn-view" onclick="showToast('WhatsApp link opened!','green')">📱 WhatsApp</button>
-    </div>
-  </div>
-  <div class="grid g3" style="gap:14px;margin-bottom:20px">
-    <div class="kpi-card"><p class="kpi-label">Referrals Sent</p><p class="kpi-value">4</p></div>
-    <div class="kpi-card"><p class="kpi-label">Signed Up</p><p class="kpi-value">2</p></div>
-    <div class="kpi-card"><p class="kpi-label">Credits Earned</p><p class="kpi-value" style="color:var(--gold)">$200</p></div>
-  </div>
-  <div class="card" style="margin-bottom:16px">
-    <p class="card-label" style="margin-bottom:12px">Referral History</p>
-    <div class="table-wrap">
-      <table class="data-table">
-        <thead><tr><th>Business</th><th>Date Referred</th><th>Status</th><th>Credit</th></tr></thead>
-        <tbody>
-          <tr><td>Miami Pet Clinic</td><td>Apr 15</td><td><span class="pill pill-green">CONVERTED</span></td><td style="font-weight:900;color:var(--gold)">$100</td></tr>
-          <tr><td>South Beach Dental</td><td>May 2</td><td><span class="pill pill-green">CONVERTED</span></td><td style="font-weight:900;color:var(--gold)">$100</td></tr>
-          <tr><td>Sunrise Yoga Studio</td><td>Jun 1</td><td><span class="pill pill-blue">SIGNED UP</span></td><td>$0 (pending)</td></tr>
-          <tr><td>Bay Harbor Plumbing</td><td>Jun 10</td><td><span class="pill" style="background:rgba(201,168,76,.1);color:var(--gold)">PENDING</span></td><td>—</td></tr>
-        </tbody>
-      </table>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-view" onclick="showToast('Email template copied.','green')">✉️ Email Template</button>
+      <button class="btn-view" onclick="showToast('WhatsApp message copied.','green')">📱 WhatsApp Copy</button>
+      <button class="btn-view" onclick="showToast('SMS template copied.','green')">💬 SMS Template</button>
     </div>
   </div>
-  <div class="card" style="background:var(--page)">
-    <p class="card-label" style="margin-bottom:14px">How It Works</p>
-    <div class="grid g3" style="gap:12px">
-      <div style="text-align:center"><div style="width:40px;height:40px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">1</div><p style="font-size:13px;font-weight:800;color:var(--ink)">Share your unique link</p></div>
-      <div style="text-align:center"><div style="width:40px;height:40px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">2</div><p style="font-size:13px;font-weight:800;color:var(--ink)">Your referral signs up for CAL Marketing</p></div>
-      <div style="text-align:center"><div style="width:40px;height:40px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 8px">3</div><p style="font-size:13px;font-weight:800;color:var(--ink)">Earn $100 credit on your next invoice per conversion</p></div>
+  <!-- Pipeline + Offer -->
+  <div class="grid g2" style="gap:16px;margin-bottom:16px">
+    <div class="card">
+      <p class="card-label" style="margin-bottom:12px">Referral Pipeline</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Business</th><th>Date</th><th>Source</th><th>Status</th><th>Credit</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Miami Pet Clinic</strong></td><td>Apr 15</td><td>Email</td><td><span class="pill pill-green">Converted</span></td><td style="font-weight:900;color:var(--gold)">$100</td></tr>
+            <tr><td><strong>South Beach Dental</strong></td><td>May 2</td><td>Direct Link</td><td><span class="pill pill-green">Converted</span></td><td style="font-weight:900;color:var(--gold)">$100</td></tr>
+            <tr><td><strong>Sunrise Yoga Studio</strong></td><td>Jun 1</td><td>WhatsApp</td><td><span class="pill pill-blue">Signed Up</span></td><td>Pending</td></tr>
+            <tr><td><strong>Bay Harbor Plumbing</strong></td><td>Jun 10</td><td>Direct Link</td><td><span class="pill" style="background:rgba(201,168,76,.1);color:var(--gold)">Contacted</span></td><td>—</td></tr>
+            <tr><td><strong>Hudson Valley Electric</strong></td><td>Jun 18</td><td>Email</td><td><span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted)">Invited</span></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-label" style="margin-bottom:12px">Referral Offer Settings</p>
+      <div style="padding:18px;background:var(--page);border-radius:12px;border:1px solid var(--border);margin-bottom:12px">
+        <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:4px">Current Offer: $100 Invoice Credit</p>
+        <p style="font-size:12px;color:var(--muted);font-weight:700">Reward issued automatically when a referred business completes their first month of service.</p>
+      </div>
+      <div style="padding:18px;background:var(--page);border-radius:12px;border:1px solid var(--border);margin-bottom:16px">
+        <p style="font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">How It Works</p>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">1</div><p style="font-size:12px;font-weight:800;color:var(--ink)">Share your referral link with another business</p></div>
+          <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">2</div><p style="font-size:12px;font-weight:800;color:var(--ink)">They sign up and start their first month</p></div>
+          <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">3</div><p style="font-size:12px;font-weight:800;color:var(--ink)">You get $100 credited to your next invoice</p></div>
+        </div>
+      </div>
+      <button class="btn-primary" style="width:100%" onclick="showToast('Referral campaign launched!','gold')">Launch Referral Push</button>
     </div>
   </div>
-  <!-- Backend note: Generate unique referral_code per client on account creation (stored in clients.referral_code). Track clicks via GET /api/referrals/track/:code → creates referral_clicks record. New account signup with referral code → link in referrals table (referrer_id, referred_company_id, status). On first payment → PATCH /api/referrals/:id/convert → Stripe credit note + status=converted. -->
 </div>
 
 <div class="screen" id="s-job-logging">
-  <div class="sec-head"><div><h2>Job Logging</h2><p>Log closed jobs and tag them to your marketing channel</p></div><button class="btn-view" onclick="openModal('log-job-modal')">+ Log Job</button></div>
-  <div class="grid g3" style="gap:14px;margin-bottom:20px">
-    <div class="kpi-card"><p class="kpi-label">Jobs Logged This Month</p><p class="kpi-value" id="job-count">0</p></div>
-    <div class="kpi-card"><p class="kpi-label">Revenue Attributed</p><p class="kpi-value" id="job-revenue">$0</p></div>
-    <div class="kpi-card"><p class="kpi-label">Top Channel</p><p class="kpi-value" id="job-top-channel" style="font-size:18px">—</p></div>
+  <div class="sec-head">
+    <div><h2>Job Tracker</h2><p>Log closed jobs and connect revenue back to your marketing channels</p></div>
+    <button class="btn-primary" onclick="openModal('log-job-modal')">+ Log Job</button>
   </div>
+  <!-- KPI row -->
+  <div class="grid g3" style="gap:14px;margin-bottom:20px">
+    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Jobs Logged</p><p class="kpi-value" id="job-count">0</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Revenue Tracked</p><p class="kpi-value" id="job-revenue">$0</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Top Channel</p><p class="kpi-value" id="job-top-channel" style="font-size:22px">—</p></div>
+  </div>
+  <!-- Channel attribution breakdown -->
+  <div class="grid g2" style="gap:16px;margin-bottom:16px">
+    <div class="card">
+      <p class="card-label" style="margin-bottom:14px">Channel Attribution</p>
+      <div style="display:grid;gap:12px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Google Ads</span><span style="font-size:12px;font-weight:900;color:var(--blue)" id="jt-google-pct">0%</span></div>
+          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div id="jt-google-bar" style="height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,#4285f4,#34a853)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Google Business</span><span style="font-size:12px;font-weight:900;color:var(--blue)" id="jt-gbp-pct">0%</span></div>
+          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div id="jt-gbp-bar" style="height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),#f5a623)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Meta Ads</span><span style="font-size:12px;font-weight:900;color:var(--blue)" id="jt-meta-pct">0%</span></div>
+          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div id="jt-meta-bar" style="height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,#1877f2,#6b44ff)"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Other / Organic</span><span style="font-size:12px;font-weight:900;color:var(--blue)" id="jt-other-pct">0%</span></div>
+          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div id="jt-other-bar" style="height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,var(--muted),var(--muted2))"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <p class="card-label" style="margin-bottom:12px">Quick Log</p>
+      <p style="font-size:13px;color:var(--muted);font-weight:700;margin-bottom:14px">Log a closed job in seconds to keep your channel attribution accurate and ROI reporting up to date.</p>
+      <div style="display:grid;gap:10px">
+        <div><label style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Job / Project Name</label><input class="input-std" id="quick-job-name" placeholder="e.g. Roof replacement — Johnson" style="margin-top:5px"></div>
+        <div class="grid g2" style="gap:10px">
+          <div><label style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Revenue ($)</label><input class="input-std" id="quick-job-rev" type="number" placeholder="0" style="margin-top:5px"></div>
+          <div><label style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Channel</label>
+            <select class="input-std" id="quick-job-channel" style="margin-top:5px">
+              <option>Google Ads</option>
+              <option>Google Business</option>
+              <option>Meta Ads</option>
+              <option>Organic / Referral</option>
+              <option>Other</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary" onclick="quickLogJob()">Log This Job</button>
+      </div>
+    </div>
+  </div>
+  <!-- Job log table -->
   <div class="card">
-    <div id="job-log-list"><p class="empty-msg">No jobs logged yet. Log your first closed job above.</p></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <p class="card-label">Recent Closed Jobs</p>
+      <button class="btn-view" onclick="showToast('Job log exported.','green')">Export CSV</button>
+    </div>
+    <div id="job-log-list"><p class="empty-msg">No jobs logged yet. Use the form above or click + Log Job to get started.</p></div>
   </div>
 </div>
 
@@ -3478,52 +3595,236 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <div class="screen" id="s-social">
   <div class="sec-head">
-    <div><h2>Social Media</h2><p>Analytics and performance from your connected social platforms</p></div>
+    <div><h2>Social Media Health</h2><p>Monitor posting consistency, engagement and content pipeline health</p></div>
+    <button class="btn-primary" onclick="showToast('Social health data refreshed.','green')">Refresh</button>
   </div>
-
-  <div class="card card-pad" style="border-left:4px solid var(--blue);margin-bottom:20px">
-    <p style="font-size:14px;font-weight:900;color:var(--blue);margin-bottom:6px">Connect Your Social Platforms</p>
-    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px">Connect platforms to pull live analytics. No data is shown until you connect.</p>
-    <div class="grid g3" style="gap:12px" id="social-connectors">
-      <div class="int-card" id="social-meta-card">
-        <div class="int-card-icon" style="background:#1877f2;border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center">
-          <svg viewBox="0 0 24 24" fill="#fff" width="22" height="22"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+  <!-- KPI row -->
+  <div class="grid g4" style="gap:14px;margin-bottom:20px">
+    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Health Score</p><p class="kpi-value" style="color:var(--gold)">86</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Posts This Month</p><p class="kpi-value">24</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Avg Engagement</p><p class="kpi-value" style="color:var(--green)">7.8%</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Content Ready</p><p class="kpi-value">12</p></div>
+  </div>
+  <!-- Platform health cards + Connect -->
+  <div class="grid g2" style="gap:16px;margin-bottom:16px">
+    <div class="card">
+      <p class="card-label" style="margin-bottom:14px">Platform Health</p>
+      <div style="display:grid;gap:12px">
+        <!-- Meta -->
+        <div style="display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--surface)">
+          <div style="width:44px;height:44px;border-radius:12px;background:#1877f2;display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 24 24" fill="#fff" width="20" height="20"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:900;color:var(--ink)">Meta</p>
+            <p style="font-size:12px;color:var(--muted);font-weight:700">Campaign content and retargeting active</p>
+          </div>
+          <span class="pill pill-green">Healthy</span>
         </div>
-        <span class="int-card-name">Meta</span>
-        <span class="int-card-sub" id="meta-status">Not connected</span>
-        <button class="btn-connect" onclick="connectSocial('meta')">Connect</button>
+        <!-- Instagram -->
+        <div style="display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--surface)">
+          <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(45deg,#f09433,#dc2743,#bc1888);display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" stroke="#fff" stroke-width="2"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" stroke="#fff" stroke-width="2" fill="none"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:900;color:var(--ink)">Instagram</p>
+            <p style="font-size:12px;color:var(--muted);font-weight:700">Reels driving strongest reach this month</p>
+          </div>
+          <span class="pill pill-green">Growing</span>
+        </div>
+        <!-- Google Business -->
+        <div style="display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;border:1px solid var(--border);border-radius:14px;padding:14px;background:var(--surface)">
+          <div style="width:44px;height:44px;border-radius:12px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 48 48" width="26" height="26"><path fill="#4285F4" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.5 4 24 4 12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.6 16.1 19 13 24 13c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.2-1.9 13.9-5.1L31.3 33c-2.1 1.6-4.8 2.5-7.3 2.5-5.2 0-9.6-3.4-11.2-8.1l-6.6 5.1C9.7 39.5 16.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.6 5.1C42.3 35.2 44 30 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+          </div>
+          <div>
+            <p style="font-size:13px;font-weight:900;color:var(--ink)">Google Business</p>
+            <p style="font-size:12px;color:var(--muted);font-weight:700">Posts and photos keeping profile active</p>
+          </div>
+          <span class="pill pill-blue">Active</span>
+        </div>
       </div>
-      <div class="int-card" id="social-instagram-card">
-        <div class="int-card-icon" style="background:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center">
-          <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><rect x="2" y="2" width="20" height="20" rx="5" ry="5" fill="none" stroke="#fff" stroke-width="2"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" stroke="#fff" stroke-width="2" fill="none"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
-        </div>
-        <span class="int-card-name">Instagram</span>
-        <span class="int-card-sub" id="instagram-status">Not connected</span>
-        <button class="btn-connect" onclick="connectSocial('instagram')">Connect</button>
+    </div>
+    <div class="card">
+      <p class="card-label" style="margin-bottom:14px">Next Content Priorities</p>
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Content Piece</th><th>Platform</th><th>Priority</th></tr></thead>
+          <tbody>
+            <tr><td>Before / after proof</td><td>Instagram</td><td><span class="pill" style="background:rgba(217,45,32,.1);color:var(--red)">High</span></td></tr>
+            <tr><td>Customer story reel</td><td>Meta + IG</td><td><span class="pill pill-blue">In Edit</span></td></tr>
+            <tr><td>Offer reminder post</td><td>All</td><td><span class="pill pill-green">Scheduled</span></td></tr>
+            <tr><td>Review showcase post</td><td>Instagram</td><td><span class="pill" style="background:rgba(201,168,76,.1);color:var(--gold)">Upcoming</span></td></tr>
+            <tr><td>GBP weekly update</td><td>Google Business</td><td><span class="pill pill-blue">In Progress</span></td></tr>
+          </tbody>
+        </table>
       </div>
-      <div class="int-card" id="social-gbp-card">
-        <div class="int-card-icon" style="background:#fff;border:1px solid var(--border);border-radius:10px;width:44px;height:44px;display:flex;align-items:center;justify-content:center">
-          <svg viewBox="0 0 24 24" width="24" height="24" fill="none"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="#4285F4"/><circle cx="12" cy="9" r="2.5" fill="#fff"/></svg>
-        </div>
-        <span class="int-card-name">Google Business</span>
-        <span class="int-card-sub" id="gbp-social-status">Not connected</span>
-        <button class="btn-connect" onclick="connectSocial('gbp')">Connect</button>
+      <div style="margin-top:14px;padding:12px 14px;background:rgba(201,168,76,.08);border:1px dashed var(--gold);border-radius:10px">
+        <p style="font-size:12px;font-weight:900;color:var(--gold);margin-bottom:3px">Monthly Target: 30 Posts</p>
+        <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08);margin-top:6px"><div style="height:100%;width:80%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+        <p style="font-size:11px;font-weight:700;color:var(--muted);margin-top:4px">24 of 30 posts published this month</p>
       </div>
     </div>
   </div>
-
-  <div id="social-analytics-empty" style="text-align:center;padding:60px 20px">
-    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="var(--border)" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 16px;display:block"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-    <p style="font-size:16px;font-weight:900;color:var(--muted)">No platforms connected yet</p>
-    <p style="font-size:13px;color:var(--muted2);font-weight:600;margin-top:6px">Connect a platform above to see live analytics here</p>
-    <p style="font-size:11px;color:var(--muted2);font-weight:700;margin-top:20px">Backend note for James: GET /api/social/analytics/:company_id — pull from Meta Graph API (insights endpoint), Instagram Basic Display API, and GBP API. Store snapshots in Supabase social_analytics table. Sync daily via Railway cron.</p>
+  <!-- Engagement breakdown -->
+  <div class="card">
+    <p class="card-label" style="margin-bottom:14px">Engagement Breakdown</p>
+    <div class="grid g3" style="gap:14px">
+      <div style="text-align:center;padding:16px;background:var(--page);border-radius:12px">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#1877f2;line-height:1">8.4%</p>
+        <p style="font-size:12px;font-weight:800;color:var(--ink);margin-top:4px">Meta Avg Engagement</p>
+        <p style="font-size:11px;color:var(--muted);font-weight:700">+1.2% from last month</p>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--page);border-radius:12px">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#dc2743;line-height:1">11.2%</p>
+        <p style="font-size:12px;font-weight:800;color:var(--ink);margin-top:4px">Instagram Avg Engagement</p>
+        <p style="font-size:11px;color:var(--muted);font-weight:700">+2.8% from last month</p>
+      </div>
+      <div style="text-align:center;padding:16px;background:var(--page);border-radius:12px">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:900;color:#4285f4;line-height:1">4.1%</p>
+        <p style="font-size:12px;font-weight:800;color:var(--ink);margin-top:4px">GBP Post Engagement</p>
+        <p style="font-size:11px;color:var(--muted);font-weight:700">+0.3% from last month</p>
+      </div>
+    </div>
   </div>
+</div>
 
-  <div id="social-analytics-content" style="display:none">
-    <div class="grid g3" style="margin-bottom:20px">
-      <div class="kpi-card"><p class="kpi-label">Total Reach</p><p class="kpi-value" id="social-reach">—</p></div>
-      <div class="kpi-card"><p class="kpi-label">Engagement Rate</p><p class="kpi-value" id="social-engagement">—</p></div>
-      <div class="kpi-card"><p class="kpi-label">Profile Visits</p><p class="kpi-value" id="social-visits">—</p></div>
+<!-- ============================================================ -->
+<!-- LEADERBOARD SCREEN -->
+<!-- ============================================================ -->
+<div class="screen" id="s-leaderboard">
+  <div class="sec-head">
+    <div><h2>Review Leaderboard</h2><p>Track who is generating reviews, NFC taps and customer feedback</p></div>
+    <button class="btn-primary" onclick="showToast('Leaderboard exported.','green')">Export</button>
+  </div>
+  <!-- KPI row -->
+  <div class="grid g4" style="gap:14px;margin-bottom:20px">
+    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Total Reviews</p><p class="kpi-value">142</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">This Month</p><p class="kpi-value" style="color:var(--green)">14</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">NFC Taps</p><p class="kpi-value">62</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Tap → Review Rate</p><p class="kpi-value" style="color:var(--green)">23%</p></div>
+  </div>
+  <!-- Tabs: Reviews / Team -->
+  <div class="tabs-row" style="margin-bottom:16px">
+    <button class="tab-btn active" onclick="switchTabGroup('lb-tabs','lb-reviews',this)">Reviews</button>
+    <button class="tab-btn" onclick="switchTabGroup('lb-tabs','lb-team',this)">Team</button>
+  </div>
+  <div id="lb-tabs">
+    <!-- Reviews tab -->
+    <div id="lb-reviews" class="tab-panel">
+      <div class="card">
+        <p class="card-label" style="margin-bottom:12px">Top Review Generators — Clients</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Client / Business</th><th>Reviews</th><th>Avg Rating</th><th>NFC Taps</th><th>This Month</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,168,76,.14);color:var(--gold);font-weight:950">1</span></td>
+                <td><strong>Apex Legal Group</strong></td>
+                <td><strong>38</strong></td>
+                <td><strong style="color:var(--green)">4.9 ★</strong></td>
+                <td>16</td>
+                <td><span class="pill pill-green">+5</span></td>
+              </tr>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,168,76,.14);color:var(--gold);font-weight:950">2</span></td>
+                <td><strong>Green Collar Roofing</strong></td>
+                <td><strong>31</strong></td>
+                <td><strong style="color:var(--green)">4.8 ★</strong></td>
+                <td>12</td>
+                <td><span class="pill pill-blue">+3</span></td>
+              </tr>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(27,58,107,.08);color:var(--muted);font-weight:950">3</span></td>
+                <td><strong>Houses Auto Body</strong></td>
+                <td><strong>27</strong></td>
+                <td><strong style="color:var(--green)">4.7 ★</strong></td>
+                <td>10</td>
+                <td><span class="pill pill-blue">+2</span></td>
+              </tr>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(27,58,107,.08);color:var(--muted);font-weight:950">4</span></td>
+                <td><strong>Willy Diamond Tree Care</strong></td>
+                <td><strong>24</strong></td>
+                <td><strong style="color:var(--gold)">4.5 ★</strong></td>
+                <td>8</td>
+                <td><span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted)">+1</span></td>
+              </tr>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(27,58,107,.08);color:var(--muted);font-weight:950">5</span></td>
+                <td><strong>United Sewer &amp; Septic</strong></td>
+                <td><strong>22</strong></td>
+                <td><strong style="color:var(--green)">4.8 ★</strong></td>
+                <td>16</td>
+                <td><span class="pill pill-green">+3</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <!-- Team tab -->
+    <div id="lb-team" class="tab-panel" style="display:none">
+      <div class="card">
+        <p class="card-label" style="margin-bottom:12px">Team Member Rankings — Review Generation</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Team Member</th><th>Role</th><th>Reviews</th><th>NFC Taps</th><th>Positive Rate</th><th>Grade</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,168,76,.14);color:var(--gold);font-weight:950">1</span></td>
+                <td><strong>Michael Torres</strong></td><td style="color:var(--muted);font-size:12px">Field Ops</td>
+                <td><strong>42</strong></td><td>18</td>
+                <td>
+                  <div style="height:8px;width:120px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:98%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+                  <span style="font-size:11px;color:var(--muted);font-weight:700">98%</span>
+                </td>
+                <td><span class="pill pill-green">A+</span></td>
+              </tr>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(201,168,76,.14);color:var(--gold);font-weight:950">2</span></td>
+                <td><strong>James Wodzinski</strong></td><td style="color:var(--muted);font-size:12px">Account Strategy</td>
+                <td><strong>37</strong></td><td>15</td>
+                <td>
+                  <div style="height:8px;width:120px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:96%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+                  <span style="font-size:11px;color:var(--muted);font-weight:700">96%</span>
+                </td>
+                <td><span class="pill pill-green">A</span></td>
+              </tr>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(27,58,107,.08);color:var(--muted);font-weight:950">3</span></td>
+                <td><strong>Laura Martinez</strong></td><td style="color:var(--muted);font-size:12px">Client Success</td>
+                <td><strong>29</strong></td><td>12</td>
+                <td>
+                  <div style="height:8px;width:120px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:94%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+                  <span style="font-size:11px;color:var(--muted);font-weight:700">94%</span>
+                </td>
+                <td><span class="pill pill-green">A</span></td>
+              </tr>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(27,58,107,.08);color:var(--muted);font-weight:950">4</span></td>
+                <td><strong>Chris Kraich</strong></td><td style="color:var(--muted);font-size:12px">Creative Direction</td>
+                <td><strong>26</strong></td><td>10</td>
+                <td>
+                  <div style="height:8px;width:120px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:92%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+                  <span style="font-size:11px;color:var(--muted);font-weight:700">92%</span>
+                </td>
+                <td><span class="pill pill-blue">A-</span></td>
+              </tr>
+              <tr>
+                <td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(27,58,107,.08);color:var(--muted);font-weight:950">5</span></td>
+                <td><strong>Matt Gallagher</strong></td><td style="color:var(--muted);font-size:12px">Ads Performance</td>
+                <td><strong>22</strong></td><td>9</td>
+                <td>
+                  <div style="height:8px;width:120px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:91%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>
+                  <span style="font-size:11px;color:var(--muted);font-weight:700">91%</span>
+                </td>
+                <td><span class="pill pill-blue">A-</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -3587,7 +3888,7 @@ var TITLES = {
   todos:'To-Dos',team:'Team Management','agency-admin':'Agency Admin',pos:'POS Builder',
   invoicing:'Invoicing',proposals:'Proposals & Contracts',nps:'Client Satisfaction',
   referrals:'Referral Program',booking:'Book a Call',whitelabel:'White Label',revenue:'Revenue Dashboard',
-  permissions:'Permission Controls','job-logging':'Job Logging',social:'Social Media',seo:'SEO'
+  permissions:'Permission Controls','job-logging':'Job Tracker',social:'Social Media Health',seo:'SEO',leaderboard:'Review Leaderboard'
 };
 var DEFAULT_ACCOUNTS = [
   {id:'a1',name:'Apex Legal Group',initials:'AL',plan:'Deluxe',color:'#1b3a6b'},
@@ -3631,7 +3932,7 @@ var POS_OB_STEPS = [
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
   agency: ['home','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
-  admin: ['home','campaigns','billing','proposals','inbox','files','schedule','reports','reviews','nps','team','referrals','todos','notes','job-logging','notifications','settings','profile','help','social','whitelabel','permissions'],
+  admin: ['home','campaigns','billing','inbox','files','schedule','reports','reviews','nps','team','referrals','todos','notes','job-logging','notifications','settings','profile','help','social','whitelabel','permissions','leaderboard'],
   user: ['todos','notes','files','inbox','profile'],
   test: ['home','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
 };
@@ -4058,6 +4359,10 @@ function setupRoleUI(){
   if(currentRole==='user'){
     if(nlSales) nlSales.style.display='none';
     if(nlAdmin) nlAdmin.style.display='none';
+  } else if(currentRole==='admin'){
+    if(nlSales) nlSales.style.display='none';
+    var salesBtn=document.getElementById('nav-sales-btn'); if(salesBtn) salesBtn.style.display='none';
+    if(nlAdmin) nlAdmin.style.display='';
   } else {
     if(nlSales) nlSales.style.display='';
     if(nlAdmin) nlAdmin.style.display='';
@@ -4910,6 +5215,33 @@ function updateJobStats(jobs){
   var jc=document.getElementById('job-count'); if(jc) jc.textContent=total;
   var jr=document.getElementById('job-revenue'); if(jr) jr.textContent='$'+revenue.toLocaleString();
   var jt=document.getElementById('job-top-channel'); if(jt) jt.textContent=topChannel;
+  // update attribution bars
+  var channelMap={'Google Ads':'google','Google Business':'gbp','Meta Ads':'meta'};
+  var other=0;
+  Object.keys(channels).forEach(function(ch){
+    var key=channelMap[ch];
+    var pct=total?Math.round(channels[ch]/total*100):0;
+    if(key){
+      var pEl=document.getElementById('jt-'+key+'-pct'); if(pEl) pEl.textContent=pct+'%';
+      var bEl=document.getElementById('jt-'+key+'-bar'); if(bEl) bEl.style.width=pct+'%';
+    } else { other+=channels[ch]; }
+  });
+  var otherPct=total?Math.round(other/total*100):0;
+  var opEl=document.getElementById('jt-other-pct'); if(opEl) opEl.textContent=otherPct+'%';
+  var obEl=document.getElementById('jt-other-bar'); if(obEl) obEl.style.width=otherPct+'%';
+}
+function quickLogJob(){
+  var name=(document.getElementById('quick-job-name')||{}).value||'';
+  var rev=parseFloat((document.getElementById('quick-job-rev')||{}).value||'0')||0;
+  var channel=(document.getElementById('quick-job-channel')||{}).value||'Other';
+  if(!name.trim()){ showToast('Enter a job name.','gold'); return; }
+  var today=new Date().toISOString().split('T')[0];
+  JOB_LOGS.unshift({name:name.trim(),date:today,channel:channel,revenue:rev,notes:'',loggedBy:currentUser?currentUser.email:'',company:currentUser?currentUser.company:''});
+  saveState('jobLogs',JOB_LOGS);
+  var qn=document.getElementById('quick-job-name'); if(qn) qn.value='';
+  var qr=document.getElementById('quick-job-rev'); if(qr) qr.value='';
+  renderJobLogs();
+  showToast('Job logged!','green');
 }
 
 // ============ HEALTH BADGE ============
@@ -5552,7 +5884,7 @@ function healthBadge(score){
     'james@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner'},
     'matt@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner'}
   };
-  var FIXED_SCREEN_SET={leaderboard:true,'job-logging':true,social:true,nps:true,referrals:true,help:true,plans:true,billing:true,whitelabel:true};
+  var FIXED_SCREEN_SET={help:true,plans:true,billing:true,whitelabel:true};
 
   function qs(sel,root){ return (root||document).querySelector(sel); }
   function qsa(sel,root){ return Array.prototype.slice.call((root||document).querySelectorAll(sel)); }
@@ -5628,22 +5960,6 @@ function healthBadge(score){
     window.TITLES.leaderboard='Review Leaderboard';
     window.TITLES['job-logging']='Job Tracker';
     window.TITLES.social='Social Media Health';
-    if(!screen('leaderboard')){
-      var div=document.createElement('div');
-      div.className='screen';
-      div.id='s-leaderboard';
-      var main=qs('.main') || qs('#app') || document.body;
-      main.appendChild(div);
-    }
-    if(!document.getElementById('nav-leaderboard-btn')){
-      var btn=document.createElement('button');
-      btn.className='nav-btn';
-      btn.id='nav-leaderboard-btn';
-      btn.setAttribute('onclick',"nav('leaderboard')");
-      btn.innerHTML='<svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg>Review Leaderboard';
-      var job=document.getElementById('nav-job-logging-btn');
-      if(job&&job.parentNode) job.parentNode.insertBefore(btn, job);
-    }
     if(window.DEFAULT_PERMISSIONS){
       ['admin','agency','test'].forEach(function(role){
         if(Array.isArray(window.DEFAULT_PERMISSIONS[role])){
