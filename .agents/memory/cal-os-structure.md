@@ -49,5 +49,12 @@ Agencies already have a top-left account dropdown (`#acct-switcher-wrap` / `#acc
 ## Role logins
 Agency=chris@cal.marketing (CAL Marketing, skips onboarding, sees all client accounts a1–a5 + can create). Admin=client@apexlegal.com. User=staff@apexlegal.com. Test role also exists. Agency/test get the account switcher; agency routed straight to launchApp (no business-account onboarding).
 
+## getMeta() only fills defaults when the account key is entirely absent
+`getMeta(key)` (in the window.* boot block) lazily seeds full defaults (name/initials/plan/color/logo/font/language) only when `!all[key]`. So any code that pre-writes a PARTIAL `cal-account-meta[id]` (e.g. just `{location}`) permanently blocks default seeding — downstream readers like `refreshScreenForAccount` (`m.name`) then get undefined and show generic/blank labels.
+
+**Why:** `createAccount()` writing `{location}` alone left new accounts with no name/color in meta.
+
+**How to apply:** when writing meta for a not-yet-seeded account, write a COMPLETE object (all default keys + your field), not a partial patch. Inside the boot closure use `saveMeta()`; from static functions (like `createAccount`, which is NOT window-overridden) merge full defaults manually.
+
 ## Testing harness note
 The Playwright testing skill caps at ~10 iterations per run and the admin onboarding modal + login consume several. Keep test plans tiny (1–2 navigations). Prefer in-page `eval` returning a single diagnostic string (offsetHeight, parent id, closest('.main')) over visual judgment — the agent's visual "blank" reports were unreliable; geometry probes found the truth.
