@@ -1,0 +1,1 @@
+- [CAL OS structure](cal-os-structure.md) — single-file portal: screens must be balanced direct children of `<main>`; an unclosed `<div>` makes later screens nest and render blank (offsetHeight 0); `replaceScreens()` overwrites some static screens at runtime.
