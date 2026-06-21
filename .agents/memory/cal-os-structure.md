@@ -21,5 +21,27 @@ Every page is a `<div class="screen" id="s-xxx">`. CSS: `.screen{display:none}` 
 
 **Why/How:** if a static screen looks wrong/old at runtime but correct in the source, check whether `replaceScreens()` overwrites it. The newer 7-platform Social hub was being replaced by an old 3-platform version until the `setHtml('s-social',...)` line was removed.
 
+## Per-account branding must NOT override `--gold`
+`applyAccountBranding()` themes the dashboard per selected account. It must keep the brand `--gold` CSS var fixed (#c9a84c) and store the account's brand color in a SEPARATE var (`--acct`).
+
+**Why:** buttons (`.btn-connect`, `.ob-btn`, `.btn-primary`) are gold background + black text. Earlier the function did `setProperty('--gold', account.color)`; accounts like Apex Legal are navy (#1b3a6b), so every gold button became navy with unreadable black text. This was the user-reported "blue and black button" bug.
+
+**How to apply:** if buttons appear the wrong color per-account, check what `applyAccountBranding()` (in the window.* override block) sets on `--gold`.
+
+## Profile photo: inline cssText must include `display:block`
+CSS has `.profile-avatar-circle img{display:none}` by default. When applying a profile photo via `element.style.cssText='...'`, the string must include `display:block`, otherwise the stylesheet's `display:none` wins and the photo stays hidden — even though the top-right `.avatar-btn img` (no display:none) shows fine. Applies in both `handleProfilePhoto` and the launchApp photo-restore block.
+
+## Duplicate function definitions — edit the WINNING one
+Many functions exist twice: a static `function foo()` AND a later `window.foo = function(){...}` in the fix/boot block. The window override wins. Always edit the later/window version (e.g. setCurrentAcct, nav, refreshScreenForAccount, OB_STEPS, applyAccountBranding).
+
+## Fixed-screen routing (`FIXED_SCREEN_SET`)
+`FIXED_SCREEN_SET={help,plans,billing,whitelabel}`. The active `nav()` wrapper early-returns into `renderFixedScreen(id)` for these ids — so hooks placed only after `priorNav(id)` in the nav wrapper will NOT run for them. To run per-screen logic for a fixed screen (e.g. role-aware `renderBilling()`), add the call inside `renderFixedScreen()`.
+
+## Connector connection state
+Connections are stored per account in localStorage key `cal-integrations-<acctId>` as `{platformKey:true}`, where platformKey = OAUTH_DATA[platform].name lowercased with spaces stripped (e.g. 'googleads','metaads','googlebusinessprofile','stripe'). Written by `completeOAuth()`. Analytics/billing gating reads these keys.
+
+## Role logins
+Agency=chris@cal.marketing (CAL Marketing, skips onboarding, sees all client accounts a1–a5 + can create). Admin=client@apexlegal.com. User=staff@apexlegal.com. Test role also exists. Agency/test get the account switcher; agency routed straight to launchApp (no business-account onboarding).
+
 ## Testing harness note
 The Playwright testing skill caps at ~10 iterations per run and the admin onboarding modal + login consume several. Keep test plans tiny (1–2 navigations). Prefer in-page `eval` returning a single diagnostic string (offsetHeight, parent id, closest('.main')) over visual judgment — the agent's visual "blank" reports were unreliable; geometry probes found the truth.
