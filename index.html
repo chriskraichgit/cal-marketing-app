@@ -1072,7 +1072,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <div class="acct-dd-head">Switch Account</div>
           <div id="acct-dd-list"></div>
           <div class="acct-dd-divider"></div>
-          <button class="acct-dd-new" onclick="closeAcctDd();openModal('new-acct-modal')">
+          <button class="acct-dd-new" onclick="closeAcctDd();resetNewAcctModal();openModal('new-acct-modal')">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>New Account
           </button>
         </div>
@@ -1907,6 +1907,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <button class="btn-connect" onclick="openOAuthModal('whatsapp')">Connect</button>
         </div>
         <div class="int-card"><div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" style="width:30px"></div><span class="int-card-name">Google Maps</span><span class="int-card-sub">Not connected</span><button class="btn-connect" onclick="openOAuthModal('google-maps')">Connect</button></div>
+      </div>
+    </div>
+    <div class="card card-pad">
+      <div class="card-head"><span class="card-title">Business Logo</span></div>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;margin:8px 0 14px">This logo shows in the account switcher and dashboard for the currently selected account.</p>
+      <div style="display:flex;align-items:center;gap:16px">
+        <img id="settings-logo-preview" alt="Business logo" style="width:64px;height:64px;border-radius:14px;object-fit:contain;background:#fff;border:1px solid var(--border);padding:6px">
+        <label class="btn-gold" style="cursor:pointer;width:max-content">Change Logo<input type="file" accept="image/*" style="display:none" onchange="handleSettingsLogo(this)"></label>
       </div>
     </div>
     <div class="card card-pad">
@@ -3676,6 +3684,12 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div class="form-grid">
         <div class="form-field"><label class="form-label">Business Name</label><input class="input-std" id="new-acct-name" placeholder="e.g. Green Collar Roofing"></div>
         <div class="form-field"><label class="form-label">Location</label><input class="input-std" id="new-acct-location" placeholder="e.g. 123 Main St, Miami, FL"></div>
+        <div class="form-field"><label class="form-label">Business Logo</label>
+          <div style="display:flex;align-items:center;gap:14px">
+            <img id="new-acct-logo-preview" alt="" style="display:none;width:54px;height:54px;border-radius:12px;object-fit:contain;background:#fff;border:1px solid var(--border);padding:5px">
+            <label class="btn-ghost" style="cursor:pointer;width:max-content">Upload Logo<input type="file" accept="image/*" style="display:none" onchange="newAcctLogoPreview(this)"></label>
+          </div>
+        </div>
         <div class="form-field"><label class="form-label">Select Plan</label>
           <div class="new-acct-plan-grid">
             <div class="plan-sel-card selected" onclick="selectNewAcctPlan(this,'Foundation')"><p class="plan-sel-name">Standard</p><p class="plan-sel-price">$297/mo</p></div>
@@ -4716,16 +4730,29 @@ function createAccount(){
   var planName=planEl?planEl.textContent:'Foundation';
   var colors=['#1b3a6b','#2e7d32','#c9a84c','#7c3aed','#d92d20','#0052cc'];
   var initials=name.split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
+  var logo=window._newAcctLogo||'';
   var newAcct={id:'a'+Date.now(),name:name,initials:initials,plan:planName,color:colors[accounts.length%colors.length],location:location};
   accounts.push(newAcct);
   localStorage.setItem('cal-accounts',JSON.stringify(accounts));
-  if(location){
-    try{ var meta=JSON.parse(localStorage.getItem('cal-account-meta')||'{}'); meta[newAcct.id]=Object.assign({name:name,initials:initials,plan:planName,color:newAcct.color,logo:'',font:'Inter',language:'en'},meta[newAcct.id],{location:location}); localStorage.setItem('cal-account-meta',JSON.stringify(meta)); }catch(e){}
-  }
+  try{ var meta=JSON.parse(localStorage.getItem('cal-account-meta')||'{}'); meta[newAcct.id]=Object.assign({name:name,initials:initials,plan:planName,color:newAcct.color,logo:logo,font:'Inter',language:'en'},meta[newAcct.id],{name:name,plan:planName,location:location,logo:logo}); localStorage.setItem('cal-account-meta',JSON.stringify(meta)); }catch(e){}
   buildAcctDd(); setCurrentAcct(newAcct.id);
   var nameEl=document.getElementById('new-acct-name'); if(nameEl) nameEl.value='';
   var locEl=document.getElementById('new-acct-location'); if(locEl) locEl.value='';
+  var lp=document.getElementById('new-acct-logo-preview'); if(lp){ lp.src=''; lp.style.display='none'; }
+  window._newAcctLogo='';
   closeModal('new-acct-modal'); showToast(name+' account created!','green');
+}
+function newAcctLogoPreview(inp){
+  if(!inp||!inp.files||!inp.files[0]) return;
+  var r=new FileReader();
+  r.onload=function(e){ window._newAcctLogo=e.target.result; var p=document.getElementById('new-acct-logo-preview'); if(p){ p.src=e.target.result; p.style.display='block'; } };
+  r.readAsDataURL(inp.files[0]);
+}
+function resetNewAcctModal(){
+  window._newAcctLogo='';
+  var nameEl=document.getElementById('new-acct-name'); if(nameEl) nameEl.value='';
+  var locEl=document.getElementById('new-acct-location'); if(locEl) locEl.value='';
+  var lp=document.getElementById('new-acct-logo-preview'); if(lp){ lp.src=''; lp.style.display='none'; }
 }
 function selectNewAcctPlan(el){ document.querySelectorAll('.plan-sel-card').forEach(function(c){ c.classList.remove('selected'); }); el.classList.add('selected'); }
 
@@ -6156,10 +6183,17 @@ function healthBadge(score){
     r.onload=function(e){
       saveMeta(acctKey(),{logo:e.target.result});
       var preview=document.getElementById('wl-preview-logo'); if(preview) preview.src=e.target.result;
+      var sp=document.getElementById('settings-logo-preview'); if(sp) sp.src=e.target.result;
+      buildAcctDd();
       applyAccountBranding();
       showToastSafe('Logo saved to this account.','green');
     };
     r.readAsDataURL(inp.files[0]);
+  };
+  window.handleSettingsLogo=function(inp){ window.handleWLLogo(inp); };
+  window.fillSettingsLogo=function(){
+    var sp=document.getElementById('settings-logo-preview'); if(!sp) return;
+    var m=getMeta(acctKey()); sp.src=m.logo||CAL_LOGO;
   };
 
   var oldNav=window.nav;
@@ -6172,6 +6206,7 @@ function healthBadge(score){
       if(screen==='social') loadSocialConnections();
       if(screen==='job-logging') renderJobLogs();
       if(screen==='whitelabel') fillWhiteLabelForm();
+      if(screen==='settings') fillSettingsLogo();
     },0);
   };
 
