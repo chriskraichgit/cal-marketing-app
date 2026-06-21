@@ -2366,6 +2366,28 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: TEAM ============ -->
 <div class="screen" id="s-team">
+  <!-- AGENCY VIEW (agency/test) -->
+  <div id="team-agency-view" style="display:none">
+    <div class="sec-head"><div><h2>Team &amp; Access</h2><p>Manage your agency team and client admins</p></div></div>
+    <div class="tabs-row" style="margin-bottom:14px">
+      <button class="tab-btn active" id="team-tab-agency" onclick="switchTeamTab('agency')">Agency Members</button>
+      <button class="tab-btn" id="team-tab-admins" onclick="switchTeamTab('admins')">Client Admins</button>
+    </div>
+    <div id="team-agency-panel">
+      <div class="sec-head" style="margin-bottom:12px"><div><h3 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--ink)">Agency Members</h3><p style="font-size:13px;font-weight:700;color:var(--muted)">People on the CAL Marketing team</p></div><button class="btn-view" onclick="openInvite('agency')">+ Invite Agency Member</button></div>
+      <div class="card">
+        <table class="tbl"><thead><tr><th>Member</th><th>Email</th><th>Role</th><th>Status</th></tr></thead><tbody id="team-agency-body"></tbody></table>
+      </div>
+    </div>
+    <div id="team-admins-panel" style="display:none">
+      <div class="sec-head" style="margin-bottom:12px"><div><h3 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--ink)">Client Admins</h3><p style="font-size:13px;font-weight:700;color:var(--muted)">Admin contacts for each client account</p></div><button class="btn-view" onclick="openInvite('admin')">+ Invite Admin</button></div>
+      <div class="card">
+        <table class="tbl"><thead><tr><th>Admin</th><th>Email</th><th>Account</th><th>Status</th></tr></thead><tbody id="team-admins-body"></tbody></table>
+      </div>
+    </div>
+  </div>
+  <!-- CLIENT VIEW (admin) -->
+  <div id="team-client-view">
   <div class="sec-head"><div><h2>Team Management</h2><p>Manage team members and roles</p></div><button class="btn-view" onclick="openModal('invite-member-modal')">+ Invite Member</button></div>
   <div class="card" style="margin-bottom:14px">
     <table class="tbl"><thead><tr><th>Member</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>
@@ -2414,6 +2436,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         </ul>
       </div>
     </div>
+  </div>
   </div>
 </div>
 
@@ -3849,6 +3872,31 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
 </div>
 
+<!-- TEAM INVITE MODAL (agency: members + admins) -->
+<div class="modal-overlay hidden" id="team-invite-modal" onclick="if(event.target===this)closeModal('team-invite-modal')">
+  <div class="modal">
+    <div class="modal-head"><h2 id="team-invite-title">Invite</h2><button class="icon-btn" onclick="closeModal('team-invite-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="form-grid" style="margin-bottom:14px">
+        <div class="form-field"><label class="form-label">Full Name</label><input id="ti-name" class="input-std" placeholder="Jane Smith"></div>
+        <div class="form-field"><label class="form-label">Email Address</label><input id="ti-email" class="input-std" type="email" placeholder="jane@company.com"></div>
+      </div>
+      <div id="ti-role-wrap">
+        <p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:10px">SELECT ROLE</p>
+        <div class="grid" style="gap:8px">
+          <div class="team-role-card selected" onclick="selectTiRole(this,'Agency Admin')"><p class="team-role-title">Agency Admin</p><p class="team-role-desc">Full access to all client accounts, billing, subscriptions, and team management.</p></div>
+          <div class="team-role-card" onclick="selectTiRole(this,'Agency Member')"><p class="team-role-title">Agency Member</p><p class="team-role-desc">Access to assigned client accounts and day-to-day work — no billing or team controls.</p></div>
+        </div>
+      </div>
+      <div id="ti-account-wrap" style="display:none">
+        <div class="form-field"><label class="form-label">Assign to Account</label><select id="ti-account" class="input-std"></select></div>
+        <p style="font-size:12px;font-weight:700;color:var(--muted);margin-top:10px">This admin will get full dashboard access for the selected client account.</p>
+      </div>
+    </div>
+    <div class="modal-actions"><button class="btn-gold" onclick="sendTeamInvite()">Send Invite</button><button class="btn-ghost" onclick="closeModal('team-invite-modal')">Cancel</button></div>
+  </div>
+</div>
+
 <!-- VIDEO PLAYER MODAL -->
 <div class="modal-overlay hidden" id="video-player-modal" onclick="if(event.target===this)closeModal('video-player-modal')">
   <div class="modal" style="max-width:600px">
@@ -4792,6 +4840,112 @@ function toggleTheme(){
 // ============ MODALS ============
 function openModal(id){ var m=document.getElementById(id); if(m){ m.classList.remove('hidden'); document.body.classList.add('locked'); } }
 function closeModal(id){ var m=document.getElementById(id); if(m){ m.classList.add('hidden'); document.body.classList.remove('locked'); } }
+
+// ============ AGENCY TEAM & ADMIN INVITES ============
+function teamLS(key,fallback){ try{ return JSON.parse(localStorage.getItem(key)||JSON.stringify(fallback)); }catch(e){ return fallback; } }
+function teamSave(key,val){ try{ localStorage.setItem(key,JSON.stringify(val)); }catch(e){} }
+function teamInitials(name){ return (name||'').trim().split(/\s+/).map(function(p){return p[0];}).join('').slice(0,2).toUpperCase()||'?'; }
+function teamEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+var TEAM_COLORS=['#1b3a6b','#2e7d32','#7c3aed','#0052cc','#c2410c','#0e7490'];
+function teamColorFor(seed,ink){ var c=TEAM_COLORS[(seed||0)%TEAM_COLORS.length]; return c; }
+function switchTeamTab(tab){
+  var ap=document.getElementById('team-agency-panel'), dp=document.getElementById('team-admins-panel');
+  var at=document.getElementById('team-tab-agency'), dt=document.getElementById('team-tab-admins');
+  if(ap) ap.style.display=tab==='agency'?'':'none';
+  if(dp) dp.style.display=tab==='admins'?'':'none';
+  if(at) at.classList.toggle('active',tab==='agency');
+  if(dt) dt.classList.toggle('active',tab==='admins');
+}
+function renderTeam(){
+  var agencyView=document.getElementById('team-agency-view');
+  var clientView=document.getElementById('team-client-view');
+  var isAgency=(window.currentRole==='agency'||window.currentRole==='test');
+  if(agencyView) agencyView.style.display=isAgency?'':'none';
+  if(clientView) clientView.style.display=isAgency?'none':'';
+  if(!isAgency) return;
+  // Agency members
+  var body=document.getElementById('team-agency-body');
+  if(body){
+    var seed=[
+      {name:'Chris Kraich',email:'chris@cal.marketing',role:'Founder / Agency',status:'Active',color:'var(--gold)',ink:'#000'},
+      {name:'James Wodzinski',email:'james@cal.marketing',role:'Agency Partner',status:'Active',color:'#1b3a6b',ink:'#fff'},
+      {name:'Matt Gallagher',email:'matt@cal.marketing',role:'Agency Partner',status:'Active',color:'#2e7d32',ink:'#fff'}
+    ];
+    var invited=teamLS('cal-agency-invites',[]);
+    var rows=seed.map(function(m){
+      return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:'+m.color+';color:'+m.ink+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+teamInitials(m.name)+'</div><strong>'+m.name+'</strong></div></td><td>'+m.email+'</td><td><span class="pill pill-gold">'+m.role+'</span></td><td><span class="pill pill-green">Active</span></td></tr>';
+    });
+    invited.forEach(function(m,i){
+      rows.push('<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:'+teamColorFor(i+2)+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+teamInitials(m.name)+'</div><strong style="color:var(--muted)">'+teamEsc(m.name)+'</strong></div></td><td>'+teamEsc(m.email)+'</td><td><span class="pill pill-blue">'+teamEsc(m.role||'Agency Member')+'</span></td><td><span class="pill pill-gold">Invited</span></td></tr>');
+    });
+    body.innerHTML=rows.join('');
+  }
+  // Client admins
+  var abody=document.getElementById('team-admins-body');
+  if(abody){
+    var seedA=[
+      {name:'Alex Torres',email:'client@apexlegal.com',account:'Apex Legal Group',status:'Active'}
+    ];
+    var ainv=teamLS('cal-admin-invites',[]);
+    var arows=seedA.map(function(m,i){
+      return '<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:'+teamColorFor(i)+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+teamInitials(m.name)+'</div><strong>'+m.name+'</strong></div></td><td>'+m.email+'</td><td>'+m.account+'</td><td><span class="pill pill-green">Active</span></td></tr>';
+    });
+    ainv.forEach(function(m,i){
+      arows.push('<tr><td><div style="display:flex;align-items:center;gap:8px"><div style="width:30px;height:30px;border-radius:50%;background:'+teamColorFor(i+1)+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+teamInitials(m.name)+'</div><strong style="color:var(--muted)">'+teamEsc(m.name)+'</strong></div></td><td>'+teamEsc(m.email)+'</td><td>'+teamEsc(m.account||'—')+'</td><td><span class="pill pill-gold">Invited</span></td></tr>');
+    });
+    abody.innerHTML=arows.join('');
+  }
+}
+window.renderTeam=renderTeam;
+var tiType='agency', tiRole='Agency Admin';
+function openInvite(type){
+  tiType=type;
+  var title=document.getElementById('team-invite-title');
+  var roleWrap=document.getElementById('ti-role-wrap');
+  var acctWrap=document.getElementById('ti-account-wrap');
+  var nameEl=document.getElementById('ti-name'), emailEl=document.getElementById('ti-email');
+  if(nameEl) nameEl.value=''; if(emailEl) emailEl.value='';
+  if(type==='agency'){
+    if(title) title.textContent='Invite Agency Member';
+    if(roleWrap) roleWrap.style.display='';
+    if(acctWrap) acctWrap.style.display='none';
+    tiRole='Agency Admin';
+    var cards=document.querySelectorAll('#ti-role-wrap .team-role-card');
+    cards.forEach(function(c,i){ c.classList.toggle('selected',i===0); });
+  } else {
+    if(title) title.textContent='Invite Admin';
+    if(roleWrap) roleWrap.style.display='none';
+    if(acctWrap) acctWrap.style.display='';
+    var sel=document.getElementById('ti-account');
+    if(sel) sel.innerHTML=(window.accounts||[]).map(function(a){ return '<option value="'+a.id+'">'+a.name+'</option>'; }).join('');
+  }
+  openModal('team-invite-modal');
+}
+function selectTiRole(el,role){
+  tiRole=role;
+  var cards=document.querySelectorAll('#ti-role-wrap .team-role-card');
+  cards.forEach(function(c){ c.classList.remove('selected'); });
+  el.classList.add('selected');
+}
+function sendTeamInvite(){
+  var name=(document.getElementById('ti-name')||{}).value; name=(name||'').trim();
+  var email=(document.getElementById('ti-email')||{}).value; email=(email||'').trim();
+  if(!name||!email){ showToast('Enter a name and email.','gold'); return; }
+  if(tiType==='agency'){
+    var inv=teamLS('cal-agency-invites',[]);
+    inv.push({name:name,email:email,role:tiRole});
+    teamSave('cal-agency-invites',inv);
+  } else {
+    var acctId=(document.getElementById('ti-account')||{}).value;
+    var acct=(window.accounts||[]).filter(function(a){return a.id===acctId;})[0];
+    var ainv=teamLS('cal-admin-invites',[]);
+    ainv.push({name:name,email:email,account:acct?acct.name:''});
+    teamSave('cal-admin-invites',ainv);
+  }
+  closeModal('team-invite-modal');
+  showToast('Invitation sent to '+email+'!','green');
+  renderTeam();
+}
 function closeAllModals(){
   document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(function(m){ m.classList.add('hidden'); });
   document.body.classList.remove('locked');
@@ -6357,6 +6511,7 @@ function healthBadge(score){
     if(priorNav) priorNav(id);
     if(id==='billing' && typeof renderBilling==='function') try{ renderBilling(); }catch(e){}
     if(id==='analytics' && typeof gateAnalytics==='function') try{ gateAnalytics(); }catch(e){}
+    if(id==='team' && typeof renderTeam==='function') try{ renderTeam(); }catch(e){}
     setTimeout(cleanAdminNav,0);
   };
 

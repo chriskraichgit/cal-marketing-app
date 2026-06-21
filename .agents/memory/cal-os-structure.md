@@ -40,6 +40,12 @@ Many functions exist twice: a static `function foo()` AND a later `window.foo = 
 ## Connector connection state
 Connections are stored per account in localStorage key `cal-integrations-<acctId>` as `{platformKey:true}`, where platformKey = OAUTH_DATA[platform].name lowercased with spaces stripped (e.g. 'googleads','metaads','googlebusinessprofile','stripe'). Written by `completeOAuth()`. Analytics/billing gating reads these keys.
 
+## Role-aware screen pattern (Team screen)
+The Team screen (`s-team`) shows different content per role by wrapping each variant in its own div (`#team-agency-view` hidden by default, `#team-client-view`) and toggling them in `renderTeam()` on `currentRole` (agency/test vs admin). `renderTeam()` is wired in the nav wrapper for `id==='team'` (team is NOT in FIXED_SCREEN_SET). Agency view has Agency Members + Client Admins tabs; invites persist to localStorage `cal-agency-invites` / `cal-admin-invites` and re-render. Use this same wrap-and-toggle pattern for any other role-divergent screen. Always HTML-escape user-entered invite values before `innerHTML` (helper `teamEsc`).
+
+## Account switcher already exists
+Agencies already have a top-left account dropdown (`#acct-switcher-wrap` / `#acct-sw-btn`, list `#acct-dd-list`, built by `buildAcctDd()`, shown for agency/test in setupRoleUI) with "New Account". Don't rebuild it — it lets the agency switch/manage all client accounts (a1–a5). Agency members are seeded in `AGENCY_USERS` (chris/james/matt @cal.marketing).
+
 ## Role logins
 Agency=chris@cal.marketing (CAL Marketing, skips onboarding, sees all client accounts a1–a5 + can create). Admin=client@apexlegal.com. User=staff@apexlegal.com. Test role also exists. Agency/test get the account switcher; agency routed straight to launchApp (no business-account onboarding).
 
