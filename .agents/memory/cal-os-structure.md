@@ -129,3 +129,23 @@ Profile photo (saveState 'profilePhoto') must be applied to BOTH `#profile-avata
 handleProfilePhoto + launchApp restore loop both circle ids; fillSettingsPfp() (called on
 nav to settings) rehydrates the settings preview. Inline img cssText MUST include
 display:block (CSS default for .profile-avatar-circle img is display:none).
+
+## Second "overhaul" boot IIFE wraps nav/launchApp/setupRoleUI AGAIN
+A standalone `<script>` IIFE appended AFTER the main bootFixes IIFE (last script before `</body>`)
+adds `applyCalLayout()` which re-wraps `window.nav`/`launchApp`/`setupRoleUI` a SECOND time and
+runs on a storage listener + timeouts. It is the authoritative final layer for: force-hiding Sales
+for ALL roles (the static setupRoleUI else-branch still shows sales for `test`, this overrides it),
+moving `#nav-onboarding-btn` (agency→after Client Projects; admin→after Home), admin phase-based
+Onboarding↔Maintenance label/route by onboarding completion, the Files `#files-gdrive-card`, the
+admin home `#admin-onb-cta`, and Settings Layout & Navigation prefs. To change any of these, edit
+THIS trailing IIFE (it wins over earlier layers because it runs last).
+
+## Layout & Navigation toggles (Settings) — explicit-pref-only by design
+`cal-layout-prefs-<role>` (LAYOUT_ITEMS per role) drives Settings toggles. `applyLayoutPrefs()`
+acts ONLY on keys with an explicit saved pref (true=show / false=hide); no pref = leave the
+existing permission/agencyHide visibility untouched. **Why:** the spec said "default all visible"
+but force-showing would re-expose goals/roi/pos/whitelabel/booking/revenue and contradict the
+cleanup intent + the item-8 hide list — so defaults are preserved and toggles work both directions
+on demand. Admin toggle list is trimmed to items in admin's VISIBLE sections (campaigns, reviews,
+leads, reports, schedule, todos); referrals/nps were NOT added (their buttons live under the
+admin-hidden `#nav-label-admin`, would orphan).
