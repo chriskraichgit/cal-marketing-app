@@ -4274,10 +4274,8 @@ function doLogin(){
   if(err) err.classList.remove('show');
   currentUser=Object.assign({},u,{email:matchedEmail});
   currentRole=u.role;
-  var obDone=localStorage.getItem('cal-ob-done-'+matchedEmail)==='1';
-  if(obDone||currentRole==='test'||currentRole==='agency'){ launchApp(); }
-  else if(currentRole==='user'){ startUserOnboarding(); }
-  else { startOnboarding(); }
+  // Sign In never runs onboarding — business details are only collected under Create Account.
+  launchApp();
 }
 function switchLoginTab(tab){
   var sp=document.getElementById('signin-panel');
