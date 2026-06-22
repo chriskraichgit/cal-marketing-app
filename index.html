@@ -1382,6 +1382,15 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============ SCREEN: ROI ============ -->
 <div class="screen" id="s-roi">
   <div class="sec-head"><div><h2>ROI Tracker</h2><p>Return on investment across all CAL services</p></div></div>
+  <div class="card card-pad" id="roi-gate" style="text-align:center;padding:44px 20px">
+    <div style="width:56px;height:56px;border-radius:16px;background:var(--page);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" width="26" height="26"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+    <h3 style="font-size:17px;font-weight:900;color:var(--ink);margin-bottom:6px">No ROI data yet</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;max-width:380px;margin:0 auto 18px;line-height:1.6">ROI is calculated from real ad spend and attributed revenue. Connect your ad platforms to see real numbers.</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-connect" onclick="openOAuthModal('google-ads')">Connect Google Ads</button>
+      <button class="btn-connect" onclick="openOAuthModal('meta-ads')">Connect Meta Ads</button>
+    </div>
+  </div>
   <div class="kpi-row">
     <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Total Spend</span></div><span class="stat-val">$4,200</span><div class="stat-foot"><span>This month</span></div></div>
     <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Revenue Attributed</span></div><span class="stat-val">$17.6k</span><div class="stat-foot"><span class="up">4.2x ROAS</span></div></div>
@@ -1402,6 +1411,15 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============ SCREEN: CAMPAIGNS ============ -->
 <div class="screen" id="s-campaigns">
   <div class="sec-head"><div><h2>Campaigns</h2><p>Active across all platforms</p></div><button class="btn-view" onclick="openModal('new-campaign-modal')">+ New Campaign</button></div>
+  <div class="card card-pad" id="campaigns-gate" style="text-align:center;padding:44px 20px">
+    <div style="width:56px;height:56px;border-radius:16px;background:var(--page);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" width="26" height="26"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    <h3 style="font-size:17px;font-weight:900;color:var(--ink);margin-bottom:6px">No campaigns yet</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;max-width:380px;margin:0 auto 18px;line-height:1.6">Campaign performance is pulled live from your ad platforms. Connect a platform to see real campaigns — no fake numbers.</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-connect" onclick="openOAuthModal('google-ads')">Connect Google Ads</button>
+      <button class="btn-connect" onclick="openOAuthModal('meta-ads')">Connect Meta Ads</button>
+    </div>
+  </div>
   <div class="filter-row">
     <button class="f-btn active" onclick="setFilterActive(this)">All</button><button class="f-btn" onclick="setFilterActive(this)">Google</button><button class="f-btn" onclick="setFilterActive(this)">Meta</button><button class="f-btn" onclick="setFilterActive(this)">Email</button><button class="f-btn" onclick="setFilterActive(this)">Paused</button>
   </div>
@@ -3206,6 +3224,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div class="sec-head">
     <div><h2>Revenue Dashboard</h2><p>Agency-wide MRR, ARR and client breakdown</p></div>
   </div>
+  <div class="card card-pad" id="revenue-gate" style="text-align:center;padding:44px 20px">
+    <div style="width:56px;height:56px;border-radius:16px;background:var(--page);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" width="26" height="26"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+    <h3 style="font-size:17px;font-weight:900;color:var(--ink);margin-bottom:6px">No revenue data yet</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;max-width:380px;margin:0 auto 18px;line-height:1.6">MRR, ARR and churn are pulled directly from Stripe. Connect Stripe to see your real revenue — no fake numbers.</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-connect" onclick="openOAuthModal('stripe')">Connect Stripe</button>
+    </div>
+  </div>
   <!-- MRR Hero -->
   <div class="card" style="background:linear-gradient(135deg,var(--blue),#1a4a90);margin-bottom:16px;text-align:center;padding:32px;min-height:120px">
     <p style="font-size:12px;font-weight:800;color:rgba(255,255,255,.6);margin-bottom:6px;letter-spacing:.08em">TOTAL MRR</p>
@@ -4958,6 +4984,26 @@ function gateAnalytics(){
   if(pill) pill.style.display=connected?'':'none';
 }
 
+function gateDataScreen(screenId,gateId,keys){
+  var screen=document.getElementById(screenId);
+  if(!screen) return;
+  var connected=false;
+  try{
+    var s=JSON.parse(localStorage.getItem('cal-integrations-'+(window.currentAcctId||'a1'))||'{}');
+    connected=keys.some(function(k){ return !!s[k]; });
+  }catch(e){}
+  var gate=document.getElementById(gateId);
+  Array.prototype.forEach.call(screen.children,function(ch){
+    if(ch.classList.contains('sec-head')||ch.id===gateId) return;
+    ch.style.display=connected?'':'none';
+  });
+  if(gate) gate.style.display=connected?'none':'';
+}
+function gateRoi(){ gateDataScreen('s-roi','roi-gate',['googleads','metaads']); }
+function gateRevenue(){ gateDataScreen('s-revenue','revenue-gate',['stripe']); }
+function gateCampaigns(){ gateDataScreen('s-campaigns','campaigns-gate',['googleads','metaads']); }
+function gateAllDataScreens(){ try{ gateAnalytics(); }catch(e){} try{ gateRoi(); }catch(e){} try{ gateRevenue(); }catch(e){} try{ gateCampaigns(); }catch(e){} }
+
 // ============ PROFILE ============
 function saveProfile(){
   var name=(document.getElementById('pf-name')||{value:''}).value.trim()||currentUser.name;
@@ -5461,7 +5507,7 @@ function completeOAuth(){
     saved[platformTitle.textContent.toLowerCase().replace(/\s+/g,'')]=true;
     localStorage.setItem(connKey,JSON.stringify(saved));
   }
-  setTimeout(function(){ closeModal('oauth-modal'); showToast('Integration connected!','green'); refreshIntegrationsForAccount(currentAcctId); if(typeof renderBilling==='function') try{ renderBilling(); }catch(e){} if(typeof gateAnalytics==='function') try{ gateAnalytics(); }catch(e){} },2000);
+  setTimeout(function(){ closeModal('oauth-modal'); showToast('Integration connected!','green'); refreshIntegrationsForAccount(currentAcctId); if(typeof renderBilling==='function') try{ renderBilling(); }catch(e){} if(typeof gateAllDataScreens==='function') try{ gateAllDataScreens(); }catch(e){} },2000);
 }
 function selectPaymentMethod(type){
   closeModal('update-payment-modal');
@@ -6211,6 +6257,9 @@ function healthBadge(score){
     if(window.currentScreen==='job-logging') renderJobLogs();
     if(window.currentScreen==='billing' && typeof renderBilling==='function') try{ renderBilling(); }catch(e){}
     if(window.currentScreen==='analytics' && typeof gateAnalytics==='function') try{ gateAnalytics(); }catch(e){}
+    if(window.currentScreen==='roi' && typeof gateRoi==='function') try{ gateRoi(); }catch(e){}
+    if(window.currentScreen==='revenue' && typeof gateRevenue==='function') try{ gateRevenue(); }catch(e){}
+    if(window.currentScreen==='campaigns' && typeof gateCampaigns==='function') try{ gateCampaigns(); }catch(e){}
   };
 
   window.switchLoginTab=function(tab){
@@ -6760,6 +6809,9 @@ function healthBadge(score){
     if(priorNav) priorNav(id);
     if(id==='billing' && typeof renderBilling==='function') try{ renderBilling(); }catch(e){}
     if(id==='analytics' && typeof gateAnalytics==='function') try{ gateAnalytics(); }catch(e){}
+    if(id==='roi' && typeof gateRoi==='function') try{ gateRoi(); }catch(e){}
+    if(id==='revenue' && typeof gateRevenue==='function') try{ gateRevenue(); }catch(e){}
+    if(id==='campaigns' && typeof gateCampaigns==='function') try{ gateCampaigns(); }catch(e){}
     if(id==='team' && typeof renderTeam==='function') try{ renderTeam(); }catch(e){}
     setTimeout(cleanAdminNav,0);
   };
