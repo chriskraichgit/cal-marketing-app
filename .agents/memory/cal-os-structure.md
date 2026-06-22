@@ -65,6 +65,16 @@ Sidebar `.nav-btn` visibility is permission-driven: `setupRoleUI` shows a button
 
 **Why:** request to make the admin (business client) home/nav "less busy for marketing" — admin trimmed to `['home','campaigns','reviews','leads','inbox','files','billing','reports','settings','profile','help']`. `nav()` itself ignores permissions, so home CTAs to non-sidebar screens still work.
 
+## Making a sidebar tab agency-only (override-proof)
+Adding a screen to `DEFAULT_PERMISSIONS.agency`/`.test` only (NOT admin/user) is necessary but NOT
+sufficient to keep its `.nav-btn` hidden from admin — the permission filter in `setupRoleUI` can be
+defeated by saved per-email overrides or later re-show layers, so admin can still see the button. The
+reliable fix is the explicit non-agency/non-test hide block in `setupRoleUI`: add the screen id to the
+`testOnlyScreens` array (it force-sets `display:none` for any role that isn't agency/test, after the
+perm loop). The `user` role uses a separate `#sidebar-user` that never contains these buttons, so this
+covers it too. `nav()` still gatekeeps navigation via `hasPermission()`.
+**Why:** two new agency-only tabs (client-projects, agency-todos) stayed visible to admin until added to `testOnlyScreens`.
+
 ## Admin home is role-toggled (onboarding vs maintenance)
 `#s-home` holds two siblings: `#home-admin-view` and `#home-full-view` (original busy
 hero/KPI/health grids). `#home-admin-view` now contains TWO empty containers —
