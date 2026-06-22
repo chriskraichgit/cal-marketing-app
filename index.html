@@ -1129,10 +1129,51 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <main class="main">
 <!-- ============ SCREEN: HOME ============ -->
 <div class="screen" id="s-home">
-  <!-- Admin-first view: onboarding timeline OR maintenance home (rendered by onboarding engine) -->
+  <!-- Simplified admin-first view -->
   <div id="home-admin-view" style="display:none">
-    <div id="home-onboarding-view" style="display:none"></div>
-    <div id="home-maintenance-view" style="display:none"></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <p style="font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Account Health</p>
+        <p style="font-size:13px;color:var(--ink);font-weight:700;margin-top:2px">Your campaigns are performing above benchmark.</p>
+      </div>
+      <div style="text-align:center;flex-shrink:0">
+        <div class="admin-money-total" id="admin-health-score" style="font-size:38px">78</div>
+        <p style="font-size:10px;font-weight:900;color:var(--green);letter-spacing:.5px">HEALTHY</p>
+      </div>
+    </div>
+
+    <div class="card card-pad" style="margin-top:14px">
+      <div class="card-head"><span class="card-title">Where Your Money Is Going</span><span class="pill pill-gold">THIS MONTH</span></div>
+      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin:10px 0 18px">
+        <span class="admin-money-total">$4,200</span>
+        <span style="font-size:13px;color:var(--muted);font-weight:700;padding-bottom:7px">invested · <span style="color:var(--green);font-weight:900">$18,400 revenue generated</span></span>
+      </div>
+      <div class="health-row">
+        <div class="h-row"><div class="h-row-top"><span>Google Ads</span><span>$1,200</span></div><div class="bar-wrap"><div class="bar-fill" style="width:29%;--bar-col:var(--green)"></div></div></div>
+        <div class="h-row"><div class="h-row-top"><span>Meta Ads</span><span>$900</span></div><div class="bar-wrap"><div class="bar-fill" style="width:21%;--bar-col:#1877f2"></div></div></div>
+        <div class="h-row"><div class="h-row-top"><span>SEO / Local</span><span>$600</span></div><div class="bar-wrap"><div class="bar-fill" style="width:14%;--bar-col:var(--gold)"></div></div></div>
+        <div class="h-row"><div class="h-row-top"><span>Content &amp; Social</span><span>$800</span></div><div class="bar-wrap"><div class="bar-fill" style="width:19%;--bar-col:var(--blue)"></div></div></div>
+        <div class="h-row"><div class="h-row-top"><span>Account Management</span><span>$700</span></div><div class="bar-wrap"><div class="bar-fill" style="width:17%;--bar-col:var(--muted)"></div></div></div>
+      </div>
+      <button class="btn-ghost" style="margin-top:16px;width:100%" onclick="nav('billing')">View Billing &amp; Invoices</button>
+    </div>
+
+    <p class="admin-section-label">Quick Actions</p>
+    <div class="grid g3">
+      <button class="card card-pad admin-cta" onclick="nav('leads')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><p class="admin-cta-title">New Leads</p><p class="admin-cta-sub">4 new this week</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('reports')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><p class="admin-cta-title">Monthly Report</p><p class="admin-cta-sub">See your results</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('billing')"><div class="admin-cta-ico" style="background:var(--green)"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><p class="admin-cta-title">Billing</p><p class="admin-cta-sub">Invoices &amp; payments</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('onboarding')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg></div><div><p class="admin-cta-title">Onboarding</p><p class="admin-cta-sub">Track your setup</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('reviews')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg></div><div><p class="admin-cta-title">Reviews</p><p class="admin-cta-sub">4.8★ rating</p></div></button>
+      <button class="card card-pad admin-cta" onclick="nav('inbox')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div><p class="admin-cta-title">Messages</p><p class="admin-cta-sub">Talk to your team</p></div></button>
+      <button class="card card-pad admin-cta" onclick="openAiPanel()"><div class="admin-cta-ico" style="background:var(--ink)"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><div><p class="admin-cta-title">Ask CAL AI</p><p class="admin-cta-sub">Get instant answers</p></div></button>
+    </div>
+
+    <div class="card card-pad" style="margin-top:18px">
+      <div class="card-head"><span class="card-title">Latest from Your Team</span></div>
+      <div class="update-item"><div class="update-dot"></div><div><span class="update-text"><strong>CAL Team:</strong> New leads report uploaded to your Files section. Highlights 14% YoY growth.</span></div><span class="update-time">Jun 18</span></div>
+      <div class="update-item"><div class="update-dot" style="background:var(--green)"></div><div><span class="update-text"><strong>CAL Team:</strong> Google Ads campaign optimized — expect improved CPL over next 7 days.</span></div><span class="update-time">Jun 15</span></div>
+    </div>
   </div>
 
   <!-- Full (agency/test) view -->
@@ -7058,21 +7099,13 @@ function healthBadge(score){
     });
   }
 
-  /* ---- applyHomeForRole override (req 1/2 routing) ---- */
+  /* ---- applyHomeForRole override: admin sees static admin home; onboarding lives on its own tab ---- */
   window.applyHomeForRole=function(){
     var admin=(window.currentRole==='admin');
     var av=document.getElementById('home-admin-view');
     var fv=document.getElementById('home-full-view');
     if(fv) fv.style.display=admin?'none':'block';
     if(av) av.style.display=admin?'block':'none';
-    if(admin){
-      var st=onbSyncCompletion();
-      var ov=document.getElementById('home-onboarding-view');
-      var mv=document.getElementById('home-maintenance-view');
-      if(ov) ov.style.display=st.completed?'none':'block';
-      if(mv) mv.style.display=st.completed?'block':'none';
-      if(st.completed){ renderOnbMaintHome(); onbMaybeCelebrate(); } else { renderOnbHome(); }
-    }
   };
 
   /* ---- nav override: render onboarding tab + admin enhancers ---- */
@@ -7223,25 +7256,32 @@ function healthBadge(score){
   function cpUid(){ return 'id'+Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-3); }
 
   /* ---- Client Projects (req 7) ---- */
-  function cpKey(){ return 'cal-client-projects'; }
+  var CP_TEAM=[
+    {id:'chris',name:'Chris',full:'Chris Kraich',initials:'CK',color:'var(--gold)'},
+    {id:'james',name:'James',full:'James Wodzinski',initials:'JW',color:'var(--blue)'},
+    {id:'matt',name:'Matt',full:'Matt Gallagher',initials:'MG',color:'var(--green)'}
+  ];
+  function cpMember(id){ for(var i=0;i<CP_TEAM.length;i++){ if(CP_TEAM[i].id===id) return CP_TEAM[i]; } return null; }
+  var cpFilter='all';
+  function cpKey(){ return 'cal-client-projects-v2'; }
   function cpDefault(){
-    function t(text,done){ return {id:cpUid(),text:text,done:!!done}; }
+    function t(text,done,who){ return {id:cpUid(),text:text,done:!!done,assignee:who||''}; }
     return { clients:[
       {id:cpUid(), name:'Apex Legal Group', started:'2026-06-09', expanded:true, tasks:[
-        t('Kickoff call scheduled',1), t('Collect brand assets & logins',1), t('Audit current marketing',1),
-        t('Build Google & Meta campaigns',0), t('Approve ad creative',0), t('Launch campaigns',0)
+        t('Kickoff call scheduled',1,'chris'), t('Collect brand assets & logins',1,'james'), t('Audit current marketing',1,'matt'),
+        t('Build Google & Meta campaigns',0,'chris'), t('Approve ad creative',0,'james'), t('Launch campaigns',0,'chris')
       ]},
       {id:cpUid(), name:'Summit Dental Care', started:'2026-06-12', expanded:false, tasks:[
-        t('Kickoff call scheduled',1), t('Collect brand assets & logins',1), t('Audit current marketing',0), t('Build campaigns',0)
+        t('Kickoff call scheduled',1,'james'), t('Collect brand assets & logins',1,'matt'), t('Audit current marketing',0,'chris'), t('Build campaigns',0,'james')
       ]},
       {id:cpUid(), name:'Riverside Plumbing', started:'2026-06-15', expanded:false, tasks:[
-        t('Kickoff call scheduled',1), t('Collect brand assets & logins',0), t('Audit current marketing',0)
+        t('Kickoff call scheduled',1,'matt'), t('Collect brand assets & logins',0,'chris'), t('Audit current marketing',0,'matt')
       ]},
       {id:cpUid(), name:'Bright Smile Orthodontics', started:'2026-06-17', expanded:false, tasks:[
-        t('Kickoff call scheduled',1), t('Collect brand assets & logins',0)
+        t('Kickoff call scheduled',1,'chris'), t('Collect brand assets & logins',0,'james')
       ]},
       {id:cpUid(), name:'Vega Auto Group', started:'2026-06-18', expanded:false, tasks:[
-        t('Kickoff call scheduled',0)
+        t('Kickoff call scheduled',0,'matt')
       ]}
     ]};
   }
@@ -7251,11 +7291,18 @@ function healthBadge(score){
 
   window.cpToggle=function(id){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===id;}); if(c){ c.expanded=!c.expanded; cpSave(st); renderClientProjects(); } };
   window.cpToggleTask=function(cid,tid){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; var t=c.tasks.find(function(x){return x.id===tid;}); if(t){ t.done=!t.done; cpSave(st); renderClientProjects(); } };
-  window.cpAddTask=function(cid){ var inp=document.getElementById('cp-newtask-'+cid); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks.push({id:cpUid(),text:v,done:false}); cpSave(st); renderClientProjects(); };
+  window.cpAddTask=function(cid){ var inp=document.getElementById('cp-newtask-'+cid); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var sel=document.getElementById('cp-newassign-'+cid); var who=sel?sel.value:''; var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks.push({id:cpUid(),text:v,done:false,assignee:who||''}); cpSave(st); renderClientProjects(); };
   window.cpDelTask=function(cid,tid){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks=c.tasks.filter(function(x){return x.id!==tid;}); cpSave(st); renderClientProjects(); };
+  window.cpSetAssignee=function(cid,tid,who){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; var t=c.tasks.find(function(x){return x.id===tid;}); if(t){ t.assignee=who||''; cpSave(st); renderClientProjects(); } };
+  window.cpSetFilter=function(f){ cpFilter=f; renderClientProjects(); };
   window.cpAddClient=function(){ var inp=document.getElementById('cp-new-client'); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var st=cpLoad(); st.clients.unshift({id:cpUid(),name:v,started:new Date().toISOString().slice(0,10),expanded:true,tasks:[]}); cpSave(st); inp.value=''; renderClientProjects(); };
   window.cpRemoveClient=function(id){ var st=cpLoad(); st.clients=st.clients.filter(function(x){return x.id!==id;}); cpSave(st); renderClientProjects(); };
   window.cpKeydown=function(e,cid){ if(e.key==='Enter'){ if(cid) window.cpAddTask(cid); else window.cpAddClient(); } };
+  function cpAssignSelect(cid,tid,cur){
+    var opts='<option value=""'+(!cur?' selected':'')+'>Unassigned</option>'+CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(cur===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('');
+    return '<select class="cp-assign" onclick="event.stopPropagation()" onchange="cpSetAssignee(\''+cid+'\',\''+tid+'\',this.value)">'+opts+'</select>';
+  }
+  function cpAvatar(id){ var m=cpMember(id); if(!m) return ''; return '<span class="cp-ava" title="'+esc(m.full)+'" style="background:'+m.color+'">'+m.initials+'</span>'; }
 
   function renderClientProjects(){
     var el=document.getElementById('s-client-projects'); if(!el) return;
@@ -7264,69 +7311,126 @@ function healthBadge(score){
     var goalTotal=5;
     var goalDone=st.clients.filter(function(c){ return c.tasks.length>0 && c.tasks.every(function(t){return t.done;}); }).length;
     var goalPct=Math.min(100,Math.round(goalDone/goalTotal*100));
-    var cards=active.map(function(c){
-      var total=c.tasks.length, done=c.tasks.filter(function(t){return t.done;}).length;
-      var pct=total?Math.round(done/total*100):0;
-      var tasks=c.tasks.map(function(t){
-        return '<div class="cp-task'+(t.done?' done':'')+'">'
-          +'<button class="cp-check'+(t.done?' done':'')+'" onclick="cpToggleTask(\''+c.id+'\',\''+t.id+'\')" aria-label="Toggle">'+(t.done?'\u2713':'')+'</button>'
-          +'<span class="cp-task-text">'+esc(t.text)+'</span>'
-          +'<button class="cp-task-x" onclick="cpDelTask(\''+c.id+'\',\''+t.id+'\')" aria-label="Remove">\u00d7</button>'
-          +'</div>';
-      }).join('')||'<p class="cp-empty">No tasks yet \u2014 add the first one below.</p>';
-      var started=c.started?new Date(c.started+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
-      return '<div class="cp-client'+(c.expanded?' open':'')+'">'
-        +'<div class="cp-client-head" onclick="cpToggle(\''+c.id+'\')">'
-          +'<span class="cp-chev">\u203A</span>'
-          +'<div class="cp-client-meta"><p class="cp-client-name">'+esc(c.name)+'</p><p class="cp-client-sub">Started '+started+' \u00b7 '+done+'/'+total+' tasks done</p></div>'
-          +'<div class="cp-client-prog"><div class="cp-client-bar"><span style="width:'+pct+'%"></span></div><span class="cp-client-pct">'+pct+'%</span></div>'
-        +'</div>'
-        +'<div class="cp-client-body">'
-          +'<div class="cp-tasks">'+tasks+'</div>'
-          +'<div class="cp-add-row"><input id="cp-newtask-'+c.id+'" class="cp-add-input" placeholder="Add a to-do for '+esc(c.name)+'..." onkeydown="cpKeydown(event,\''+c.id+'\')"><button class="cp-add-btn" onclick="cpAddTask(\''+c.id+'\')">Add</button></div>'
-          +'<button class="cp-remove" onclick="cpRemoveClient(\''+c.id+'\')">Remove client</button>'
-        +'</div>'
+
+    /* ---- top: title + add-client (top-right) ---- */
+    var head=''
+      +'<div class="sec-head"><div><h2>Client Projects</h2><p>Track onboarding work for each client \u2014 assign it to your team.</p></div>'
+      +'<div class="cp-newclient"><input id="cp-new-client" class="cp-add-input" placeholder="Add a new client..." onkeydown="cpKeydown(event)"><button class="cp-add-btn solid" onclick="cpAddClient()">+ Add client</button></div>'
       +'</div>';
-    }).join('');
-    el.innerHTML=''
-      +'<div class="sec-head"><div><h2>Client Projects</h2><p>Track onboarding to-dos for each active client.</p></div></div>'
-      +'<div class="cp-goal"><div class="cp-goal-top"><div><p class="cp-goal-title">Goal: onboard 5 clients every two weeks</p><p class="cp-goal-sub">'+goalDone+' of '+goalTotal+' fully onboarded \u00b7 '+st.clients.length+' active client'+(st.clients.length===1?'':'s')+'</p></div><span class="cp-goal-pct">'+goalPct+'%</span></div><div class="cp-goal-bar"><span style="width:'+goalPct+'%"></span></div></div>'
-      +(st.clients.length>5?'<p class="cp-note">Showing your 5 most recent clients. Onboard or remove a client to reveal the next one.</p>':'')
-      +'<div class="cp-list">'+cards+'</div>'
-      +'<div class="cp-newclient"><input id="cp-new-client" class="cp-add-input" placeholder="Add a new client to onboard..." onkeydown="cpKeydown(event)"><button class="cp-add-btn solid" onclick="cpAddClient()">+ Add client</button></div>';
+
+    /* ---- category filter (All / each team member) with open-task counts ---- */
+    function openFor(who){ var n=0; active.forEach(function(c){ c.tasks.forEach(function(t){ if(!t.done && (who==='all'||t.assignee===who)) n++; }); }); return n; }
+    var chips='<div class="cp-filter">'
+      +'<button class="cp-chip'+(cpFilter==='all'?' active':'')+'" onclick="cpSetFilter(\'all\')">All work<span class="cp-chip-n">'+openFor('all')+'</span></button>'
+      +CP_TEAM.map(function(m){ return '<button class="cp-chip'+(cpFilter===m.id?' active':'')+'" onclick="cpSetFilter(\''+m.id+'\')"><span class="cp-ava sm" style="background:'+m.color+'">'+m.initials+'</span>'+m.name+'<span class="cp-chip-n">'+openFor(m.id)+'</span></button>'; }).join('')
+      +'</div>';
+
+    var goal='<div class="cp-goal"><div class="cp-goal-top"><div><p class="cp-goal-title">Goal: onboard 5 clients every two weeks</p><p class="cp-goal-sub">'+goalDone+' of '+goalTotal+' fully onboarded \u00b7 '+st.clients.length+' active client'+(st.clients.length===1?'':'s')+'</p></div><span class="cp-goal-pct">'+goalPct+'%</span></div><div class="cp-goal-bar"><span style="width:'+goalPct+'%"></span></div></div>';
+
+    var body;
+    if(cpFilter==='all'){
+      /* ---- global view: every client + all its work ---- */
+      var cards=active.map(function(c){
+        var total=c.tasks.length, done=c.tasks.filter(function(t){return t.done;}).length;
+        var pct=total?Math.round(done/total*100):0;
+        var tasks=c.tasks.map(function(t){
+          return '<div class="cp-task'+(t.done?' done':'')+'">'
+            +'<button class="cp-check'+(t.done?' done':'')+'" onclick="cpToggleTask(\''+c.id+'\',\''+t.id+'\')" aria-label="Toggle">'+(t.done?'\u2713':'')+'</button>'
+            +'<span class="cp-task-text">'+esc(t.text)+'</span>'
+            +cpAssignSelect(c.id,t.id,t.assignee)
+            +'<button class="cp-task-x" onclick="cpDelTask(\''+c.id+'\',\''+t.id+'\')" aria-label="Remove">\u00d7</button>'
+            +'</div>';
+        }).join('')||'<p class="cp-empty">No tasks yet \u2014 add the first one below.</p>';
+        var started=c.started?new Date(c.started+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'}):'';
+        var newAssign='<select id="cp-newassign-'+c.id+'" class="cp-assign"><option value="">Unassigned</option>'+CP_TEAM.map(function(m){ return '<option value="'+m.id+'">'+m.name+'</option>'; }).join('')+'</select>';
+        return '<div class="cp-client'+(c.expanded?' open':'')+'">'
+          +'<div class="cp-client-head" onclick="cpToggle(\''+c.id+'\')">'
+            +'<span class="cp-chev">\u203A</span>'
+            +'<div class="cp-client-meta"><p class="cp-client-name">'+esc(c.name)+'</p><p class="cp-client-sub">Started '+started+' \u00b7 '+done+'/'+total+' tasks done</p></div>'
+            +'<div class="cp-client-prog"><div class="cp-client-bar"><span style="width:'+pct+'%"></span></div><span class="cp-client-pct">'+pct+'%</span></div>'
+          +'</div>'
+          +'<div class="cp-client-body">'
+            +'<div class="cp-tasks">'+tasks+'</div>'
+            +'<div class="cp-add-row"><input id="cp-newtask-'+c.id+'" class="cp-add-input" placeholder="Add a to-do for '+esc(c.name)+'..." onkeydown="cpKeydown(event,\''+c.id+'\')">'+newAssign+'<button class="cp-add-btn" onclick="cpAddTask(\''+c.id+'\')">Add</button></div>'
+            +'<button class="cp-remove" onclick="cpRemoveClient(\''+c.id+'\')">Remove client</button>'
+          +'</div>'
+        +'</div>';
+      }).join('');
+      body=(st.clients.length>5?'<p class="cp-note">Showing your 5 most recent clients. Onboard or remove a client to reveal the next one.</p>':'')
+        +'<div class="cp-list">'+cards+'</div>';
+    } else {
+      /* ---- per-user view: only the selected person's work, grouped by client ---- */
+      var m=cpMember(cpFilter);
+      var groups=active.map(function(c){
+        var mine=c.tasks.filter(function(t){ return t.assignee===cpFilter; });
+        if(!mine.length) return '';
+        var rows=mine.map(function(t){
+          return '<div class="cp-task'+(t.done?' done':'')+'">'
+            +'<button class="cp-check'+(t.done?' done':'')+'" onclick="cpToggleTask(\''+c.id+'\',\''+t.id+'\')" aria-label="Toggle">'+(t.done?'\u2713':'')+'</button>'
+            +'<span class="cp-task-text">'+esc(t.text)+'</span>'
+            +cpAssignSelect(c.id,t.id,t.assignee)
+            +'<button class="cp-task-x" onclick="cpDelTask(\''+c.id+'\',\''+t.id+'\')" aria-label="Remove">\u00d7</button>'
+            +'</div>';
+        }).join('');
+        return '<div class="cp-ugroup"><p class="cp-ugroup-name">'+esc(c.name)+'</p><div class="cp-tasks">'+rows+'</div></div>';
+      }).join('');
+      var openN=openFor(cpFilter);
+      var doneN=0; active.forEach(function(c){ c.tasks.forEach(function(t){ if(t.done&&t.assignee===cpFilter) doneN++; }); });
+      var ohead='<div class="cp-userhead"><span class="cp-ava lg" style="background:'+m.color+'">'+m.initials+'</span><div><p class="cp-userhead-name">'+esc(m.full)+'\u2019s work</p><p class="cp-userhead-sub">'+openN+' open \u00b7 '+doneN+' done across all clients</p></div></div>';
+      body=ohead+(groups||'<p class="cp-empty" style="padding:20px 0">No work assigned to '+esc(m.name)+' yet. Switch to \u201cAll work\u201d and pick a teammate from any task.</p>');
+    }
+
+    el.innerHTML=head+chips+goal+body;
   }
 
   /* ---- Internal agency to-dos (req 8) ---- */
-  function atKey(){ return 'cal-agency-todos'; }
+  var atFilter='all';
+  function atKey(){ return 'cal-agency-todos-v2'; }
   function atDefault(){ return { items:[
-    {id:cpUid(),text:'Send weekly performance recaps to all clients',done:false},
-    {id:cpUid(),text:'Review new lead notifications',done:true},
-    {id:cpUid(),text:'Prep agenda for Monday team standup',done:false},
-    {id:cpUid(),text:'Follow up with Riverside Plumbing on logins',done:false}
+    {id:cpUid(),text:'Send weekly performance recaps to all clients',done:false,assignee:'chris'},
+    {id:cpUid(),text:'Review new lead notifications',done:true,assignee:'james'},
+    {id:cpUid(),text:'Prep agenda for Monday team standup',done:false,assignee:'chris'},
+    {id:cpUid(),text:'Follow up with Riverside Plumbing on logins',done:false,assignee:'matt'}
   ]}; }
   function atLoad(){ var st=safeJSON(atKey(),null); if(!st||!st.items){ st=atDefault(); saveJSON(atKey(),st); } return st; }
   function atSave(st){ saveJSON(atKey(),st); }
   function atSeed(){ if(!safeJSON(atKey(),null)) saveJSON(atKey(),atDefault()); }
-  window.atAdd=function(){ var inp=document.getElementById('at-input'); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var st=atLoad(); st.items.unshift({id:cpUid(),text:v,done:false}); atSave(st); inp.value=''; renderAgencyTodos(); };
+  window.atAdd=function(){ var inp=document.getElementById('at-input'); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var sel=document.getElementById('at-assign'); var who=sel?sel.value:(atFilter!=='all'?atFilter:''); var st=atLoad(); st.items.unshift({id:cpUid(),text:v,done:false,assignee:who||''}); atSave(st); inp.value=''; renderAgencyTodos(); };
   window.atToggle=function(id){ var st=atLoad(); var t=st.items.find(function(x){return x.id===id;}); if(t){ t.done=!t.done; atSave(st); renderAgencyTodos(); } };
   window.atDelete=function(id){ var st=atLoad(); st.items=st.items.filter(function(x){return x.id!==id;}); atSave(st); renderAgencyTodos(); };
+  window.atSetAssignee=function(id,who){ var st=atLoad(); var t=st.items.find(function(x){return x.id===id;}); if(t){ t.assignee=who||''; atSave(st); renderAgencyTodos(); } };
+  window.atSetFilter=function(f){ atFilter=f; renderAgencyTodos(); };
   window.atClearDone=function(){ var st=atLoad(); st.items=st.items.filter(function(x){return !x.done;}); atSave(st); renderAgencyTodos(); };
   window.atKeydown=function(e){ if(e.key==='Enter') window.atAdd(); };
+  function atAssignSelect(id,cur){
+    var opts='<option value=""'+(!cur?' selected':'')+'>Unassigned</option>'+CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(cur===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('');
+    return '<select class="cp-assign" onchange="atSetAssignee(\''+id+'\',this.value)">'+opts+'</select>';
+  }
   function renderAgencyTodos(){
     var el=document.getElementById('s-agency-todos'); if(!el) return;
     var st=atLoad();
-    var open=st.items.filter(function(t){return !t.done;});
-    var done=st.items.filter(function(t){return t.done;});
+    function match(t){ return atFilter==='all'||t.assignee===atFilter; }
+    var items=st.items.filter(match);
+    var open=items.filter(function(t){return !t.done;});
+    var done=items.filter(function(t){return t.done;});
+    function openCount(who){ return st.items.filter(function(t){ return !t.done && (who==='all'||t.assignee===who); }).length; }
+    var chips='<div class="cp-filter">'
+      +'<button class="cp-chip'+(atFilter==='all'?' active':'')+'" onclick="atSetFilter(\'all\')">All<span class="cp-chip-n">'+openCount('all')+'</span></button>'
+      +CP_TEAM.map(function(m){ return '<button class="cp-chip'+(atFilter===m.id?' active':'')+'" onclick="atSetFilter(\''+m.id+'\')"><span class="cp-ava sm" style="background:'+m.color+'">'+m.initials+'</span>'+m.name+'<span class="cp-chip-n">'+openCount(m.id)+'</span></button>'; }).join('')
+      +'</div>';
     function row(t){
       return '<div class="at-item'+(t.done?' done':'')+'">'
         +'<button class="at-check'+(t.done?' done':'')+'" onclick="atToggle(\''+t.id+'\')" aria-label="Toggle">'+(t.done?'\u2713':'')+'</button>'
         +'<span class="at-text">'+esc(t.text)+'</span>'
+        +atAssignSelect(t.id,t.assignee)
         +'<button class="at-x" onclick="atDelete(\''+t.id+'\')" aria-label="Remove">\u00d7</button>'
       +'</div>';
     }
+    var newAssign='<select id="at-assign" class="cp-assign"><option value=""'+(atFilter==='all'?' selected':'')+'>Unassigned</option>'+CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(atFilter===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('')+'</select>';
     el.innerHTML=''
-      +'<div class="sec-head"><div><h2>My To-Dos</h2><p>Your personal agency tasks \u2014 separate from client work.</p></div>'+(done.length?'<button class="btn-view" onclick="atClearDone()">Clear completed</button>':'')+'</div>'
-      +'<div class="at-add"><input id="at-input" class="cp-add-input" placeholder="Add a to-do..." onkeydown="atKeydown(event)"><button class="cp-add-btn solid" onclick="atAdd()">+ Add</button></div>'
+      +'<div class="sec-head"><div><h2>My To-Dos</h2><p>Agency tasks \u2014 assign them to your team and filter by person.</p></div>'+(done.length?'<button class="btn-view" onclick="atClearDone()">Clear completed</button>':'')+'</div>'
+      +chips
+      +'<div class="at-add"><input id="at-input" class="cp-add-input" placeholder="Add a to-do..." onkeydown="atKeydown(event)">'+newAssign+'<button class="cp-add-btn solid" onclick="atAdd()">+ Add</button></div>'
       +'<div class="at-list">'+(open.map(row).join('')||'<p class="cp-empty">Nothing to do \u2014 you\u2019re all caught up.</p>')+'</div>'
       +(done.length?'<p class="admin-section-label">Completed</p><div class="at-list at-done-list">'+done.map(row).join('')+'</div>':'');
   }
@@ -7366,7 +7470,18 @@ function healthBadge(score){
       +'.at-item{display:flex;align-items:center;gap:11px;background:var(--surface);border:1px solid var(--border);border-radius:11px;box-shadow:var(--soft);padding:11px 13px}'
       +'.at-check{flex-shrink:0;width:22px;height:22px;border-radius:6px;border:2px solid var(--border);background:transparent;color:#fff;font-size:12px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center}.at-check:hover{border-color:var(--green)}.at-check.done{background:var(--green);border-color:var(--green)}'
       +'.at-text{flex:1;font-size:14px;font-weight:700;color:var(--ink)}.at-item.done .at-text{color:var(--muted);text-decoration:line-through}'
-      +'.at-done-list{opacity:.75;margin-top:4px}';
+      +'.at-done-list{opacity:.75;margin-top:4px}'
+      +'.cp-filter{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}'
+      +'.cp-chip{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--ink);font-size:13px;font-weight:800;cursor:pointer}'
+      +'.cp-chip:hover{border-color:var(--gold)}.cp-chip.active{background:var(--ink,#10243f);border-color:var(--ink,#10243f);color:#fff}'
+      +'.cp-chip-n{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:rgba(0,0,0,.08);color:var(--ink);font-size:11px;font-weight:900}.cp-chip.active .cp-chip-n{background:var(--gold);color:#000}'
+      +'.cp-ava{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;color:#000;font-size:10px;font-weight:900;flex-shrink:0}.cp-ava.sm{width:20px;height:20px;font-size:9px}.cp-ava.lg{width:42px;height:42px;font-size:15px}'
+      +'.cp-assign{flex-shrink:0;height:30px;border:1px solid var(--border);border-radius:8px;padding:0 8px;font-size:12px;font-weight:800;font-family:inherit;color:var(--ink);background:var(--surface);cursor:pointer;max-width:120px}.cp-assign:hover{border-color:var(--gold)}'
+      +'.cp-userhead{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--soft);padding:14px 16px;margin-bottom:14px}'
+      +'.cp-userhead-name{font-size:16px;font-weight:900;color:var(--ink)}.cp-userhead-sub{font-size:12px;font-weight:700;color:var(--muted);margin-top:2px}'
+      +'.cp-ugroup{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--soft);padding:12px 16px 14px;margin-bottom:12px}'
+      +'.cp-ugroup-name{font-size:13px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}'
+      +'.sec-head .cp-newclient{margin-top:0}';
     document.head.appendChild(s);
   }
 
