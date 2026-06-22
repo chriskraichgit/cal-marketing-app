@@ -1,0 +1,46 @@
+CAL OS — Dashboard Cleanup & Navigation Overhaul
+Make the following changes to the CAL OS client portal. Do not break any existing functionality. Apply all changes carefully.
+
+1. REMOVE SALES SECTION ENTIRELY (Agency)
+Remove the Sales nav group from the sidebar completely — the dropdown button, the sub-items (Dashboard, Training), and the nav label that says "Sales". Remove it for the agency role. Do not show it for any role. The screens can stay in the code but should not be accessible from the nav.
+
+2. AGENCY SIDEBAR — MOVE ONBOARDING UNDER WORK
+For the agency role sidebar, remove Onboarding from the Overview section. Move it under the Work section, placed right above or below Client Projects. Rename the nav label for it to "Client Projects & Onboarding" or just keep it as Onboarding but position it under Work. The onboarding tab inside Client Projects should serve as the onboarding tracker per client — no separate standalone Onboarding screen for agency.
+
+3. ADMIN OVERVIEW — PHASE-BASED NAV
+For the admin role, the Overview section should be phase-based:
+
+Always show: Home
+Show Onboarding only when onboarding is NOT complete (check localStorage key cal-onboarding-[slug] completed field)
+Once onboarding IS complete, replace Onboarding in the nav with a new item called Maintenance that links to a simple Maintenance screen showing what CAL does every month for them (monthly optimization, review generation, strategy calls). This switch should happen automatically based on the completed flag.
+
+
+4. SETTINGS — ADD LAYOUT TOGGLE SECTION
+Inside the Settings screen, add a new section called "Layout & Navigation" placed above the existing Integrations section. It should contain a list of toggleable nav items the user can show or hide. Each toggle uses the existing sw (switch) button style. Items that can be toggled:
+For agency: Campaigns, Reviews & NFC, Leads, SEO, Goals, ROI Tracker, Analytics, Social Media, Satisfaction, Referrals, POS Builder, Invoicing, Proposals, Revenue, White Label, Book a Call, Review Leaderboard
+For admin: Campaigns, Reviews & NFC, Leads, Reports, Schedule, To-Dos, Referrals, Satisfaction
+Store each toggle state in localStorage under the key cal-layout-prefs-[role]. On app load, read these prefs and show or hide the corresponding nav buttons accordingly. Default all to visible (on).
+
+5. FILES — ADD GOOGLE DRIVE CONNECTION
+In the Files screen for both agency and admin roles, add a Google Drive connection card at the top of the screen above the file list. Use the same style as the existing OAuth connection cards (int-card style). It should show the Google Drive logo, say "Connect Google Drive to access and upload files directly from your Drive", and have a Connect button that calls openOAuthModal('google-drive'). The google-drive OAuth data already exists in the OAUTH_DATA object so the modal will work automatically.
+
+6. AGENCY DASHBOARD — CLEAN UP THE HOME SCREEN
+The agency home screen (home-full-view) is too busy. Make these changes:
+
+Remove the 4 KPI connect cards (Google Ads, Meta Ads, Google Business, Stripe Billing) from the home screen. These already exist in Settings under Integrations so they do not need to be on the home screen.
+Keep the hero section with the health score, the CAL Health bars card, the Recent Activity card, and the CAL Updates feed.
+The home screen should feel clean and focused, not overwhelming.
+
+
+7. ADMIN HOME — QUICK ACTIONS UPDATE
+In the admin home quick actions grid, rename the Onboarding card dynamically:
+
+If onboarding is not complete: show it as "Onboarding" with subtitle "Track your setup" — clicking goes to nav('onboarding')
+If onboarding IS complete: replace it with "Maintenance" with subtitle "See what CAL is doing" — clicking goes to nav('maintenance')
+
+Create a simple maintenance screen (s-maintenance) that lists what CAL does every month in plain English: monthly optimization, reporting, review generation and responses, and monthly strategy check-in. Use the same card style as the rest of the admin screens.
+
+8. GENERAL CLEANUP
+
+Make sure the agency sidebar does not show: Sales, Whitelabel nav button (move it to Settings only), Book a Call nav button (move it to Settings or remove from nav), Revenue (agency-only screen, keep it but move it under Agency Admin instead of its own nav item)
+Tighten up the agency sidebar so it only shows the most important items and everything else lives in Settings or inside other screens
