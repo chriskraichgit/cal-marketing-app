@@ -7318,7 +7318,23 @@ function healthBadge(score){
   window.cpDelTask=function(cid,tid){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks=c.tasks.filter(function(x){return x.id!==tid;}); cpSave(st); renderClientProjects(); };
   window.cpSetAssignee=function(cid,tid,who){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; var t=c.tasks.find(function(x){return x.id===tid;}); if(t){ t.assignee=who||''; cpSave(st); renderClientProjects(); } };
   window.cpSetFilter=function(f){ cpFilter=f; renderClientProjects(); };
-  window.cpAddClient=function(){ var inp=document.getElementById('cp-new-client'); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var st=cpLoad(); st.clients.unshift({id:cpUid(),name:v,started:new Date().toISOString().slice(0,10),expanded:true,tasks:[]}); cpSave(st); inp.value=''; renderClientProjects(); };
+  window.cpOnAccountChange=function(sel){ var ci=document.getElementById('cp-custom-name'); if(!ci) return; if(sel.value==='__custom__'){ ci.style.display=''; ci.value=''; ci.focus(); } else { ci.style.display='none'; } };
+  window.cpAddClient=function(){
+    var sel=document.getElementById('cp-account-select'); if(!sel) return;
+    var name='';
+    if(sel.value==='__custom__'){
+      var ci=document.getElementById('cp-custom-name'); name=ci?(ci.value||'').trim():'';
+      if(!name){ if(window.showToast) showToast('Enter the client name first.','gold'); if(ci) ci.focus(); return; }
+    } else if(sel.value.indexOf('acct:')===0){
+      name=sel.options[sel.selectedIndex].text;
+    } else {
+      if(window.showToast) showToast('Pick an account first.','gold'); return;
+    }
+    var st=cpLoad();
+    if(st.clients.some(function(c){ return (c.name||'').toLowerCase()===name.toLowerCase(); })){ if(window.showToast) showToast(name+' already has a project.','gold'); return; }
+    st.clients.unshift({id:cpUid(),name:name,started:new Date().toISOString().slice(0,10),expanded:true,tasks:[]});
+    cpSave(st); renderClientProjects(); if(window.showToast) showToast(name+' added to client projects!','green');
+  };
   window.cpRemoveClient=function(id){ var st=cpLoad(); st.clients=st.clients.filter(function(x){return x.id!==id;}); cpSave(st); renderClientProjects(); };
   window.cpKeydown=function(e,cid){ if(e.key==='Enter'){ if(cid) window.cpAddTask(cid); else window.cpAddClient(); } };
   function cpAssignSelect(cid,tid,cur){
@@ -7336,9 +7352,20 @@ function healthBadge(score){
     var goalPct=Math.min(100,Math.round(goalDone/goalTotal*100));
 
     /* ---- top: title + add-client (top-right) ---- */
+    var existingNames=st.clients.map(function(c){ return (c.name||'').toLowerCase(); });
+    var acctOpts=(window.accounts||[]).filter(function(a){ return existingNames.indexOf((a.name||'').toLowerCase())===-1; })
+      .map(function(a){ return '<option value="acct:'+a.id+'">'+esc(a.name)+'</option>'; }).join('');
     var head=''
       +'<div class="sec-head"><div><h2>Client Projects</h2><p>Track onboarding work for each client \u2014 assign it to your team.</p></div>'
-      +'<div class="cp-newclient"><input id="cp-new-client" class="cp-add-input" placeholder="Add a new client..." onkeydown="cpKeydown(event)"><button class="cp-add-btn solid" onclick="cpAddClient()">+ Add client</button></div>'
+      +'<div class="cp-newclient">'
+        +'<select id="cp-account-select" class="cp-add-input cp-add-select" onchange="cpOnAccountChange(this)">'
+          +'<option value="">Select an account\u2026</option>'
+          +acctOpts
+          +'<option value="__custom__">Account isn\u2019t on OS? Add their project here</option>'
+        +'</select>'
+        +'<input id="cp-custom-name" class="cp-add-input" style="display:none" placeholder="New client name\u2026" onkeydown="cpKeydown(event)">'
+        +'<button class="cp-add-btn solid" onclick="cpAddClient()">+ Add client</button>'
+      +'</div>'
       +'</div>';
 
     /* ---- category filter (All / each team member) with open-task counts ---- */
