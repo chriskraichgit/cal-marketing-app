@@ -84,6 +84,27 @@ submitCreateAccount() must push a new account into localStorage `cal-accounts` (
 `cal-account-meta` entry) for it to appear in the agency account switcher (buildAcctDd reads
 cal-accounts). finishOnboarding() does NOT create accounts, so there's no duplicate.
 
+## Global i18n (English↔Spanish) — runtime DOM translator + dictionary
+Language is GLOBAL (localStorage `cal-language`), NOT per-account. The translator lives in the
+bootFixes IIFE: `getLang/setLanguage`, `txEs` (whole-string dictionary lookup keyed by trimmed
+English), `translateTree` (TreeWalker over text nodes + placeholder/title attrs; stores original
+English in `node.__en`/`el.__en_attr`; reverting to 'en' restores them), and `ensureLangObserver`
+(MutationObserver on body, translates newly-added nodes only when lang==='es'). `applyLanguage(getLang())`
+runs at boot and after login so it persists across reload/relogin.
+
+The Spanish dictionary is injected once as `<script>window.I18N_ES={...}</script>` right after `<body>`.
+
+**Why/How (gotchas):**
+- It's whole-string lookup, so EVERY user-visible string must be a dictionary key. Strings live in 3
+  places: static DOM text, JS template-literal strings (dynamic render), and hidden detail-panel HTML.
+  To regenerate keys reliably, parse with a real HTML parser (node-html-parser) for static/option text —
+  regex `<script>…</script>` stripping OVER-matches and silently hides strings. Use acorn for JS literals.
+- `translateTree` must NOT reject `<option>` wholesale (only skip the language selector
+  `#cal-lang-select` via `sel.contains`), or dropdown option labels stay English.
+- Interpolated/concatenated runtime strings (e.g. `\`${name} added!\``) won't match a static key —
+  acceptable for this prototype. Example placeholder data (sample names/emails/phones) is intentionally
+  left untranslated.
+
 ## Profile photo lives on two circles
 Profile photo (saveState 'profilePhoto') must be applied to BOTH `#profile-avatar-circle`
 (Profile page) and `#settings-pfp-preview` (Settings card), plus topbar `#avatar-btn`.
