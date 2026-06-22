@@ -4224,7 +4224,7 @@ var POS_OB_STEPS = [
 
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
-  agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
+  agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
   admin: ['home','onboarding','campaigns','reviews','files','billing','reports','inbox','schedule','todos','notifications','help','profile'],
   user: ['todos','notes','files','inbox','profile'],
   test: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
@@ -4664,8 +4664,15 @@ function setupRoleUI(){
     var salesBtn=document.getElementById('nav-sales-btn'); if(salesBtn) salesBtn.style.display='none';
     var salesSub=document.getElementById('sales-sub'); if(salesSub) salesSub.style.display='none';
     if(nlAdmin){ nlAdmin.style.display='none'; }
+  } else if(currentRole==='agency'){
+    if(nlSales) nlSales.style.display='none';
+    var salesBtnAg=document.getElementById('nav-sales-btn'); if(salesBtnAg) salesBtnAg.style.display='none';
+    var salesSubAg=document.getElementById('sales-sub'); if(salesSubAg) salesSubAg.style.display='none';
+    if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Admin'; }
   } else {
     if(nlSales) nlSales.style.display='';
+    var salesBtnT=document.getElementById('nav-sales-btn'); if(salesBtnT) salesBtnT.style.display='';
+    var salesSubT=document.getElementById('sales-sub'); if(salesSubT) salesSubT.style.display='';
     if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Admin'; }
   }
   // PART 6 — test-only screens hidden for non-test non-agency roles
@@ -6586,9 +6593,15 @@ function healthBadge(score){
     var proposalBtn=document.getElementById('nav-proposals-btn');
     var jobBtn=document.getElementById('nav-job-logging-btn');
     var leaderBtn=document.getElementById('nav-leaderboard-btn');
-    if(role!=='agency' && role!=='test'){
+    var salesSubEl=document.getElementById('sales-sub');
+    if(role!=='test'){
       if(salesLabel) salesLabel.style.display='none';
       if(salesBtn) salesBtn.style.display='none';
+      if(salesSubEl) salesSubEl.style.display='none';
+    } else {
+      if(salesLabel) salesLabel.style.display='';
+      if(salesBtn) salesBtn.style.display='';
+      if(salesSubEl) salesSubEl.style.display='';
     }
     if(role==='admin'){
       if(proposalBtn) proposalBtn.style.display='none';
@@ -6732,6 +6745,9 @@ function healthBadge(score){
     if(window.currentRole==='admin' && id==='sales'){
       toast('Sales was removed from the admin account.','gold');
       id='leaderboard';
+    }
+    if(window.currentRole==='agency' && id==='sales'){
+      id='home';
     }
     if(window.currentRole==='admin' && id==='proposals'){
       toast('Proposals was removed from the admin account.','gold');
