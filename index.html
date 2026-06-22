@@ -887,6 +887,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button class="nav-btn" onclick="nav('home')">
       <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
     </button>
+    <button class="nav-btn" onclick="nav('onboarding')">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
+    </button>
     <button class="nav-btn" onclick="nav('goals')">
       <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals
     </button>
@@ -1120,50 +1123,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <main class="main">
 <!-- ============ SCREEN: HOME ============ -->
 <div class="screen" id="s-home">
-  <!-- Simplified admin-first view -->
+  <!-- Admin-first view: onboarding timeline OR maintenance home (rendered by onboarding engine) -->
   <div id="home-admin-view" style="display:none">
-    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <p style="font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Account Health</p>
-        <p style="font-size:13px;color:var(--ink);font-weight:700;margin-top:2px">Your campaigns are performing above benchmark.</p>
-      </div>
-      <div style="text-align:center;flex-shrink:0">
-        <div class="admin-money-total" id="admin-health-score" style="font-size:38px">78</div>
-        <p style="font-size:10px;font-weight:900;color:var(--green);letter-spacing:.5px">HEALTHY</p>
-      </div>
-    </div>
-
-    <div class="card card-pad" style="margin-top:14px">
-      <div class="card-head"><span class="card-title">Where Your Money Is Going</span><span class="pill pill-gold">THIS MONTH</span></div>
-      <div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px;margin:10px 0 18px">
-        <span class="admin-money-total">$4,200</span>
-        <span style="font-size:13px;color:var(--muted);font-weight:700;padding-bottom:7px">invested · <span style="color:var(--green);font-weight:900">$18,400 revenue generated</span></span>
-      </div>
-      <div class="health-row">
-        <div class="h-row"><div class="h-row-top"><span>Google Ads</span><span>$1,200</span></div><div class="bar-wrap"><div class="bar-fill" style="width:29%;--bar-col:var(--green)"></div></div></div>
-        <div class="h-row"><div class="h-row-top"><span>Meta Ads</span><span>$900</span></div><div class="bar-wrap"><div class="bar-fill" style="width:21%;--bar-col:#1877f2"></div></div></div>
-        <div class="h-row"><div class="h-row-top"><span>SEO / Local</span><span>$600</span></div><div class="bar-wrap"><div class="bar-fill" style="width:14%;--bar-col:var(--gold)"></div></div></div>
-        <div class="h-row"><div class="h-row-top"><span>Content &amp; Social</span><span>$800</span></div><div class="bar-wrap"><div class="bar-fill" style="width:19%;--bar-col:var(--blue)"></div></div></div>
-        <div class="h-row"><div class="h-row-top"><span>Account Management</span><span>$700</span></div><div class="bar-wrap"><div class="bar-fill" style="width:17%;--bar-col:var(--muted)"></div></div></div>
-      </div>
-      <button class="btn-ghost" style="margin-top:16px;width:100%" onclick="nav('billing')">View Billing &amp; Invoices</button>
-    </div>
-
-    <p class="admin-section-label">Quick Actions</p>
-    <div class="grid g3">
-      <button class="card card-pad admin-cta" onclick="nav('leads')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><p class="admin-cta-title">New Leads</p><p class="admin-cta-sub">4 new this week</p></div></button>
-      <button class="card card-pad admin-cta" onclick="nav('reports')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><p class="admin-cta-title">Monthly Report</p><p class="admin-cta-sub">See your results</p></div></button>
-      <button class="card card-pad admin-cta" onclick="nav('billing')"><div class="admin-cta-ico" style="background:var(--green)"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><p class="admin-cta-title">Billing</p><p class="admin-cta-sub">Invoices &amp; payments</p></div></button>
-      <button class="card card-pad admin-cta" onclick="nav('reviews')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg></div><div><p class="admin-cta-title">Reviews</p><p class="admin-cta-sub">4.8★ rating</p></div></button>
-      <button class="card card-pad admin-cta" onclick="nav('inbox')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div><p class="admin-cta-title">Messages</p><p class="admin-cta-sub">Talk to your team</p></div></button>
-      <button class="card card-pad admin-cta" onclick="openAiPanel()"><div class="admin-cta-ico" style="background:var(--ink)"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><div><p class="admin-cta-title">Ask CAL AI</p><p class="admin-cta-sub">Get instant answers</p></div></button>
-    </div>
-
-    <div class="card card-pad" style="margin-top:18px">
-      <div class="card-head"><span class="card-title">Latest from Your Team</span></div>
-      <div class="update-item"><div class="update-dot"></div><div><span class="update-text"><strong>CAL Team:</strong> New leads report uploaded to your Files section. Highlights 14% YoY growth.</span></div><span class="update-time">Jun 18</span></div>
-      <div class="update-item"><div class="update-dot" style="background:var(--green)"></div><div><span class="update-text"><strong>CAL Team:</strong> Google Ads campaign optimized — expect improved CPL over next 7 days.</span></div><span class="update-time">Jun 15</span></div>
-    </div>
+    <div id="home-onboarding-view" style="display:none"></div>
+    <div id="home-maintenance-view" style="display:none"></div>
   </div>
 
   <!-- Full (agency/test) view -->
@@ -1246,6 +1209,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
   </div><!-- /home-full-view -->
 </div>
+
+<!-- ============ SCREEN: ONBOARDING (CAL Journey) ============ -->
+<div class="screen" id="s-onboarding"></div>
 
 <!-- ============ SCREEN: GOALS ============ -->
 <div class="screen" id="s-goals">
@@ -4190,10 +4156,10 @@ var POS_OB_STEPS = [
 
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
-  agency: ['home','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
-  admin: ['home','campaigns','reviews','leads','inbox','files','billing','reports','nps','settings','profile','help'],
+  agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
+  admin: ['home','onboarding','campaigns','reviews','files','billing','reports','inbox','schedule','todos','notifications','help','profile'],
   user: ['todos','notes','files','inbox','profile'],
-  test: ['home','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
+  test: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
 };
 var agencyPermissions = JSON.parse(localStorage.getItem('cal-agency-perms') || 'null') || {};
 var adminPermissions = JSON.parse(localStorage.getItem('cal-admin-perms') || 'null') || {};
@@ -4625,7 +4591,7 @@ function setupRoleUI(){
     if(nlSales) nlSales.style.display='none';
     var salesBtn=document.getElementById('nav-sales-btn'); if(salesBtn) salesBtn.style.display='none';
     var salesSub=document.getElementById('sales-sub'); if(salesSub) salesSub.style.display='none';
-    if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Feedback'; }
+    if(nlAdmin){ nlAdmin.style.display='none'; }
   } else {
     if(nlSales) nlSales.style.display='';
     if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Admin'; }
@@ -6758,11 +6724,486 @@ function healthBadge(score){
     },0);
   };
 
+  /* ============================================================
+     CLIENT ONBOARDING JOURNEY ENGINE
+     ============================================================ */
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function slug(str){ return String(str||'local').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'local'; }
+  function accountData(key){
+    var all=safeJSON('cal-account-data',{});
+    if(!all[key]){
+      var base=Math.abs(String(key).split('').reduce(function(s,c){return s+c.charCodeAt(0);},0));
+      all[key]={health:68+(base%22),leads:34+(base%80),reviews:6+(base%18),revenue:12000+(base%7)*4200,topChannel:['Google Ads','Organic','Meta Ads','Google Business'][base%4]};
+      saveJSON('cal-account-data',all);
+    }
+    return all[key];
+  }
+
+  var ONB_JOURNEY = [
+    {id:'ob1', phase:'onboarding', week:1, owner:'cal',    title:'Kickoff call & account access', desc:'We schedule your welcome call and gather the logins we need to get started.'},
+    {id:'ob2', phase:'onboarding', week:1, owner:'client', title:'Share brand assets & logins', desc:'Send us your logo, brand colors, and access to Google, Meta, and your website.'},
+    {id:'ob3', phase:'onboarding', week:1, owner:'cal',    title:'Audit your current marketing', desc:'We review your website, Google profile, ads, and reviews to find quick wins.'},
+    {id:'ob4', phase:'onboarding', week:2, owner:'client', title:'Approve goals & target audience', desc:'Confirm who we should target and the monthly lead goal we are aiming for.'},
+    {id:'ob5', phase:'onboarding', week:2, owner:'cal',    title:'Market & keyword research', desc:'We map your competitors and the search terms that bring in the best clients.'},
+    {id:'su1', phase:'setup', week:3, owner:'cal',    title:'Build campaigns & landing pages', desc:'We create your Google and Meta ads plus the pages that turn clicks into leads.'},
+    {id:'su2', phase:'setup', week:3, owner:'client', title:'Approve ad creative & copy', desc:'Review and sign off on the ads and messaging we will run for you.'},
+    {id:'su3', phase:'setup', week:4, owner:'cal',    title:'Connect tracking & reporting', desc:'We set up call tracking, lead forms, and your live results dashboard.'},
+    {id:'su4', phase:'setup', week:4, owner:'client', title:'Confirm billing & launch date', desc:'Approve your plan and pick the day your campaigns go live.'},
+    {id:'su5', phase:'setup', week:4, owner:'cal',    title:'Launch your campaigns', desc:'Everything goes live and the first leads start coming in.'},
+    {id:'mt1', phase:'maintenance', week:0, owner:'cal',    title:'Monthly optimization & reporting', desc:'We fine-tune your campaigns every month and send plain-English results.'},
+    {id:'mt2', phase:'maintenance', week:0, owner:'cal',    title:'Review generation & responses', desc:'We help you collect new 5-star reviews and respond to every one.'},
+    {id:'mt3', phase:'maintenance', week:0, owner:'client', title:'Monthly strategy check-in', desc:'A quick call to review results together and set the next priorities.'}
+  ];
+  var ONB_CORE = ONB_JOURNEY.filter(function(s){ return s.phase!=='maintenance'; });
+
+  function onbBizName(){
+    if(window.currentRole==='agency'||window.currentRole==='test'){
+      var a=(window.accounts||[]).find(function(x){ return x.id===window.currentAcctId; });
+      return a?a.name:'Business Account';
+    }
+    return (window.currentUser&&window.currentUser.company)||'Business Account';
+  }
+  function onbKey(){ return 'cal-onboarding-'+slug(onbBizName()); }
+  function onbLoad(){
+    var st=safeJSON(onbKey(),null);
+    if(!st){ st={started:new Date().toISOString(),completed:false,completedAt:null,steps:{}}; saveJSON(onbKey(),st); }
+    if(!st.steps) st.steps={};
+    return st;
+  }
+  function onbSave(st){ saveJSON(onbKey(),st); }
+  function onbStep(st,id){ return st.steps[id]||{done:false,note:''}; }
+  function onbProgress(st){
+    var done=ONB_CORE.filter(function(s){ return onbStep(st,s.id).done; }).length;
+    return {done:done,total:ONB_CORE.length,pct:Math.round(done/ONB_CORE.length*100)};
+  }
+  function onbIsComplete(st){ return onbProgress(st).done>=ONB_CORE.length; }
+  function onbCanEdit(){ return window.currentRole==='agency'||window.currentRole==='test'; }
+
+  function onbSyncCompletion(){
+    var st=onbLoad(); var complete=onbIsComplete(st);
+    if(complete && !st.completed){ st.completed=true; st.completedAt=new Date().toISOString(); onbSave(st); }
+    if(!complete && st.completed){ st.completed=false; st.completedAt=null; onbSave(st); }
+    return st;
+  }
+
+  window.onbToggleStep=function(id){
+    if(!onbCanEdit()) return;
+    var st=onbLoad(); var cur=onbStep(st,id);
+    st.steps[id]=Object.assign({done:false,note:''},cur,{done:!cur.done,completedAt:(!cur.done?new Date().toISOString():null)});
+    onbSave(st); onbSyncCompletion();
+    renderOnboardingScreen();
+  };
+  window.onbSaveNote=function(id,val){
+    if(!onbCanEdit()) return;
+    var st=onbLoad(); var cur=onbStep(st,id);
+    st.steps[id]=Object.assign({done:false,note:''},cur,{note:val});
+    onbSave(st);
+  };
+
+  /* ---- Home: onboarding timeline (req 1) ---- */
+  function renderOnbHome(){
+    var host=document.getElementById('home-onboarding-view'); if(!host) return;
+    var st=onbLoad(); var p=onbProgress(st);
+    var weekPhase={1:'Onboarding',2:'Onboarding',3:'Setup',4:'Setup'};
+    var weeks=[1,2,3,4].map(function(w){
+      function item(s){
+        var ds=onbStep(st,s.id);
+        return '<div class="onb-tl-item'+(ds.done?' done':'')+'">'
+          +'<span class="onb-tl-check">'+(ds.done?'\u2713':'')+'</span>'
+          +'<div><p class="onb-tl-title">'+esc(s.title)+'</p><p class="onb-tl-desc">'+esc(s.desc)+'</p>'
+          +(ds.note?'<p class="onb-tl-note">Note from CAL: '+esc(ds.note)+'</p>':'')+'</div></div>';
+      }
+      var cal=ONB_CORE.filter(function(s){ return s.week===w&&s.owner==='cal'; });
+      var cli=ONB_CORE.filter(function(s){ return s.week===w&&s.owner==='client'; });
+      return '<div class="onb-week"><div class="onb-week-head"><span class="onb-week-num">Week '+w+'</span><span class="onb-week-phase">'+weekPhase[w]+'</span></div>'
+        +'<div class="onb-week-cols">'
+        +'<div class="onb-col"><p class="onb-col-label">What CAL is doing</p>'+(cal.map(item).join('')||'<p class="onb-empty">\u2014</p>')+'</div>'
+        +'<div class="onb-col"><p class="onb-col-label">What you need to do</p>'+(cli.map(item).join('')||'<p class="onb-empty">\u2014</p>')+'</div>'
+        +'</div></div>';
+    }).join('');
+    host.innerHTML='<div class="onb-hero">'
+      +'<p class="onb-hero-eyebrow">Welcome aboard</p>'
+      +'<h2 class="onb-hero-title">Your CAL Onboarding</h2>'
+      +'<p class="onb-hero-sub">Here\u2019s exactly what\u2019s happening over your first few weeks. We handle the heavy lifting \u2014 you just complete a few quick steps.</p>'
+      +'<div class="onb-prog"><div class="onb-prog-top"><span>'+p.done+' of '+p.total+' steps complete</span><span>'+p.pct+'%</span></div>'
+      +'<div class="onb-prog-bar"><div class="onb-prog-fill" style="width:'+p.pct+'%"></div></div></div></div>'
+      +'<div class="onb-tl">'+weeks+'</div>'
+      +'<div class="onb-foot"><p>Questions about any step? <button class="btn-link" onclick="nav(\'inbox\')">Message your CAL team</button></p></div>';
+  }
+
+  /* ---- Home: maintenance dashboard (req 2) ---- */
+  function renderOnbMaintHome(){
+    var host=document.getElementById('home-maintenance-view'); if(!host) return;
+    var key=acctKey();
+    var d=(typeof accountData==='function')?accountData(key):{health:78,leads:42,reviews:14,revenue:18400};
+    var rating=(4.6+((d.reviews||10)%5)/10).toFixed(1); if(parseFloat(rating)>5) rating='4.9';
+    var snap=[
+      {label:'New leads this month',val:d.leads,ctx:'Potential customers who reached out to your business this month.'},
+      {label:'Revenue generated',val:money(d.revenue),ctx:'Estimated revenue your marketing brought in \u2014 far more than you invested.'},
+      {label:'Average rating',val:rating+'\u2605',ctx:'Your average review score. Higher ratings win you more new customers.'},
+      {label:'Marketing health',val:d.health,ctx:'An overall grade for your marketing. Above 70 means things are healthy.'}
+    ];
+    var campaigns=[
+      {name:'Google Ads',status:'Active',cls:'green',note:'Running and bringing in leads.'},
+      {name:'Meta Ads',status:'Active',cls:'green',note:'Retargeting people who visited your site.'},
+      {name:'SEO / Local',status:'Optimizing',cls:'gold',note:'Climbing the Google Map results.'},
+      {name:'Reviews',status:'Active',cls:'green',note:'Collecting and responding to new reviews.'}
+    ];
+    host.innerHTML=''
+      +'<div class="card card-pad om-contact">'
+        +'<div><p class="om-contact-title">Your campaigns are live and working.</p><p class="om-contact-sub">Here\u2019s a plain-English look at how things are going this month.</p></div>'
+        +'<button class="btn-gold om-contact-btn" onclick="nav(\'inbox\')"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px;vertical-align:-3px"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Contact your CAL team</button>'
+      +'</div>'
+      +'<div class="card card-pad" style="margin-top:14px"><div class="card-head"><span class="card-title">CAL Updates</span><span class="pill pill-blue">LATEST</span></div>'
+        +'<div class="update-item"><div class="update-dot"></div><div><span class="update-text"><strong>CAL Team:</strong> New leads report uploaded to your Files section. Highlights 14% growth.</span></div><span class="update-time">Jun 18</span></div>'
+        +'<div class="update-item"><div class="update-dot" style="background:var(--green)"></div><div><span class="update-text"><strong>CAL Team:</strong> Google Ads optimized \u2014 expect a lower cost per lead over the next 7 days.</span></div><span class="update-time">Jun 15</span></div>'
+        +'<div class="update-item"><div class="update-dot" style="background:var(--blue)"></div><div><span class="update-text"><strong>CAL Team:</strong> Monthly strategy recap posted in Reports.</span></div><span class="update-time">Jun 10</span></div>'
+      +'</div>'
+      +'<p class="admin-section-label">This Month at a Glance</p>'
+      +'<div class="om-snap">'+snap.map(function(s){
+        return '<div class="card om-snap-card"><p class="om-snap-label">'+s.label+'</p><p class="om-snap-val">'+s.val+'</p><p class="kpi-plain">'+s.ctx+'</p></div>';
+      }).join('')+'</div>'
+      +'<p class="admin-section-label">Active Campaigns</p>'
+      +'<div class="om-camp">'+campaigns.map(function(c){
+        return '<div class="card om-camp-card"><div class="om-camp-top"><span class="om-dot '+c.cls+'"></span><span class="om-camp-name">'+c.name+'</span><span class="om-camp-status '+c.cls+'">'+c.status+'</span></div><p class="kpi-plain">'+c.note+'</p></div>';
+      }).join('')+'</div>';
+  }
+
+  /* ---- Celebration (req 1) ---- */
+  function onbCelebrate(){
+    if(document.getElementById('onb-celebrate')) return;
+    var colors=['#c9a84c','#2e7d32','#1877f2','#e63946','#7c3aed'];
+    var conf='';
+    for(var i=0;i<36;i++){
+      conf+='<span class="onb-conf" style="left:'+Math.round(Math.random()*100)+'%;background:'+colors[i%5]+';animation-delay:'+(Math.random()*0.8).toFixed(2)+'s;animation-duration:'+(2+Math.random()*1.5).toFixed(2)+'s"></span>';
+    }
+    var ov=document.createElement('div'); ov.id='onb-celebrate'; ov.className='onb-cel-overlay';
+    ov.innerHTML='<div class="onb-conf-wrap">'+conf+'</div>'
+      +'<div class="onb-cel-card">'
+      +'<div class="onb-cel-emoji">\uD83C\uDF89</div>'
+      +'<h2>You\u2019re all set up!</h2>'
+      +'<p>Your onboarding is complete and your campaigns are live. From here, your home screen shows your results and what CAL is doing for you every month.</p>'
+      +'<button class="btn-gold" onclick="onbDismissCelebrate()">Go to my dashboard</button>'
+      +'</div>';
+    document.body.appendChild(ov);
+  }
+  window.onbDismissCelebrate=function(){
+    var o=document.getElementById('onb-celebrate'); if(o) o.remove();
+    try{ saveJSON('cal-onb-celebrated-'+slug(onbBizName()),true); }catch(e){}
+    if(window.applyHomeForRole) window.applyHomeForRole();
+  };
+  function onbMaybeCelebrate(){
+    if(window.currentRole!=='admin') return;
+    var st=onbLoad();
+    if(st.completed && !safeJSON('cal-onb-celebrated-'+slug(onbBizName()),false)) onbCelebrate();
+  }
+
+  /* ---- Onboarding tab (req 6) ---- */
+  function renderOnbMaintenanceTab(st){
+    var maint=ONB_JOURNEY.filter(function(s){ return s.phase==='maintenance'; });
+    var done=new Date(st.completedAt||Date.now());
+    var dstr=done.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+    return '<div class="sec-head"><div><h2>Your CAL Journey</h2><p>You\u2019re fully launched \u2014 here\u2019s what we do for you every month.</p></div><span class="pill pill-green">Maintenance</span></div>'
+      +'<div class="onb-maint-banner"><div class="onb-maint-ico">\u2713</div><div><p class="onb-maint-title">Onboarding complete</p><p class="onb-maint-sub">You finished onboarding on '+dstr+'. Your campaigns are live and working for you.</p></div></div>'
+      +'<p class="admin-section-label">What CAL does every month</p>'
+      +'<div class="onb-maint-grid">'+maint.map(function(s){
+        return '<div class="card onb-maint-card"><p class="onb-maint-card-title">'+esc(s.title)+'</p><p class="onb-maint-card-desc">'+esc(s.desc)+'</p></div>';
+      }).join('')+'</div>'
+      +'<div class="onb-foot"><p>Need something? <button class="btn-link" onclick="nav(\'inbox\')">Message your CAL team</button></p></div>';
+  }
+  function renderOnboardingScreen(){
+    var el=document.getElementById('s-onboarding'); if(!el) return;
+    var st=onbSyncCompletion(); var p=onbProgress(st);
+    var canEdit=onbCanEdit();
+    if(st.completed && !canEdit){ el.innerHTML=renderOnbMaintenanceTab(st); return; }
+    var phases=[
+      {id:'onboarding',name:'Onboarding',sub:'We learn your business and build your plan.'},
+      {id:'setup',name:'Setup',sub:'We build, approve, and launch your campaigns.'},
+      {id:'maintenance',name:'Maintenance',sub:'Ongoing growth, optimization, and reporting.'}
+    ];
+    function phaseDone(pid){
+      var steps=ONB_JOURNEY.filter(function(s){ return s.phase===pid && pid!=='maintenance'; });
+      return steps.length>0 && steps.every(function(s){ return onbStep(st,s.id).done; });
+    }
+    var curPhase=st.completed?'maintenance':(!phaseDone('onboarding')?'onboarding':'setup');
+    var header='<div class="sec-head"><div><h2>Your CAL Journey</h2><p>'
+      +(canEdit?'Mark steps complete and leave notes \u2014 your client sees updates live.':'Follow your progress from day one through launch and beyond.')
+      +'</p></div>'+(canEdit?'<span class="pill pill-blue">Agency view</span>':'<span class="pill pill-gold">'+p.pct+'% complete</span>')+'</div>';
+    var prog='<div class="onb-prog onb-prog-card"><div class="onb-prog-top"><span>'+p.done+' of '+p.total+' steps complete</span><span>'+p.pct+'%</span></div><div class="onb-prog-bar"><div class="onb-prog-fill" style="width:'+p.pct+'%"></div></div></div>';
+    var chips='<div class="onb-phase-row">'+phases.map(function(ph){
+      var status=ph.id==='maintenance'?(st.completed?'current':'upcoming'):(phaseDone(ph.id)?'done':(curPhase===ph.id?'current':'upcoming'));
+      return '<div class="onb-phase-chip '+status+'"><span class="onb-phase-dot"></span><div><p class="onb-phase-name">'+ph.name+'</p><p class="onb-phase-status">'+(status==='done'?'Complete':status==='current'?'In progress':'Up next')+'</p></div></div>';
+    }).join('')+'</div>';
+    var body=phases.map(function(ph){
+      var steps=ONB_JOURNEY.filter(function(s){ return s.phase===ph.id; });
+      var ongoing=(ph.id==='maintenance');
+      var editable=canEdit && !ongoing;
+      var stepHtml=steps.map(function(s){
+        var ds=onbStep(st,s.id);
+        var owner=s.owner==='cal'?'<span class="onb-owner cal">CAL</span>':'<span class="onb-owner client">You</span>';
+        var check=ongoing
+          ? '<span class="onb-check-btn ongoing" aria-hidden="true">\u21BB</span>'
+          : (editable
+            ? '<button class="onb-check-btn'+(ds.done?' done':'')+'" onclick="onbToggleStep(\''+s.id+'\')" aria-label="Toggle step">'+(ds.done?'\u2713':'')+'</button>'
+            : '<span class="onb-check-btn'+(ds.done?' done':'')+'">'+(ds.done?'\u2713':'')+'</span>');
+        var note=ongoing
+          ? '<span class="onb-owner cal" style="margin-top:8px;display:inline-block">Ongoing</span>'
+          : (editable
+            ? '<textarea class="onb-note-input" placeholder="Add a note for your client..." oninput="onbSaveNote(\''+s.id+'\',this.value)">'+esc(ds.note||'')+'</textarea>'
+            : (ds.note?'<p class="onb-tl-note">Note from CAL: '+esc(ds.note)+'</p>':''));
+        return '<div class="onb-step'+(ds.done?' done':'')+'">'+check+'<div class="onb-step-body"><div class="onb-step-head"><p class="onb-step-title">'+esc(s.title)+'</p>'+owner+'</div><p class="onb-step-desc">'+esc(s.desc)+'</p>'+note+'</div></div>';
+      }).join('');
+      return '<div class="onb-phase-block"><div class="onb-phase-block-head"><h3>'+ph.name+'</h3><p>'+ph.sub+'</p></div>'+stepHtml+'</div>';
+    }).join('');
+    el.innerHTML=header+prog+chips+body;
+  }
+
+  /* ---- Milestone banners (req 4) ---- */
+  var MILESTONES=[
+    {id:'firstLead', test:function(d){ return (d.leads||0)>=1; }, emoji:'\uD83C\uDFAF', title:'First lead in!', msg:'Your marketing just brought in its first lead \u2014 this is where growth begins.'},
+    {id:'reviews10', test:function(d){ return (d.reviews||0)>=10; }, emoji:'\u2B50', title:'10+ reviews!', msg:'You\u2019ve collected 10 or more reviews \u2014 a powerful trust signal for new customers.'},
+    {id:'firstConv', test:function(d){ return (d.revenue||0)>0; }, emoji:'\uD83E\uDD1D', title:'First conversion!', msg:'A lead just became a paying customer. Your investment is paying off.'}
+  ];
+  function msStore(){ return 'cal-milestones-'+slug(onbBizName()); }
+  window.msDismiss=function(id){
+    var m=safeJSON(msStore(),{}); m[id]=true; saveJSON(msStore(),m);
+    var b=document.getElementById('ms-'+id); if(b) b.remove();
+  };
+  function ensureMilestoneHost(){
+    var main=document.querySelector('main.main'); if(!main) return;
+    if(!document.getElementById('cal-milestone-host')){
+      var h=document.createElement('div'); h.id='cal-milestone-host'; h.className='ms-host';
+      main.insertBefore(h,main.firstChild);
+    }
+  }
+  function renderMilestones(){
+    var host=document.getElementById('cal-milestone-host'); if(!host) return;
+    if(window.currentRole!=='admin'){ host.innerHTML=''; return; }
+    var st=onbLoad();
+    if(!st.completed){ host.innerHTML=''; return; } // milestones are post-launch
+    var d=(typeof accountData==='function')?accountData(acctKey()):{};
+    var dis=safeJSON(msStore(),{});
+    host.innerHTML=MILESTONES.filter(function(m){ return m.test(d)&&!dis[m.id]; }).map(function(m){
+      return '<div class="ms-banner" id="ms-'+m.id+'"><span class="ms-emoji">'+m.emoji+'</span><div class="ms-text"><strong>'+m.title+'</strong><span>'+m.msg+'</span></div><button class="ms-x" onclick="msDismiss(\''+m.id+'\')" aria-label="Dismiss">\u00d7</button></div>';
+    }).join('');
+  }
+
+  /* ---- Plain-English under every KPI (req 3) ---- */
+  var KPI_MAP=[
+    ['lead','How many potential customers reached out to your business.'],
+    ['review','Customer reviews build trust and help you rank higher on Google.'],
+    ['rating','Your average review score \u2014 higher means happier customers.'],
+    ['star','Your average review score \u2014 higher means happier customers.'],
+    ['revenue','Estimated money your marketing has brought in.'],
+    ['conversion','How often interested people turn into real customers.'],
+    ['cost per','What you pay on average to get one new lead. Lower is better.'],
+    ['cpl','What you pay on average to get one new lead. Lower is better.'],
+    ['cpc','What you pay on average for each click. Lower is better.'],
+    ['roi','For every $1 you spend, this is what you get back.'],
+    ['return','For every $1 you spend, this is what you get back.'],
+    ['health','An overall grade for how well your marketing is performing.'],
+    ['score','An overall grade for how well your marketing is performing.'],
+    ['click','How many people clicked your ads or links.'],
+    ['impression','How many people saw your ads or content.'],
+    ['reach','How many people saw your ads or content.'],
+    ['spend','How much you\u2019ve invested in marketing this period.'],
+    ['budget','How much you\u2019ve invested in marketing this period.'],
+    ['invest','How much you\u2019ve invested in marketing this period.'],
+    ['call','How many phone calls your marketing generated.'],
+    ['booking','How many appointments were booked.'],
+    ['appointment','How many appointments were booked.'],
+    ['engagement','How actively people interact with your posts.'],
+    ['traffic','How many people visited your website.'],
+    ['visit','How many people visited your website.'],
+    ['session','How many people visited your website.'],
+    ['open','How many people opened your emails or messages.'],
+    ['response','How quickly your team responds to new leads.']
+  ];
+  function kpiSentence(label){
+    var l=(label||'').toLowerCase();
+    for(var i=0;i<KPI_MAP.length;i++){ if(l.indexOf(KPI_MAP[i][0])>=0) return KPI_MAP[i][1]; }
+    var clean=(label||'this number').toLowerCase().trim();
+    return 'A quick look at your '+clean+' for this period.';
+  }
+  function addKpiContext(){
+    if(window.currentRole!=='admin') return;
+    var scr=document.querySelector('.screen.active'); if(!scr) return;
+    var cards=scr.querySelectorAll('.stat-card, .kpi-card, .cal-kpi');
+    Array.prototype.forEach.call(cards,function(c){
+      if(c.getAttribute('data-kpi-plain')) return;
+      c.setAttribute('data-kpi-plain','1');
+      if(c.querySelector('.kpi-plain')) return;
+      var lblEl=c.querySelector('.stat-label, .kpi-label, span');
+      var label=lblEl?lblEl.textContent:'';
+      var p=document.createElement('p'); p.className='kpi-plain'; p.textContent=kpiSentence(label);
+      c.appendChild(p);
+    });
+  }
+
+  /* ---- applyHomeForRole override (req 1/2 routing) ---- */
+  window.applyHomeForRole=function(){
+    var admin=(window.currentRole==='admin');
+    var av=document.getElementById('home-admin-view');
+    var fv=document.getElementById('home-full-view');
+    if(fv) fv.style.display=admin?'none':'block';
+    if(av) av.style.display=admin?'block':'none';
+    if(admin){
+      var st=onbSyncCompletion();
+      var ov=document.getElementById('home-onboarding-view');
+      var mv=document.getElementById('home-maintenance-view');
+      if(ov) ov.style.display=st.completed?'none':'block';
+      if(mv) mv.style.display=st.completed?'block':'none';
+      if(st.completed){ renderOnbMaintHome(); onbMaybeCelebrate(); } else { renderOnbHome(); }
+    }
+  };
+
+  /* ---- nav override: render onboarding tab + admin enhancers ---- */
+  var _priorNavOnb=window.nav;
+  window.nav=function(s){
+    var r=_priorNavOnb?_priorNavOnb(s):undefined;
+    if(window.currentScreen==='onboarding') renderOnboardingScreen();
+    if(window.currentRole==='admin'){
+      ensureMilestoneHost();
+      setTimeout(function(){ addKpiContext(); renderMilestones(); },0);
+    } else {
+      var mh=document.getElementById('cal-milestone-host'); if(mh) mh.innerHTML='';
+    }
+    return r;
+  };
+
+  /* ---- live cross-tab updates ---- */
+  window.addEventListener('storage',function(e){
+    if(!e.key) return;
+    if(e.key===onbKey()){
+      if(window.currentScreen==='onboarding') renderOnboardingScreen();
+      if(window.currentScreen==='home' && window.currentRole==='admin' && window.applyHomeForRole) window.applyHomeForRole();
+    }
+  });
+
+  /* ---- demo seed: Apex Legal mid-onboarding ---- */
+  function onbSeedDemo(){
+    var key='cal-onboarding-'+slug('Apex Legal Group');
+    if(safeJSON(key,null)) return;
+    var st={started:'2026-06-01T00:00:00.000Z',completed:false,completedAt:null,steps:{}};
+    ['ob1','ob2','ob3','ob4','ob5','su1'].forEach(function(id){ st.steps[id]={done:true,note:'',completedAt:'2026-06-10T00:00:00.000Z'}; });
+    st.steps['su1'].note='Drafts of your Google Ads are ready \u2014 take a look when you can.';
+    st.steps['su2']={done:false,note:'Sent over the ad copy doc; just need your thumbs-up to proceed.'};
+    saveJSON(key,st);
+  }
+
+  function injectOnbCSS(){
+    if(document.getElementById('cal-onb-css')) return;
+    var s=document.createElement('style'); s.id='cal-onb-css';
+    s.textContent=''
+      +'.kpi-plain{font-size:11px;font-weight:600;color:var(--muted);margin-top:6px;line-height:1.45}'
+      /* milestone banners */
+      +'.ms-host{display:flex;flex-direction:column;gap:10px}.ms-host:not(:empty){margin-bottom:14px}'
+      +'.ms-banner{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;background:linear-gradient(100deg,var(--gold-pale,#faf4e2),#fff);border:1.5px solid rgba(201,168,76,.45);box-shadow:var(--soft)}'
+      +'.ms-emoji{font-size:24px;flex-shrink:0}.ms-text{flex:1;display:flex;flex-direction:column;gap:1px}.ms-text strong{font-size:14px;color:var(--ink)}.ms-text span{font-size:12px;color:var(--muted);font-weight:600}'
+      +'.ms-x{flex-shrink:0;width:26px;height:26px;border-radius:8px;border:0;background:rgba(0,0,0,.05);color:var(--muted);font-size:18px;line-height:1;cursor:pointer}.ms-x:hover{background:rgba(0,0,0,.1);color:var(--ink)}'
+      /* progress bar */
+      +'.onb-prog{margin-top:16px}.onb-prog-card{margin:0 0 16px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--soft)}'
+      +'.onb-prog-top{display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--ink);margin-bottom:7px}'
+      +'.onb-prog-bar{height:9px;border-radius:999px;background:rgba(0,0,0,.08);overflow:hidden}.onb-prog-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--green));transition:width .5s ease}'
+      /* onboarding home timeline */
+      +'.onb-hero{padding:22px;border-radius:16px;background:linear-gradient(135deg,var(--ink,#10243f),#1b3a6b);color:#fff;box-shadow:var(--soft)}'
+      +'.onb-hero-eyebrow{font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}'
+      +'.onb-hero-title{font-family:Barlow Condensed,sans-serif;font-size:30px;font-weight:900;margin:4px 0 6px}'
+      +'.onb-hero-sub{font-size:13px;font-weight:600;color:rgba(255,255,255,.82);max-width:560px;line-height:1.5}'
+      +'.onb-hero .onb-prog-top{color:#fff}.onb-hero .onb-prog-bar{background:rgba(255,255,255,.18)}'
+      +'.onb-tl{display:flex;flex-direction:column;gap:14px;margin-top:16px}'
+      +'.onb-week{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--soft);overflow:hidden}'
+      +'.onb-week-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--gold-pale,#faf4e2)}'
+      +'.onb-week-num{font-family:Barlow Condensed,sans-serif;font-size:18px;font-weight:900;color:var(--ink)}'
+      +'.onb-week-phase{font-size:10px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);background:#fff;border:1px solid rgba(201,168,76,.4);padding:3px 9px;border-radius:999px}'
+      +'.onb-week-cols{display:grid;grid-template-columns:1fr 1fr;gap:0}'
+      +'.onb-col{padding:14px 16px}.onb-col:first-child{border-right:1px solid var(--border)}'
+      +'.onb-col-label{font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}'
+      +'.onb-tl-item{display:flex;gap:9px;align-items:flex-start;margin-bottom:12px}.onb-tl-item:last-child{margin-bottom:0}'
+      +'.onb-tl-check{flex-shrink:0;width:20px;height:20px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;margin-top:1px}'
+      +'.onb-tl-item.done .onb-tl-check{background:var(--green);border-color:var(--green)}'
+      +'.onb-tl-title{font-size:13px;font-weight:800;color:var(--ink);line-height:1.3}.onb-tl-item.done .onb-tl-title{color:var(--muted);text-decoration:line-through}'
+      +'.onb-tl-desc{font-size:12px;color:var(--muted);font-weight:600;line-height:1.4;margin-top:2px}'
+      +'.onb-tl-note{font-size:12px;color:var(--blue);font-weight:700;background:rgba(24,119,242,.08);border-radius:8px;padding:6px 9px;margin-top:6px;line-height:1.4}'
+      +'.onb-empty{font-size:13px;color:var(--muted);font-weight:700}'
+      +'.onb-foot{text-align:center;margin-top:18px;font-size:13px;color:var(--muted);font-weight:600}'
+      +'.btn-link{border:0;background:transparent;color:var(--gold);font-weight:800;cursor:pointer;font-size:13px;text-decoration:underline}'
+      /* onboarding tab */
+      +'.onb-phase-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}'
+      +'.onb-phase-chip{display:flex;align-items:center;gap:9px;padding:12px 14px;border-radius:13px;background:var(--surface);border:1px solid var(--border);box-shadow:var(--soft)}'
+      +'.onb-phase-dot{width:11px;height:11px;border-radius:50%;background:var(--border);flex-shrink:0}'
+      +'.onb-phase-chip.done .onb-phase-dot{background:var(--green)}.onb-phase-chip.current{border-color:var(--gold);background:var(--gold-pale,#faf4e2)}.onb-phase-chip.current .onb-phase-dot{background:var(--gold)}'
+      +'.onb-phase-name{font-size:13px;font-weight:800;color:var(--ink)}.onb-phase-status{font-size:11px;font-weight:700;color:var(--muted)}'
+      +'.onb-phase-block{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--soft);padding:16px;margin-bottom:14px}'
+      +'.onb-phase-block-head{margin-bottom:12px}.onb-phase-block-head h3{font-family:Barlow Condensed,sans-serif;font-size:20px;font-weight:900;color:var(--ink)}.onb-phase-block-head p{font-size:12px;color:var(--muted);font-weight:600;margin-top:1px}'
+      +'.onb-step{display:flex;gap:11px;align-items:flex-start;padding:12px 0;border-top:1px solid var(--border)}'
+      +'.onb-check-btn{flex-shrink:0;width:24px;height:24px;border-radius:7px;border:2px solid var(--border);background:transparent;color:#fff;font-size:13px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;margin-top:1px}'
+      +'button.onb-check-btn:hover{border-color:var(--green)}.onb-check-btn.done{background:var(--green);border-color:var(--green)}'
+      +'.onb-check-btn.ongoing{border-style:dashed;border-color:var(--gold);color:var(--gold);background:transparent;font-size:15px}'
+      +'.onb-step-body{flex:1}.onb-step-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}'
+      +'.onb-step-title{font-size:14px;font-weight:800;color:var(--ink)}.onb-step.done .onb-step-title{color:var(--muted)}'
+      +'.onb-owner{font-size:9px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px}'
+      +'.onb-owner.cal{background:rgba(201,168,76,.16);color:#9a7d2e}.onb-owner.client{background:rgba(24,119,242,.14);color:#1877f2}'
+      +'.onb-step-desc{font-size:12px;color:var(--muted);font-weight:600;line-height:1.45;margin-top:3px}'
+      +'.onb-note-input{width:100%;margin-top:8px;min-height:38px;border:1px solid var(--border);border-radius:9px;padding:8px 10px;font-size:12px;font-family:inherit;font-weight:600;color:var(--ink);background:var(--bg,#fff);resize:vertical}'
+      /* maintenance summary tab */
+      +'.onb-maint-banner{display:flex;gap:12px;align-items:center;padding:16px;border-radius:14px;background:linear-gradient(100deg,rgba(46,125,50,.12),var(--surface));border:1.5px solid rgba(46,125,50,.35);margin-bottom:18px}'
+      +'.onb-maint-ico{width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;flex-shrink:0}'
+      +'.onb-maint-title{font-size:15px;font-weight:900;color:var(--ink)}.onb-maint-sub{font-size:12px;color:var(--muted);font-weight:600;margin-top:1px}'
+      +'.onb-maint-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}'
+      +'.onb-maint-card{padding:16px}.onb-maint-card-title{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:5px}.onb-maint-card-desc{font-size:12px;color:var(--muted);font-weight:600;line-height:1.45}'
+      /* maintenance home */
+      +'.om-contact{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}'
+      +'.om-contact-title{font-size:15px;font-weight:800;color:var(--ink)}.om-contact-sub{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}'
+      +'.om-contact-btn{flex-shrink:0;height:40px;padding:0 16px;white-space:nowrap}'
+      +'.om-snap{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}'
+      +'.om-snap-card{padding:16px;border-left:4px solid var(--gold)}'
+      +'.om-snap-label{font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.03em}'
+      +'.om-snap-val{font-family:Barlow Condensed,sans-serif;font-size:32px;font-weight:900;color:var(--ink);line-height:1.05;margin-top:4px}'
+      +'.om-camp{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.om-camp-card{padding:14px}'
+      +'.om-camp-top{display:flex;align-items:center;gap:7px}.om-camp-name{font-size:13px;font-weight:800;color:var(--ink);flex:1}'
+      +'.om-dot{width:9px;height:9px;border-radius:50%}.om-dot.green{background:var(--green)}.om-dot.gold{background:var(--gold)}'
+      +'.om-camp-status{font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;padding:2px 8px;border-radius:999px}'
+      +'.om-camp-status.green{background:rgba(46,125,50,.14);color:var(--green)}.om-camp-status.gold{background:rgba(201,168,76,.16);color:#9a7d2e}'
+      /* celebration */
+      +'.onb-cel-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(10,20,35,.62);backdrop-filter:blur(3px);overflow:hidden}'
+      +'.onb-cel-card{position:relative;z-index:2;max-width:420px;width:90%;background:var(--surface,#fff);border-radius:20px;padding:34px 28px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:onbPop .4s ease}'
+      +'@keyframes onbPop{from{transform:scale(.86);opacity:0}to{transform:scale(1);opacity:1}}'
+      +'.onb-cel-emoji{font-size:54px;margin-bottom:6px}'
+      +'.onb-cel-card h2{font-family:Barlow Condensed,sans-serif;font-size:30px;font-weight:900;color:var(--ink);margin-bottom:8px}'
+      +'.onb-cel-card p{font-size:14px;color:var(--muted);font-weight:600;line-height:1.5;margin-bottom:20px}'
+      +'.onb-cel-card .btn-gold{width:100%;height:46px;font-size:15px}'
+      +'.onb-conf-wrap{position:absolute;inset:0;z-index:1;pointer-events:none}'
+      +'.onb-conf{position:absolute;top:-14px;width:9px;height:14px;border-radius:2px;opacity:.9;animation:onbFall linear forwards}'
+      +'@keyframes onbFall{to{transform:translateY(105vh) rotate(540deg);opacity:.4}}'
+      +'@media(max-width:760px){.onb-week-cols{grid-template-columns:1fr}.onb-col:first-child{border-right:0;border-bottom:1px solid var(--border)}.onb-phase-row{grid-template-columns:1fr}.onb-maint-grid{grid-template-columns:1fr}.om-snap{grid-template-columns:1fr 1fr}.om-camp{grid-template-columns:1fr 1fr}}';
+    document.head.appendChild(s);
+  }
+
+  function onbInit(){
+    injectOnbCSS();
+    onbSeedDemo();
+    ensureMilestoneHost();
+    window.TITLES=window.TITLES||{};
+    window.TITLES.onboarding='Your CAL Journey';
+  }
+
+  var _priorLaunchOnb=window.launchApp;
+  window.launchApp=function(){
+    if(_priorLaunchOnb) _priorLaunchOnb();
+    setTimeout(function(){
+      onbInit();
+      if(window.applyHomeForRole) window.applyHomeForRole();
+      if(window.currentRole==='admin'){ ensureMilestoneHost(); addKpiContext(); renderMilestones(); }
+    },10);
+  };
+
   function init(){
     injectAdminFixCSS();
     seedAgencyUsers();
     ensureScreensAndNav();
     cleanAdminNav();
+    onbInit();
     if(window.currentScreen && FIXED_SCREEN_SET[window.currentScreen]) renderFixedScreen(window.currentScreen);
   }
   document.addEventListener('DOMContentLoaded',init);

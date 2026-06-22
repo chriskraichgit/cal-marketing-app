@@ -65,19 +65,27 @@ Sidebar `.nav-btn` visibility is permission-driven: `setupRoleUI` shows a button
 
 **Why:** request to make the admin (business client) home/nav "less busy for marketing" — admin trimmed to `['home','campaigns','reviews','leads','inbox','files','billing','reports','settings','profile','help']`. `nav()` itself ignores permissions, so home CTAs to non-sidebar screens still work.
 
-## Admin home is role-toggled (simplified view)
-`#s-home` holds two siblings: `#home-admin-view` (CTA-first: "Where Your Money Is Going" spend breakdown + Quick Action `.admin-cta` cards + compact health score) and `#home-full-view` (original busy hero/KPI/health grids). `window.applyHomeForRole()` shows admin-view only when `currentRole==='admin'`, else full-view. Wired in `setupRoleUI`, the `nav()` wrapper (`s==='home'`), and `refreshScreenForAccount` (keeps `#admin-health-score` mirrored from `#h-score`).
+## Admin home is role-toggled (onboarding vs maintenance)
+`#s-home` holds two siblings: `#home-admin-view` and `#home-full-view` (original busy
+hero/KPI/health grids). `#home-admin-view` now contains TWO empty containers —
+`#home-onboarding-view` (week-by-week timeline) and `#home-maintenance-view` (CAL Updates +
+monthly snapshot + active campaigns + contact CTA) — filled at runtime by the onboarding engine.
+`window.applyHomeForRole()` is OVERRIDDEN in the bootFixes IIFE: shows admin-view only when
+`currentRole==='admin'`, then picks onboarding vs maintenance container by onboarding completion
+state. See [Onboarding engine](onboarding-engine.md). (The old CTA-first "Where Your Money Is
+Going" admin home was replaced by this onboarding/maintenance split.)
 
 ## Testing harness note
 The Playwright testing skill caps at ~10 iterations per run and the admin onboarding modal + login consume several. Keep test plans tiny (1–2 navigations). Prefer in-page `eval` returning a single diagnostic string (offsetHeight, parent id, closest('.main')) over visual judgment — the agent's visual "blank" reports were unreliable; geometry probes found the truth.
 
 ## Shared #nav-label-admin section header (per-role text)
-`#nav-label-admin` is ONE shared sidebar section header. setupRoleUI toggles both its
-visibility AND its text per role: admin sees it as "Feedback" (now contains only the
-Satisfaction/`nps` item), agency/test see it as "Admin". If you hide it for admin again,
-the lone Satisfaction button floats headerless. Admin Satisfaction visibility needs THREE
-things in sync: `nps` in DEFAULT_PERMISSIONS.admin, `nps` NOT in the ensureScreensAndNav
-admin filter list, and the label shown.
+`#nav-label-admin` is ONE shared sidebar section header. setupRoleUI sets it per role:
+agency/test see it as "Admin"; admin now HIDES it entirely (`display:none`) because the admin
+sidebar no longer includes `nps`/Satisfaction — its trimmed list is the exact onboarding spec
+(home, onboarding, campaigns, reviews, files, billing, reports, inbox, schedule, todos,
+notifications, help, profile). If you ever re-add a Feedback/`nps` item for admin, show the label
+again or the lone button floats headerless, and keep THREE things in sync: item in
+DEFAULT_PERMISSIONS.admin, NOT in the ensureScreensAndNav admin filter list, and label shown.
 
 ## New self-signup accounts -> agency switcher
 submitCreateAccount() must push a new account into localStorage `cal-accounts` (+ complete

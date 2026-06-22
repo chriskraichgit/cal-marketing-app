@@ -1,1 +1,2 @@
 - [CAL OS structure](cal-os-structure.md) — single-file portal: screens must be balanced direct children of `<main>`; an unclosed `<div>` makes later screens nest and render blank (offsetHeight 0); `replaceScreens()` overwrites some static screens at runtime.
+- [Onboarding engine](onboarding-engine.md) — admin journey: shared key `cal-onboarding-<slug(bizName)>`; last IIFE lacks `slug`/`accountData` in scope (redefine); live sync is same-browser-tab only; home routes timeline vs maintenance via `applyHomeForRole`.
