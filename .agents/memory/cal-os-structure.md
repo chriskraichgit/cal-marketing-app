@@ -56,5 +56,17 @@ Agency=chris@cal.marketing (CAL Marketing, skips onboarding, sees all client acc
 
 **How to apply:** when writing meta for a not-yet-seeded account, write a COMPLETE object (all default keys + your field), not a partial patch. Inside the boot closure use `saveMeta()`; from static functions (like `createAccount`, which is NOT window-overridden) merge full defaults manually.
 
+## Admin nav simplification — sidebar visibility has THREE layers
+Sidebar `.nav-btn` visibility is permission-driven: `setupRoleUI` shows a button only if its `nav('x')` target is in `getPermissions(role,email)` (default = `DEFAULT_PERMISSIONS[role]`, overridable per-email via `agencyPermissions`/`cal-agency-perms`). To trim a role's nav, edit `DEFAULT_PERMISSIONS[role]` — BUT two later layers can re-inflate it:
+1. `ensureScreensAndNav()` (boot block) force-PUSHES `['leaderboard','job-logging','social','nps','referrals']` back into role perm arrays at runtime and filters per-role. Exclude the role from the push + add to its filter, or trimmed perms get undone.
+2. `cleanAdminNav()` force-sets specific buttons (job-logging, leaderboard, proposals) `display` per role AFTER the perm loop — it can re-show buttons the perm loop hid. Set them to `'none'` for the role.
+
+**Static section labels** (Overview/Marketing/Work/Files & Billing/Settings) always render; only `nav-label-sales`/`nav-label-admin` are id'd + conditionally hidden. After trimming, ensure each visible section still has ≥1 item, and hide `nav-label-admin` for admin (else orphan header).
+
+**Why:** request to make the admin (business client) home/nav "less busy for marketing" — admin trimmed to `['home','campaigns','reviews','leads','inbox','files','billing','reports','settings','profile','help']`. `nav()` itself ignores permissions, so home CTAs to non-sidebar screens still work.
+
+## Admin home is role-toggled (simplified view)
+`#s-home` holds two siblings: `#home-admin-view` (CTA-first: "Where Your Money Is Going" spend breakdown + Quick Action `.admin-cta` cards + compact health score) and `#home-full-view` (original busy hero/KPI/health grids). `window.applyHomeForRole()` shows admin-view only when `currentRole==='admin'`, else full-view. Wired in `setupRoleUI`, the `nav()` wrapper (`s==='home'`), and `refreshScreenForAccount` (keeps `#admin-health-score` mirrored from `#h-score`).
+
 ## Testing harness note
 The Playwright testing skill caps at ~10 iterations per run and the admin onboarding modal + login consume several. Keep test plans tiny (1–2 navigations). Prefer in-page `eval` returning a single diagnostic string (offsetHeight, parent id, closest('.main')) over visual judgment — the agent's visual "blank" reports were unreliable; geometry probes found the truth.

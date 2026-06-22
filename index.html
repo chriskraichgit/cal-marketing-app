@@ -4174,7 +4174,7 @@ var POS_OB_STEPS = [
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
   agency: ['home','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
-  admin: ['home','campaigns','billing','inbox','files','schedule','reports','reviews','nps','team','referrals','todos','notes','job-logging','notifications','settings','profile','help','social','whitelabel','permissions','leaderboard'],
+  admin: ['home','campaigns','reviews','leads','inbox','files','billing','reports','settings','profile','help'],
   user: ['todos','notes','files','inbox','profile'],
   test: ['home','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
 };
@@ -4607,7 +4607,7 @@ function setupRoleUI(){
     if(nlSales) nlSales.style.display='none';
     var salesBtn=document.getElementById('nav-sales-btn'); if(salesBtn) salesBtn.style.display='none';
     var salesSub=document.getElementById('sales-sub'); if(salesSub) salesSub.style.display='none';
-    if(nlAdmin) nlAdmin.style.display='';
+    if(nlAdmin) nlAdmin.style.display='none';
   } else {
     if(nlSales) nlSales.style.display='';
     if(nlAdmin) nlAdmin.style.display='';
@@ -6441,11 +6441,13 @@ function healthBadge(score){
     if(window.DEFAULT_PERMISSIONS){
       ['admin','agency','test'].forEach(function(role){
         if(Array.isArray(window.DEFAULT_PERMISSIONS[role])){
-          ['leaderboard','job-logging','social','nps','referrals'].forEach(function(sc){
-            if(window.DEFAULT_PERMISSIONS[role].indexOf(sc)<0) window.DEFAULT_PERMISSIONS[role].push(sc);
-          });
+          if(role!=='admin'){
+            ['leaderboard','job-logging','social','nps','referrals'].forEach(function(sc){
+              if(window.DEFAULT_PERMISSIONS[role].indexOf(sc)<0) window.DEFAULT_PERMISSIONS[role].push(sc);
+            });
+          }
           window.DEFAULT_PERMISSIONS[role]=window.DEFAULT_PERMISSIONS[role].filter(function(sc){
-            if(role==='admin') return sc!=='sales' && sc!=='proposals';
+            if(role==='admin') return ['sales','proposals','leaderboard','job-logging','social','nps','referrals'].indexOf(sc)<0;
             if(role==='agency') return sc!=='job-logging';
             return true;
           });
@@ -6467,8 +6469,8 @@ function healthBadge(score){
     }
     if(role==='admin'){
       if(proposalBtn) proposalBtn.style.display='none';
-      if(jobBtn) jobBtn.style.display='';
-      if(leaderBtn) leaderBtn.style.display='';
+      if(jobBtn) jobBtn.style.display='none';
+      if(leaderBtn) leaderBtn.style.display='none';
     }
     if(role==='agency'){
       if(jobBtn) jobBtn.style.display='none';
