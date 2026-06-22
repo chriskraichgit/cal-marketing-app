@@ -2464,6 +2464,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div class="tabs-row" style="margin-bottom:14px">
       <button class="tab-btn active" id="team-tab-agency" onclick="switchTeamTab('agency')">Agency Members</button>
       <button class="tab-btn" id="team-tab-admins" onclick="switchTeamTab('admins')">Client Admins</button>
+      <button class="tab-btn" id="team-tab-allusers" onclick="switchTeamTab('allusers')" style="display:none">All Users</button>
     </div>
     <div id="team-agency-panel">
       <div class="sec-head" style="margin-bottom:12px"><div><h3 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--ink)">Agency Members</h3><p style="font-size:13px;font-weight:700;color:var(--muted)">People on the CAL Marketing team</p></div><button class="btn-view" onclick="openInvite('agency')">+ Invite Agency Member</button></div>
@@ -2477,6 +2478,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <table class="tbl"><thead><tr><th>Admin</th><th>Email</th><th>Account</th><th>Status</th></tr></thead><tbody id="team-admins-body"></tbody></table>
       </div>
     </div>
+    <div id="team-allusers-panel" style="display:none"></div>
   </div>
   <!-- CLIENT VIEW (admin) -->
   <div id="team-client-view">
@@ -4987,12 +4989,15 @@ function teamEsc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(c){
 var TEAM_COLORS=['#1b3a6b','#2e7d32','#7c3aed','#0052cc','#c2410c','#0e7490'];
 function teamColorFor(seed,ink){ var c=TEAM_COLORS[(seed||0)%TEAM_COLORS.length]; return c; }
 function switchTeamTab(tab){
-  var ap=document.getElementById('team-agency-panel'), dp=document.getElementById('team-admins-panel');
-  var at=document.getElementById('team-tab-agency'), dt=document.getElementById('team-tab-admins');
+  var ap=document.getElementById('team-agency-panel'), dp=document.getElementById('team-admins-panel'), up=document.getElementById('team-allusers-panel');
+  var at=document.getElementById('team-tab-agency'), dt=document.getElementById('team-tab-admins'), ut=document.getElementById('team-tab-allusers');
   if(ap) ap.style.display=tab==='agency'?'':'none';
   if(dp) dp.style.display=tab==='admins'?'':'none';
+  if(up) up.style.display=tab==='allusers'?'':'none';
   if(at) at.classList.toggle('active',tab==='agency');
   if(dt) dt.classList.toggle('active',tab==='admins');
+  if(ut) ut.classList.toggle('active',tab==='allusers');
+  if(tab==='allusers') renderAllUsers();
 }
 function renderTeam(){
   var agencyView=document.getElementById('team-agency-view');
@@ -5001,6 +5006,9 @@ function renderTeam(){
   if(agencyView) agencyView.style.display=isAgency?'':'none';
   if(clientView) clientView.style.display=isAgency?'none':'';
   if(!isAgency) return;
+  // Show/hide All Users tab (super admin only)
+  var utBtn=document.getElementById('team-tab-allusers');
+  if(utBtn) utBtn.style.display=isSuperAdmin()?'':'none';
   // Agency members
   var body=document.getElementById('team-agency-body');
   if(body){
@@ -5035,6 +5043,140 @@ function renderTeam(){
   }
 }
 window.renderTeam=renderTeam;
+
+/* ============================================================
+   SUPER ADMIN — User Role & Title Management
+   Accessible only to chris@cal.marketing (Agency Owner)
+   ============================================================ */
+var SA_EMAIL='chris@cal.marketing';
+function isSuperAdmin(){ return !!(window.currentUser && window.currentUser.email===SA_EMAIL); }
+function saOvKey(){ return 'cal-role-overrides'; }
+function saOvLoad(){ return teamLS(saOvKey(),{}); }
+function saOvSave(ov){ teamSave(saOvKey(),ov); }
+
+/* Apply stored role/title overrides to USERS at startup so role changes persist */
+function applyRoleOverrides(){
+  var ov=saOvLoad();
+  var emails=Object.keys(ov);
+  for(var i=0;i<emails.length;i++){
+    var em=emails[i];
+    if(window.USERS && window.USERS[em]){
+      if(ov[em].role) window.USERS[em].role=ov[em].role;
+      if(ov[em].title!==undefined) window.USERS[em].title=ov[em].title;
+    }
+  }
+}
+
+var SA_ROLE_LEVEL={user:1,admin:2,agency:3,test:0};
+var SA_ROLE_LABEL={user:'Staff',admin:'Admin',agency:'Agency',test:'Test'};
+var SA_ROLE_PILL={user:'pill-muted',admin:'pill-blue',agency:'pill-gold',test:'pill-blue'};
+var SA_ROLE_COLORS=['var(--gold)','#1b3a6b','#2e7d32','#7c3aed','#0052cc','#c2410c','#0e7490'];
+
+function saGetUser(email){
+  var u=window.USERS[email]||{};
+  var ov=saOvLoad();
+  return Object.assign({},u,ov[email]||{},{email:email});
+}
+
+window.saPromote=function(email){
+  if(email===SA_EMAIL){ showToast('Cannot change the super admin\u2019s role.','gold'); return; }
+  var u=saGetUser(email);
+  var lv=SA_ROLE_LEVEL[u.role]||0;
+  if(lv>=3){ showToast((u.name||email)+' is already at the highest role.','gold'); return; }
+  var newRole=lv===1?'admin':lv===2?'agency':'admin';
+  var ov=saOvLoad(); ov[email]=Object.assign({},ov[email]||{},{role:newRole}); saOvSave(ov);
+  if(window.USERS&&window.USERS[email]) window.USERS[email].role=newRole;
+  showToast((u.name||email)+' promoted to '+SA_ROLE_LABEL[newRole]+'.','green');
+  renderAllUsers();
+};
+
+window.saDemote=function(email){
+  if(email===SA_EMAIL){ showToast('Cannot change the super admin\u2019s role.','gold'); return; }
+  var u=saGetUser(email);
+  var lv=SA_ROLE_LEVEL[u.role]||0;
+  if(lv<=1){ showToast((u.name||email)+' is already at the lowest role.','gold'); return; }
+  var newRole=lv===3?'admin':lv===2?'user':'user';
+  var ov=saOvLoad(); ov[email]=Object.assign({},ov[email]||{},{role:newRole}); saOvSave(ov);
+  if(window.USERS&&window.USERS[email]) window.USERS[email].role=newRole;
+  showToast((u.name||email)+' demoted to '+SA_ROLE_LABEL[newRole]+'.','gold');
+  renderAllUsers();
+};
+
+window.saEditTitle=function(email){
+  var u=saGetUser(email);
+  var cur=u.title||'';
+  var nv=window.prompt('Edit job title for '+(u.name||email)+':',cur);
+  if(nv===null) return;
+  nv=nv.trim();
+  var ov=saOvLoad(); ov[email]=Object.assign({},ov[email]||{},{title:nv}); saOvSave(ov);
+  if(window.USERS&&window.USERS[email]) window.USERS[email].title=nv;
+  showToast('Title updated.','green');
+  renderAllUsers();
+};
+
+function renderAllUsers(){
+  var el=document.getElementById('team-allusers-panel'); if(!el) return;
+  var allEmails=Object.keys(window.USERS||{});
+  var roleOrder={agency:0,admin:1,user:2,test:3};
+  allEmails.sort(function(a,b){ var ua=saGetUser(a),ub=saGetUser(b); return (roleOrder[ua.role]||9)-(roleOrder[ub.role]||9)||(ua.name||a).localeCompare(ub.name||b); });
+  var rows=allEmails.map(function(email,i){
+    var u=saGetUser(email);
+    var role=u.role||'user';
+    var lv=SA_ROLE_LEVEL[role]||0;
+    var pill=SA_ROLE_PILL[role]||'pill-muted';
+    var label=SA_ROLE_LABEL[role]||role;
+    var isMe=(email===SA_EMAIL);
+    var canPromote=!isMe && lv>=1 && lv<3;
+    var canDemote=!isMe && lv>1;
+    var ava=SA_ROLE_COLORS[i%SA_ROLE_COLORS.length];
+    var ink=(role==='agency')?'#000':'#fff';
+    return '<tr>'
+      +'<td><div style="display:flex;align-items:center;gap:10px">'
+        +'<div class="sa-ava" style="background:'+ava+';color:'+ink+'">'+teamInitials(u.name||email)+'</div>'
+        +'<div><p style="font-weight:900;font-size:14px;color:var(--ink)">'+teamEsc(u.name||email)+'</p>'
+          +(isMe?'<p style="font-size:10px;font-weight:900;color:var(--gold);letter-spacing:.5px;margin-top:1px">SUPER ADMIN</p>':'')
+        +'</div>'
+      +'</div></td>'
+      +'<td class="sa-email">'+teamEsc(email)+'</td>'
+      +'<td class="sa-title">'+teamEsc(u.title||'\u2014')
+        +'<button class="sa-edit-btn" onclick="saEditTitle(\''+teamEsc(email)+'\')" title="Edit title">\u270F\uFE0F</button>'
+      +'</td>'
+      +'<td><span class="pill '+pill+'">'+label+'</span></td>'
+      +'<td><div style="display:flex;gap:6px;align-items:center">'
+        +(canPromote?'<button class="sa-btn sa-up" onclick="saPromote(\''+teamEsc(email)+'\')">Promote \u2191</button>':'<button class="sa-btn" disabled style="opacity:.3;cursor:not-allowed">Promote \u2191</button>')
+        +(canDemote?'<button class="sa-btn sa-dn" onclick="saDemote(\''+teamEsc(email)+'\')">Demote \u2193</button>':'<button class="sa-btn" disabled style="opacity:.3;cursor:not-allowed">Demote \u2193</button>')
+      +'</div></td>'
+    +'</tr>';
+  }).join('');
+  el.innerHTML=''
+    +'<div class="sec-head" style="margin-bottom:14px">'
+      +'<div><h3 style="font-family:\'Barlow Condensed\',sans-serif;font-size:24px;font-weight:900;color:var(--ink)">All Users</h3>'
+        +'<p style="font-size:13px;font-weight:700;color:var(--muted)">View and manage every user\u2019s role and job title.</p></div>'
+      +'<span class="pill pill-gold" style="font-size:11px;letter-spacing:.5px">SUPER ADMIN VIEW</span>'
+    +'</div>'
+    +'<div class="card" style="overflow-x:auto">'
+      +'<table class="tbl"><thead><tr><th>Name</th><th>Email</th><th>Job Title</th><th>Role</th><th>Actions</th></tr></thead>'
+      +'<tbody>'+rows+'</tbody></table>'
+    +'</div>'
+    +'<p class="sa-note">\u26A0\uFE0F Role changes take effect the next time the user signs in. You cannot change your own role.</p>';
+}
+
+/* Inject super-admin CSS */
+(function(){
+  if(document.getElementById('cal-sa-css')) return;
+  var s=document.createElement('style'); s.id='cal-sa-css';
+  s.textContent=''
+    +'.sa-ava{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0}'
+    +'.sa-email{font-size:13px;color:var(--muted);font-weight:700}'
+    +'.sa-title{font-size:13px;font-weight:700;color:var(--ink)}'
+    +'.sa-edit-btn{border:0;background:transparent;cursor:pointer;font-size:13px;margin-left:6px;vertical-align:middle;opacity:.6}.sa-edit-btn:hover{opacity:1}'
+    +'.sa-btn{height:30px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink);font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap}'
+    +'.sa-up{border-color:var(--green);color:var(--green)}.sa-up:hover{background:var(--green);color:#fff}'
+    +'.sa-dn{border-color:var(--red,#e63946);color:var(--red,#e63946)}.sa-dn:hover{background:var(--red,#e63946);color:#fff}'
+    +'.sa-note{font-size:12px;font-weight:700;color:var(--muted);margin-top:10px;line-height:1.5}';
+  document.head.appendChild(s);
+})();
+
 var tiType='agency', tiRole='Agency Admin';
 function openInvite(type){
   tiType=type;
@@ -7508,6 +7650,7 @@ function healthBadge(score){
   function init(){
     injectAdminFixCSS();
     seedAgencyUsers();
+    if(typeof applyRoleOverrides==='function') applyRoleOverrides();
     var sess=safeJSON('cal-session',null);
     if(sess && sess.email && !window.currentUser && window.USERS && window.USERS[sess.email]){
       var su=window.USERS[sess.email];
