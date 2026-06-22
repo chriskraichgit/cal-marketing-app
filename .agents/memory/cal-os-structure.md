@@ -70,3 +70,23 @@ Sidebar `.nav-btn` visibility is permission-driven: `setupRoleUI` shows a button
 
 ## Testing harness note
 The Playwright testing skill caps at ~10 iterations per run and the admin onboarding modal + login consume several. Keep test plans tiny (1–2 navigations). Prefer in-page `eval` returning a single diagnostic string (offsetHeight, parent id, closest('.main')) over visual judgment — the agent's visual "blank" reports were unreliable; geometry probes found the truth.
+
+## Shared #nav-label-admin section header (per-role text)
+`#nav-label-admin` is ONE shared sidebar section header. setupRoleUI toggles both its
+visibility AND its text per role: admin sees it as "Feedback" (now contains only the
+Satisfaction/`nps` item), agency/test see it as "Admin". If you hide it for admin again,
+the lone Satisfaction button floats headerless. Admin Satisfaction visibility needs THREE
+things in sync: `nps` in DEFAULT_PERMISSIONS.admin, `nps` NOT in the ensureScreensAndNav
+admin filter list, and the label shown.
+
+## New self-signup accounts -> agency switcher
+submitCreateAccount() must push a new account into localStorage `cal-accounts` (+ complete
+`cal-account-meta` entry) for it to appear in the agency account switcher (buildAcctDd reads
+cal-accounts). finishOnboarding() does NOT create accounts, so there's no duplicate.
+
+## Profile photo lives on two circles
+Profile photo (saveState 'profilePhoto') must be applied to BOTH `#profile-avatar-circle`
+(Profile page) and `#settings-pfp-preview` (Settings card), plus topbar `#avatar-btn`.
+handleProfilePhoto + launchApp restore loop both circle ids; fillSettingsPfp() (called on
+nav to settings) rehydrates the settings preview. Inline img cssText MUST include
+display:block (CSS default for .profile-avatar-circle img is display:none).

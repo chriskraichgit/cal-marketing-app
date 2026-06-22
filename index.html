@@ -1933,6 +1933,13 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="btn-view" onclick="openModal('report-modal')">View</button>
     </div>
   </div>
+  <div class="card card-pad" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border:1px solid var(--gold)">
+    <div>
+      <p style="font-size:14px;font-weight:900;color:var(--ink)">How is your marketing team doing?</p>
+      <p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Review your CAL team and share your satisfaction so we can keep improving your results.</p>
+    </div>
+    <button class="btn-gold" style="white-space:nowrap" onclick="nav('nps')">Review Your Team</button>
+  </div>
 </div>
 <!-- ============ SCREEN: SETTINGS ============ -->
 <div class="screen" id="s-settings">
@@ -1964,6 +1971,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div style="display:flex;align-items:center;gap:16px">
         <img id="settings-logo-preview" alt="Business logo" style="width:64px;height:64px;border-radius:14px;object-fit:contain;background:#fff;border:1px solid var(--border);padding:6px">
         <label class="btn-gold" style="cursor:pointer;width:max-content">Change Logo<input type="file" accept="image/*" style="display:none" onchange="handleSettingsLogo(this)"></label>
+      </div>
+    </div>
+    <div class="card card-pad">
+      <div class="card-head"><span class="card-title">Profile Photo</span></div>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;margin:8px 0 14px">This photo shows on your profile page and in the top bar.</p>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="profile-avatar-circle" id="settings-pfp-preview" style="width:64px;height:64px;font-size:22px"><span id="settings-pfp-initials">CK</span></div>
+        <label class="btn-gold" style="cursor:pointer;width:max-content">Change Photo<input type="file" accept="image/*" style="display:none" onchange="handleProfilePhoto(this)"></label>
       </div>
     </div>
     <div class="card card-pad">
@@ -4174,7 +4189,7 @@ var POS_OB_STEPS = [
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
   agency: ['home','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
-  admin: ['home','campaigns','reviews','leads','inbox','files','billing','reports','settings','profile','help'],
+  admin: ['home','campaigns','reviews','leads','inbox','files','billing','reports','nps','settings','profile','help'],
   user: ['todos','notes','files','inbox','profile'],
   test: ['home','goals','analytics','roi','campaigns','reviews','leads','content','projects','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
 };
@@ -4499,14 +4514,16 @@ function launchApp(){
   if(savedPhoto){
     var ab=document.getElementById('avatar-btn');
     if(ab) ab.innerHTML='<img src="'+savedPhoto+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-    var pac=document.getElementById('profile-avatar-circle');
-    if(pac){
-      var existImg=pac.querySelector('img');
-      if(!existImg){ existImg=document.createElement('img'); pac.appendChild(existImg); }
-      existImg.src=savedPhoto;
-      existImg.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:50%;display:block';
-      var sp=pac.querySelector('span'); if(sp) sp.style.display='none';
-    }
+    ['profile-avatar-circle','settings-pfp-preview'].forEach(function(pid){
+      var pac=document.getElementById(pid);
+      if(pac){
+        var existImg=pac.querySelector('img');
+        if(!existImg){ existImg=document.createElement('img'); pac.appendChild(existImg); }
+        existImg.src=savedPhoto;
+        existImg.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:50%;display:block';
+        var sp=pac.querySelector('span'); if(sp) sp.style.display='none';
+      }
+    });
   }
   // Apply saved profile fields to form
   var pfName=document.getElementById('pf-name'); if(pfName) pfName.value=currentUser.name;
@@ -4551,6 +4568,7 @@ function setupRoleUI(){
   var ddName=document.getElementById('dd-user-name'); if(ddName) ddName.textContent=u.name;
   // Profile screen
   var pInit=document.getElementById('profile-initials'); if(pInit) pInit.textContent=u.initials;
+  var sPfpInit=document.getElementById('settings-pfp-initials'); if(sPfpInit) sPfpInit.textContent=u.initials;
   var pDName=document.getElementById('profile-display-name'); if(pDName) pDName.textContent=u.name;
   var pDTitle=document.getElementById('profile-display-title'); if(pDTitle) pDTitle.textContent=u.title||'';
   var pfName=document.getElementById('pf-name'); if(pfName) pfName.value=u.name;
@@ -4605,10 +4623,10 @@ function setupRoleUI(){
     if(nlSales) nlSales.style.display='none';
     var salesBtn=document.getElementById('nav-sales-btn'); if(salesBtn) salesBtn.style.display='none';
     var salesSub=document.getElementById('sales-sub'); if(salesSub) salesSub.style.display='none';
-    if(nlAdmin) nlAdmin.style.display='none';
+    if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Feedback'; }
   } else {
     if(nlSales) nlSales.style.display='';
-    if(nlAdmin) nlAdmin.style.display='';
+    if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Admin'; }
   }
   // PART 6 — test-only screens hidden for non-test non-agency roles
   var testOnlyScreens=['pos','content','sales','whitelabel','booking','goals'];
@@ -4911,14 +4929,16 @@ function handleProfilePhoto(inp){
     saveState('profilePhoto',src);
     var ab=document.getElementById('avatar-btn');
     if(ab) ab.innerHTML='<img src="'+src+'" style="width:100%;height:100%;object-fit:cover;border-radius:50%">';
-    var pac=document.getElementById('profile-avatar-circle');
-    if(pac){
-      var existImg=pac.querySelector('img');
-      if(!existImg){ existImg=document.createElement('img'); pac.appendChild(existImg); }
-      existImg.src=src;
-      existImg.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:50%;display:block';
-      var sp=pac.querySelector('span'); if(sp) sp.style.display='none';
-    }
+    ['profile-avatar-circle','settings-pfp-preview'].forEach(function(pid){
+      var pac=document.getElementById(pid);
+      if(pac){
+        var existImg=pac.querySelector('img');
+        if(!existImg){ existImg=document.createElement('img'); pac.appendChild(existImg); }
+        existImg.src=src;
+        existImg.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:50%;display:block';
+        var sp=pac.querySelector('span'); if(sp) sp.style.display='none';
+      }
+    });
     showToast('Photo updated!','green');
   };
   reader.readAsDataURL(inp.files[0]);
@@ -5547,6 +5567,19 @@ function submitCreateAccount(){
   if(err) err.classList.remove('show');
   currentUser=Object.assign({},USERS[email],{email:email});
   currentRole='admin';
+  // Register this new business under the agency's managed accounts
+  try{
+    var accts=JSON.parse(localStorage.getItem('cal-accounts')||'null')||(window.DEFAULT_ACCOUNTS?DEFAULT_ACCOUNTS.slice():[]);
+    var caColors=['#1b3a6b','#2e7d32','#c9a84c','#7c3aed','#d92d20','#0052cc'];
+    var caId='a'+Date.now();
+    var caAcct={id:caId,name:biz,initials:initials,plan:'Foundation',color:caColors[accts.length%caColors.length],location:''};
+    accts.push(caAcct);
+    localStorage.setItem('cal-accounts',JSON.stringify(accts));
+    accounts=accts;
+    var caMeta=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
+    caMeta[caId]={name:biz,initials:initials,plan:'Foundation',color:caAcct.color,logo:'',font:'Inter',language:'en'};
+    localStorage.setItem('cal-account-meta',JSON.stringify(caMeta));
+  }catch(e){}
   startOnboarding();
 }
 function openGoogleModal(){
@@ -6251,6 +6284,18 @@ function healthBadge(score){
     var sp=document.getElementById('settings-logo-preview'); if(!sp) return;
     var m=getMeta(acctKey()); sp.src=m.logo||CAL_LOGO;
   };
+  window.fillSettingsPfp=function(){
+    var pac=document.getElementById('settings-pfp-preview'); if(!pac) return;
+    var ini=document.getElementById('settings-pfp-initials'); if(ini && window.currentUser) ini.textContent=currentUser.initials||'';
+    var photo=loadState('profilePhoto','');
+    if(photo){
+      var img=pac.querySelector('img');
+      if(!img){ img=document.createElement('img'); pac.appendChild(img); }
+      img.src=photo;
+      img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:50%;display:block';
+      var sp=pac.querySelector('span'); if(sp) sp.style.display='none';
+    }
+  };
 
   var oldNav=window.nav;
   window.nav=function(screen){
@@ -6262,7 +6307,7 @@ function healthBadge(score){
       if(screen==='social') loadSocialConnections();
       if(screen==='job-logging') renderJobLogs();
       if(screen==='whitelabel') fillWhiteLabelForm();
-      if(screen==='settings') fillSettingsLogo();
+      if(screen==='settings'){ fillSettingsLogo(); if(window.fillSettingsPfp) fillSettingsPfp(); }
     },0);
   };
 
@@ -6445,7 +6490,7 @@ function healthBadge(score){
             });
           }
           window.DEFAULT_PERMISSIONS[role]=window.DEFAULT_PERMISSIONS[role].filter(function(sc){
-            if(role==='admin') return ['sales','proposals','leaderboard','job-logging','social','nps','referrals'].indexOf(sc)<0;
+            if(role==='admin') return ['sales','proposals','leaderboard','job-logging','social','referrals'].indexOf(sc)<0;
             if(role==='agency') return sc!=='job-logging';
             return true;
           });
