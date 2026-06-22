@@ -4289,6 +4289,7 @@ function togglePw(){
   inp.type=inp.type==='password'?'text':'password';
 }
 function doLogout(){
+  try{ localStorage.removeItem('cal-session'); }catch(e){}
   currentUser=null; currentRole=null; currentScreen='';
   document.getElementById('app').style.display='none';
   document.getElementById('login-view').style.display='';
@@ -4464,6 +4465,9 @@ function finishUserOnboarding(){
 }
 // ============ LAUNCH APP ============
 function launchApp(){
+  if(window.currentUser && window.currentUser.email){
+    try{ localStorage.setItem('cal-session',JSON.stringify({email:window.currentUser.email})); }catch(e){}
+  }
   document.getElementById('app').style.display='block';
   ['login-view','onboarding','user-onboarding','ob-loading'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display='none';
@@ -6076,7 +6080,7 @@ function healthBadge(score){
   function applyAccountBranding(){
     var key=acctKey(), m=getMeta(key), data=accountData(key);
     var logo=m.logo||CAL_LOGO;
-    ['.sidebar-logo','.topbar-logo','.login-logo','.ob-logo'].forEach(function(sel){ qsa(sel).forEach(function(img){ img.src=logo; }); });
+    ['.sidebar-logo','.topbar-logo','.ob-logo'].forEach(function(sel){ qsa(sel).forEach(function(img){ img.src=logo; }); });
     var sb=qs('#sb-company-name'); if(sb) sb.textContent=m.name||'Portal';
     var sbUser=qs('#sb-company-name-user'); if(sbUser) sbUser.textContent=m.name||'Staff';
     var sub=qs('#page-sub'); if(sub){ sub.textContent=m.name||''; sub.style.display=''; }
@@ -6284,12 +6288,17 @@ function healthBadge(score){
     if(!inp||!inp.files||!inp.files[0]) return;
     var r=new FileReader();
     r.onload=function(e){
-      saveMeta(acctKey(),{logo:e.target.result});
-      var preview=document.getElementById('wl-preview-logo'); if(preview) preview.src=e.target.result;
-      var sp=document.getElementById('settings-logo-preview'); if(sp) sp.src=e.target.result;
+      var logoData=e.target.result;
+      saveMeta(acctKey(),{logo:logoData});
+      if(window.currentRole==='admin' && window.currentUser && window.currentUser.company){
+        var matchAcct=(window.accounts||[]).find(function(a){ return a.name===window.currentUser.company; });
+        if(matchAcct && matchAcct.id!==acctKey()) saveMeta(matchAcct.id,{logo:logoData});
+      }
+      var preview=document.getElementById('wl-preview-logo'); if(preview) preview.src=logoData;
+      var sp=document.getElementById('settings-logo-preview'); if(sp) sp.src=logoData;
       buildAcctDd();
       applyAccountBranding();
-      showToastSafe('Logo saved to this account.','green');
+      showToastSafe('Logo saved.','green');
     };
     r.readAsDataURL(inp.files[0]);
   };
@@ -7201,6 +7210,14 @@ function healthBadge(score){
   function init(){
     injectAdminFixCSS();
     seedAgencyUsers();
+    var sess=safeJSON('cal-session',null);
+    if(sess && sess.email && !window.currentUser && window.USERS && window.USERS[sess.email]){
+      var su=window.USERS[sess.email];
+      window.currentUser=Object.assign({},su,{email:sess.email});
+      window.currentRole=su.role;
+      window.launchApp();
+      return;
+    }
     ensureScreensAndNav();
     cleanAdminNav();
     onbInit();
