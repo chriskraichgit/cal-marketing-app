@@ -4147,8 +4147,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 // ============ DATA ============
 var USERS = {
-  'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Partner'},
-  'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Owner'},
+  'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner'},
+  'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner'},
   'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner'},
   'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester'},
   'client@apexlegal.com':{pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director'},
@@ -5013,8 +5013,8 @@ function renderTeam(){
   var body=document.getElementById('team-agency-body');
   if(body){
     var seed=[
-      {name:'James Wodzinski',email:'james@cal.marketing',role:'Founder / Owner',status:'Active',color:'var(--gold)',ink:'#000'},
-      {name:'Chris Kraich',email:'chris@cal.marketing',role:'Agency Partner',status:'Active',color:'#1b3a6b',ink:'#fff'},
+      {name:'Chris Kraich',email:'chris@cal.marketing',role:'Founder / Owner',status:'Active',color:'var(--gold)',ink:'#000'},
+      {name:'James Wodzinski',email:'james@cal.marketing',role:'Agency Partner',status:'Active',color:'#1b3a6b',ink:'#fff'},
       {name:'Matt Gallagher',email:'matt@cal.marketing',role:'Agency Partner',status:'Active',color:'#2e7d32',ink:'#fff'}
     ];
     var invited=teamLS('cal-agency-invites',[]);
@@ -5046,9 +5046,9 @@ window.renderTeam=renderTeam;
 
 /* ============================================================
    SUPER ADMIN — User Role & Title Management
-   Accessible only to james@cal.marketing (Agency Owner)
+   Accessible only to chris@cal.marketing (Agency Owner)
    ============================================================ */
-var SA_EMAIL='james@cal.marketing';
+var SA_EMAIL='chris@cal.marketing';
 function isSuperAdmin(){ return !!(window.currentUser && window.currentUser.email===SA_EMAIL); }
 function saOvKey(){ return 'cal-role-overrides'; }
 function saOvLoad(){ return teamLS(saOvKey(),{}); }
