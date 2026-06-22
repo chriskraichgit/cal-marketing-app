@@ -1382,6 +1382,15 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============ SCREEN: ROI ============ -->
 <div class="screen" id="s-roi">
   <div class="sec-head"><div><h2>ROI Tracker</h2><p>Return on investment across all CAL services</p></div></div>
+  <div class="card card-pad" id="roi-gate" style="text-align:center;padding:44px 20px">
+    <div style="width:56px;height:56px;border-radius:16px;background:var(--page);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" width="26" height="26"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+    <h3 style="font-size:17px;font-weight:900;color:var(--ink);margin-bottom:6px">No ROI data yet</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;max-width:380px;margin:0 auto 18px;line-height:1.6">ROI is calculated from real ad spend and attributed revenue. Connect your ad platforms to see real numbers.</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-connect" onclick="openOAuthModal('google-ads')">Connect Google Ads</button>
+      <button class="btn-connect" onclick="openOAuthModal('meta-ads')">Connect Meta Ads</button>
+    </div>
+  </div>
   <div class="kpi-row">
     <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Total Spend</span></div><span class="stat-val">$4,200</span><div class="stat-foot"><span>This month</span></div></div>
     <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Revenue Attributed</span></div><span class="stat-val">$17.6k</span><div class="stat-foot"><span class="up">4.2x ROAS</span></div></div>
@@ -1402,6 +1411,15 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============ SCREEN: CAMPAIGNS ============ -->
 <div class="screen" id="s-campaigns">
   <div class="sec-head"><div><h2>Campaigns</h2><p>Active across all platforms</p></div><button class="btn-view" onclick="openModal('new-campaign-modal')">+ New Campaign</button></div>
+  <div class="card card-pad" id="campaigns-gate" style="text-align:center;padding:44px 20px">
+    <div style="width:56px;height:56px;border-radius:16px;background:var(--page);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" width="26" height="26"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg></div>
+    <h3 style="font-size:17px;font-weight:900;color:var(--ink);margin-bottom:6px">No campaigns yet</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;max-width:380px;margin:0 auto 18px;line-height:1.6">Campaign performance is pulled live from your ad platforms. Connect a platform to see real campaigns — no fake numbers.</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-connect" onclick="openOAuthModal('google-ads')">Connect Google Ads</button>
+      <button class="btn-connect" onclick="openOAuthModal('meta-ads')">Connect Meta Ads</button>
+    </div>
+  </div>
   <div class="filter-row">
     <button class="f-btn active" onclick="setFilterActive(this)">All</button><button class="f-btn" onclick="setFilterActive(this)">Google</button><button class="f-btn" onclick="setFilterActive(this)">Meta</button><button class="f-btn" onclick="setFilterActive(this)">Email</button><button class="f-btn" onclick="setFilterActive(this)">Paused</button>
   </div>
@@ -1769,16 +1787,20 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: SCHEDULE ============ -->
 <div class="screen" id="s-schedule">
-  <div class="sec-head"><div><h2>Schedule</h2><p>Upcoming posts and calendar events</p></div></div>
+  <div class="sec-head"><div><h2>Schedule</h2><p>Calendar events and meetings</p></div></div>
   <div class="grid g2">
     <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Upcoming Posts</span><button class="btn-view" onclick="openModal('schedule-post-modal')">+ Schedule Post</button></div>
-      <table class="tbl"><thead><tr><th>Date</th><th>Platform</th><th>Content</th><th>Status</th></tr></thead><tbody>
-        <tr><td>Jun 21</td><td><span class="pill pill-blue">IG</span></td><td>Case win highlight</td><td><span class="pill pill-gold">READY</span></td></tr>
-        <tr><td>Jun 23</td><td><span class="pill pill-purple">FB</span></td><td>Free consultation ad</td><td><span class="pill pill-gold">DRAFT</span></td></tr>
-        <tr><td>Jun 25</td><td><span class="pill pill-muted">EMAIL</span></td><td>June newsletter</td><td><span class="pill pill-green">APPROVED</span></td></tr>
-        <tr><td>Jun 28</td><td><span class="pill pill-blue">IG</span></td><td>Testimonial video</td><td><span class="pill pill-muted">PENDING</span></td></tr>
-      </tbody></table>
+      <div class="card-head"><span class="card-title">Google Calendar</span></div>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:18px 6px">
+        <div style="width:56px;height:56px;border-radius:14px;background:rgba(201,168,76,.12);color:var(--gold);display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        </div>
+        <div>
+          <p style="font-size:15px;font-weight:900;color:var(--ink)">Connect Google Calendar</p>
+          <p style="font-size:12px;font-weight:700;color:var(--muted);margin-top:4px;max-width:280px">Sync your meetings and events directly into your CAL OS schedule.</p>
+        </div>
+        <button class="btn-primary" style="width:auto;height:42px;padding:0 26px" onclick="openOAuthModal('google-calendar')">Connect Google Calendar</button>
+      </div>
     </div>
     <div class="card card-pad">
       <div class="card-head"><span class="card-title">Meetings</span><button class="btn-view" onclick="openModal('add-event-modal')">+ Add Event</button></div>
@@ -2234,6 +2256,20 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
   <!-- TRAINING TAB -->
   <div id="sales-tab-panel-training" class="sales-tab-panel" style="display:none">
+    <div class="card card-pad" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:14px;min-width:0">
+          <div style="width:48px;height:48px;border-radius:12px;background:rgba(201,168,76,.12);color:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div style="min-width:0">
+            <p style="font-size:15px;font-weight:900;color:var(--ink)">Training Platform</p>
+            <p style="font-size:12px;font-weight:700;color:var(--muted)">Connect your training platform to sync courses and track rep progress.</p>
+          </div>
+        </div>
+        <button class="btn-primary" id="training-connect-btn" style="width:auto;height:40px;padding:0 26px" onclick="connectTrainingPlatform(this)">Connect</button>
+      </div>
+    </div>
     <div style="margin-bottom:14px;padding:14px;background:rgba(217,45,32,.05);border:1px solid rgba(217,45,32,.15);border-radius:12px">
       <p style="font-size:13px;font-weight:900;color:var(--red);margin-bottom:8px">Coaching Alerts This Week</p>
       <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(217,45,32,.1)"><span style="font-size:13px;font-weight:800;color:var(--ink)">John Kim — Needs objection handling coaching</span><button class="btn-view" onclick="openModal('new-task-modal')">Send Note</button></div>
@@ -3187,6 +3223,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <div class="screen" id="s-revenue">
   <div class="sec-head">
     <div><h2>Revenue Dashboard</h2><p>Agency-wide MRR, ARR and client breakdown</p></div>
+  </div>
+  <div class="card card-pad" id="revenue-gate" style="text-align:center;padding:44px 20px">
+    <div style="width:56px;height:56px;border-radius:16px;background:var(--page);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" width="26" height="26"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+    <h3 style="font-size:17px;font-weight:900;color:var(--ink);margin-bottom:6px">No revenue data yet</h3>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;max-width:380px;margin:0 auto 18px;line-height:1.6">MRR, ARR and churn are pulled directly from Stripe. Connect Stripe to see your real revenue — no fake numbers.</p>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="btn-connect" onclick="openOAuthModal('stripe')">Connect Stripe</button>
+    </div>
   </div>
   <!-- MRR Hero -->
   <div class="card" style="background:linear-gradient(135deg,var(--blue),#1a4a90);margin-bottom:16px;text-align:center;padding:32px;min-height:120px">
@@ -4206,7 +4250,7 @@ var POS_OB_STEPS = [
 
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
-  agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
+  agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
   admin: ['home','onboarding','campaigns','reviews','files','billing','reports','inbox','schedule','todos','notifications','help','profile'],
   user: ['todos','notes','files','inbox','profile'],
   test: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
@@ -4646,8 +4690,15 @@ function setupRoleUI(){
     var salesBtn=document.getElementById('nav-sales-btn'); if(salesBtn) salesBtn.style.display='none';
     var salesSub=document.getElementById('sales-sub'); if(salesSub) salesSub.style.display='none';
     if(nlAdmin){ nlAdmin.style.display='none'; }
+  } else if(currentRole==='agency'){
+    if(nlSales) nlSales.style.display='none';
+    var salesBtnAg=document.getElementById('nav-sales-btn'); if(salesBtnAg) salesBtnAg.style.display='none';
+    var salesSubAg=document.getElementById('sales-sub'); if(salesSubAg) salesSubAg.style.display='none';
+    if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Admin'; }
   } else {
     if(nlSales) nlSales.style.display='';
+    var salesBtnT=document.getElementById('nav-sales-btn'); if(salesBtnT) salesBtnT.style.display='';
+    var salesSubT=document.getElementById('sales-sub'); if(salesSubT) salesSubT.style.display='';
     if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Admin'; }
   }
   // PART 6 — test-only screens hidden for non-test non-agency roles
@@ -4726,6 +4777,14 @@ function showSalesTab(tab){
   document.querySelectorAll('#s-sales .sales-tab-btn').forEach(function(b){ b.classList.remove('active'); });
   var activeBtn=document.querySelector('#s-sales .sales-tab-btn[data-tab="'+tab+'"]');
   if(activeBtn) activeBtn.classList.add('active');
+}
+function connectTrainingPlatform(btn){
+  if(!btn || btn.dataset.connected==='1') return;
+  btn.dataset.connected='1';
+  btn.textContent='Connected ✓';
+  btn.style.background='var(--green)';
+  btn.style.color='#fff';
+  showToast('Training platform connected!','green');
 }
 function switchTabGroup(groupId, panelId, btn){
   var group=document.getElementById(groupId);
@@ -4924,6 +4983,26 @@ function gateAnalytics(){
   if(gate) gate.style.display=connected?'none':'';
   if(pill) pill.style.display=connected?'':'none';
 }
+
+function gateDataScreen(screenId,gateId,keys){
+  var screen=document.getElementById(screenId);
+  if(!screen) return;
+  var connected=false;
+  try{
+    var s=JSON.parse(localStorage.getItem('cal-integrations-'+(window.currentAcctId||'a1'))||'{}');
+    connected=keys.some(function(k){ return !!s[k]; });
+  }catch(e){}
+  var gate=document.getElementById(gateId);
+  Array.prototype.forEach.call(screen.children,function(ch){
+    if(ch.classList.contains('sec-head')||ch.id===gateId) return;
+    ch.style.display=connected?'':'none';
+  });
+  if(gate) gate.style.display=connected?'none':'';
+}
+function gateRoi(){ gateDataScreen('s-roi','roi-gate',['googleads','metaads']); }
+function gateRevenue(){ gateDataScreen('s-revenue','revenue-gate',['stripe']); }
+function gateCampaigns(){ gateDataScreen('s-campaigns','campaigns-gate',['googleads','metaads']); }
+function gateAllDataScreens(){ try{ gateAnalytics(); }catch(e){} try{ gateRoi(); }catch(e){} try{ gateRevenue(); }catch(e){} try{ gateCampaigns(); }catch(e){} }
 
 // ============ PROFILE ============
 function saveProfile(){
@@ -5428,7 +5507,7 @@ function completeOAuth(){
     saved[platformTitle.textContent.toLowerCase().replace(/\s+/g,'')]=true;
     localStorage.setItem(connKey,JSON.stringify(saved));
   }
-  setTimeout(function(){ closeModal('oauth-modal'); showToast('Integration connected!','green'); refreshIntegrationsForAccount(currentAcctId); if(typeof renderBilling==='function') try{ renderBilling(); }catch(e){} if(typeof gateAnalytics==='function') try{ gateAnalytics(); }catch(e){} },2000);
+  setTimeout(function(){ closeModal('oauth-modal'); showToast('Integration connected!','green'); refreshIntegrationsForAccount(currentAcctId); if(typeof renderBilling==='function') try{ renderBilling(); }catch(e){} if(typeof gateAllDataScreens==='function') try{ gateAllDataScreens(); }catch(e){} },2000);
 }
 function selectPaymentMethod(type){
   closeModal('update-payment-modal');
@@ -5841,28 +5920,6 @@ function healthBadge(score){
   </div>
 </div>
 
-<!-- ====== MODAL: SCHEDULE POST ====== -->
-<div class="modal-overlay hidden" id="schedule-post-modal" onclick="if(event.target===this)closeModal('schedule-post-modal')">
-  <div class="modal">
-    <div class="modal-head"><h2>Schedule a Post</h2><button class="icon-btn" onclick="closeModal('schedule-post-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-    <div class="modal-body">
-      <div class="form-field"><label class="form-label">Caption / Copy</label><textarea class="input-std" id="sp-copy" style="height:90px;resize:vertical" placeholder="Write your post content here..."></textarea></div>
-      <div class="form-field"><label class="form-label">Platform</label>
-        <select class="input-std" id="sp-platform">
-          <option>Instagram</option><option>Facebook</option><option>LinkedIn</option><option>Email Newsletter</option><option>Google Post</option>
-        </select>
-      </div>
-      <div class="form-field"><label class="form-label">Scheduled Date &amp; Time</label><input class="input-std" id="sp-date" type="datetime-local"></div>
-      <div class="form-field"><label class="form-label">Status</label>
-        <select class="input-std" id="sp-status"><option>Draft</option><option>Ready</option><option>Approved</option></select>
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-gold" onclick="(function(){ var copy=document.getElementById('sp-copy').value.trim(); if(!copy){showToast('Post content required.','gold');return;} showToast('Post scheduled!','green'); closeModal('schedule-post-modal'); })()">Schedule Post</button>
-      <button class="btn-ghost" onclick="closeModal('schedule-post-modal')">Cancel</button>
-    </div>
-  </div>
-</div>
 
 <!-- ====== MODAL: ADD EVENT ====== -->
 <div class="modal-overlay hidden" id="add-event-modal" onclick="if(event.target===this)closeModal('add-event-modal')">
@@ -6200,6 +6257,9 @@ function healthBadge(score){
     if(window.currentScreen==='job-logging') renderJobLogs();
     if(window.currentScreen==='billing' && typeof renderBilling==='function') try{ renderBilling(); }catch(e){}
     if(window.currentScreen==='analytics' && typeof gateAnalytics==='function') try{ gateAnalytics(); }catch(e){}
+    if(window.currentScreen==='roi' && typeof gateRoi==='function') try{ gateRoi(); }catch(e){}
+    if(window.currentScreen==='revenue' && typeof gateRevenue==='function') try{ gateRevenue(); }catch(e){}
+    if(window.currentScreen==='campaigns' && typeof gateCampaigns==='function') try{ gateCampaigns(); }catch(e){}
   };
 
   window.switchLoginTab=function(tab){
@@ -6582,9 +6642,15 @@ function healthBadge(score){
     var proposalBtn=document.getElementById('nav-proposals-btn');
     var jobBtn=document.getElementById('nav-job-logging-btn');
     var leaderBtn=document.getElementById('nav-leaderboard-btn');
-    if(role!=='agency' && role!=='test'){
+    var salesSubEl=document.getElementById('sales-sub');
+    if(role!=='test'){
       if(salesLabel) salesLabel.style.display='none';
       if(salesBtn) salesBtn.style.display='none';
+      if(salesSubEl) salesSubEl.style.display='none';
+    } else {
+      if(salesLabel) salesLabel.style.display='';
+      if(salesBtn) salesBtn.style.display='';
+      if(salesSubEl) salesSubEl.style.display='';
     }
     if(role==='admin'){
       if(proposalBtn) proposalBtn.style.display='none';
@@ -6729,6 +6795,9 @@ function healthBadge(score){
       toast('Sales was removed from the admin account.','gold');
       id='leaderboard';
     }
+    if(window.currentRole==='agency' && id==='sales'){
+      id='home';
+    }
     if(window.currentRole==='admin' && id==='proposals'){
       toast('Proposals was removed from the admin account.','gold');
       id='leaderboard';
@@ -6740,6 +6809,9 @@ function healthBadge(score){
     if(priorNav) priorNav(id);
     if(id==='billing' && typeof renderBilling==='function') try{ renderBilling(); }catch(e){}
     if(id==='analytics' && typeof gateAnalytics==='function') try{ gateAnalytics(); }catch(e){}
+    if(id==='roi' && typeof gateRoi==='function') try{ gateRoi(); }catch(e){}
+    if(id==='revenue' && typeof gateRevenue==='function') try{ gateRevenue(); }catch(e){}
+    if(id==='campaigns' && typeof gateCampaigns==='function') try{ gateCampaigns(); }catch(e){}
     if(id==='team' && typeof renderTeam==='function') try{ renderTeam(); }catch(e){}
     setTimeout(cleanAdminNav,0);
   };
@@ -7296,7 +7368,23 @@ function healthBadge(score){
   window.cpDelTask=function(cid,tid){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks=c.tasks.filter(function(x){return x.id!==tid;}); cpSave(st); renderClientProjects(); };
   window.cpSetAssignee=function(cid,tid,who){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; var t=c.tasks.find(function(x){return x.id===tid;}); if(t){ t.assignee=who||''; cpSave(st); renderClientProjects(); } };
   window.cpSetFilter=function(f){ cpFilter=f; renderClientProjects(); };
-  window.cpAddClient=function(){ var inp=document.getElementById('cp-new-client'); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var st=cpLoad(); st.clients.unshift({id:cpUid(),name:v,started:new Date().toISOString().slice(0,10),expanded:true,tasks:[]}); cpSave(st); inp.value=''; renderClientProjects(); };
+  window.cpOnAccountChange=function(sel){ var ci=document.getElementById('cp-custom-name'); if(!ci) return; if(sel.value==='__custom__'){ ci.style.display=''; ci.value=''; ci.focus(); } else { ci.style.display='none'; } };
+  window.cpAddClient=function(){
+    var sel=document.getElementById('cp-account-select'); if(!sel) return;
+    var name='';
+    if(sel.value==='__custom__'){
+      var ci=document.getElementById('cp-custom-name'); name=ci?(ci.value||'').trim():'';
+      if(!name){ if(window.showToast) showToast('Enter the client name first.','gold'); if(ci) ci.focus(); return; }
+    } else if(sel.value.indexOf('acct:')===0){
+      name=sel.options[sel.selectedIndex].text;
+    } else {
+      if(window.showToast) showToast('Pick an account first.','gold'); return;
+    }
+    var st=cpLoad();
+    if(st.clients.some(function(c){ return (c.name||'').toLowerCase()===name.toLowerCase(); })){ if(window.showToast) showToast(name+' already has a project.','gold'); return; }
+    st.clients.unshift({id:cpUid(),name:name,started:new Date().toISOString().slice(0,10),expanded:true,tasks:[]});
+    cpSave(st); renderClientProjects(); if(window.showToast) showToast(name+' added to client projects!','green');
+  };
   window.cpRemoveClient=function(id){ var st=cpLoad(); st.clients=st.clients.filter(function(x){return x.id!==id;}); cpSave(st); renderClientProjects(); };
   window.cpKeydown=function(e,cid){ if(e.key==='Enter'){ if(cid) window.cpAddTask(cid); else window.cpAddClient(); } };
   function cpAssignSelect(cid,tid,cur){
@@ -7314,9 +7402,20 @@ function healthBadge(score){
     var goalPct=Math.min(100,Math.round(goalDone/goalTotal*100));
 
     /* ---- top: title + add-client (top-right) ---- */
+    var existingNames=st.clients.map(function(c){ return (c.name||'').toLowerCase(); });
+    var acctOpts=(window.accounts||[]).filter(function(a){ return existingNames.indexOf((a.name||'').toLowerCase())===-1; })
+      .map(function(a){ return '<option value="acct:'+a.id+'">'+esc(a.name)+'</option>'; }).join('');
     var head=''
       +'<div class="sec-head"><div><h2>Client Projects</h2><p>Track onboarding work for each client \u2014 assign it to your team.</p></div>'
-      +'<div class="cp-newclient"><input id="cp-new-client" class="cp-add-input" placeholder="Add a new client..." onkeydown="cpKeydown(event)"><button class="cp-add-btn solid" onclick="cpAddClient()">+ Add client</button></div>'
+      +'<div class="cp-newclient">'
+        +'<select id="cp-account-select" class="cp-add-input cp-add-select" onchange="cpOnAccountChange(this)">'
+          +'<option value="">Select an account\u2026</option>'
+          +acctOpts
+          +'<option value="__custom__">Account isn\u2019t on OS? Add their project here</option>'
+        +'</select>'
+        +'<input id="cp-custom-name" class="cp-add-input" style="display:none" placeholder="New client name\u2026" onkeydown="cpKeydown(event)">'
+        +'<button class="cp-add-btn solid" onclick="cpAddClient()">+ Add client</button>'
+      +'</div>'
       +'</div>';
 
     /* ---- category filter (All / each team member) with open-task counts ---- */
