@@ -887,7 +887,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button class="nav-btn" onclick="nav('home')">
       <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
     </button>
-    <button class="nav-btn" onclick="nav('onboarding')">
+    <button class="nav-btn" id="nav-onboarding-btn" onclick="nav('onboarding')">
       <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
     </button>
     <button class="nav-btn" onclick="nav('goals')">
@@ -1163,7 +1163,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="card card-pad admin-cta" onclick="nav('leads')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><p class="admin-cta-title">New Leads</p><p class="admin-cta-sub">4 new this week</p></div></button>
       <button class="card card-pad admin-cta" onclick="nav('reports')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><p class="admin-cta-title">Monthly Report</p><p class="admin-cta-sub">See your results</p></div></button>
       <button class="card card-pad admin-cta" onclick="nav('billing')"><div class="admin-cta-ico" style="background:var(--green)"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><p class="admin-cta-title">Billing</p><p class="admin-cta-sub">Invoices &amp; payments</p></div></button>
-      <button class="card card-pad admin-cta" onclick="nav('onboarding')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg></div><div><p class="admin-cta-title">Onboarding</p><p class="admin-cta-sub">Track your setup</p></div></button>
+      <button class="card card-pad admin-cta" id="admin-onb-cta" onclick="nav('onboarding')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg></div><div><p class="admin-cta-title">Onboarding</p><p class="admin-cta-sub">Track your setup</p></div></button>
       <button class="card card-pad admin-cta" onclick="nav('reviews')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg></div><div><p class="admin-cta-title">Reviews</p><p class="admin-cta-sub">4.8★ rating</p></div></button>
       <button class="card card-pad admin-cta" onclick="nav('inbox')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div><p class="admin-cta-title">Messages</p><p class="admin-cta-sub">Talk to your team</p></div></button>
       <button class="card card-pad admin-cta" onclick="openAiPanel()"><div class="admin-cta-ico" style="background:var(--ink)"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><div><p class="admin-cta-title">Ask CAL AI</p><p class="admin-cta-sub">Get instant answers</p></div></button>
@@ -1188,29 +1188,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="hero-btn" onclick="nav('reports')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Monthly Report</button>
       <button class="hero-btn" onclick="openVoice()"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>Voice AI</button>
       <button class="hero-btn" onclick="openAiPanel()"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Ask CAL AI</button>
-    </div>
-  </div>
-
-  <div class="kpi-row" style="margin-top:14px" id="agency-connect-kpis">
-    <div class="card stat-card" style="--accent:var(--gold)" id="kpi-google-ads">
-      <div class="stat-top"><span class="stat-label">Google Ads</span></div>
-      <span class="stat-val" style="font-size:20px;color:var(--muted)" id="kpi-google-val">Not Connected</span>
-      <div class="stat-foot"><button class="btn-connect" style="margin-top:6px" onclick="openOAuthModal('google-ads')">Connect</button></div>
-    </div>
-    <div class="card stat-card" style="--accent:#1877f2" id="kpi-meta-ads">
-      <div class="stat-top"><span class="stat-label">Meta Ads</span></div>
-      <span class="stat-val" style="font-size:20px;color:var(--muted)" id="kpi-meta-val">Not Connected</span>
-      <div class="stat-foot"><button class="btn-connect" style="margin-top:6px" onclick="openOAuthModal('meta-ads')">Connect</button></div>
-    </div>
-    <div class="card stat-card" style="--accent:var(--green)" id="kpi-gbp">
-      <div class="stat-top"><span class="stat-label">Google Business</span></div>
-      <span class="stat-val" style="font-size:20px;color:var(--muted)" id="kpi-gbp-val">Not Connected</span>
-      <div class="stat-foot"><button class="btn-connect" style="margin-top:6px" onclick="openOAuthModal('gbp')">Connect</button></div>
-    </div>
-    <div class="card stat-card" style="--accent:var(--blue)" id="kpi-stripe">
-      <div class="stat-top"><span class="stat-label">Stripe Billing</span></div>
-      <span class="stat-val" style="font-size:20px;color:var(--muted)" id="kpi-stripe-val">Not Connected</span>
-      <div class="stat-foot"><button class="btn-connect" style="margin-top:6px" onclick="openOAuthModal('stripe')">Connect</button></div>
     </div>
   </div>
 
@@ -1259,6 +1236,33 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: ONBOARDING (CAL Journey) ============ -->
 <div class="screen" id="s-onboarding"></div>
+
+<!-- ============ SCREEN: MAINTENANCE ============ -->
+<div class="screen" id="s-maintenance">
+  <div class="sec-head"><div><h2>Maintenance</h2><p>What CAL does for you every month</p></div></div>
+  <div class="card card-pad" style="margin-bottom:14px;background:linear-gradient(100deg,rgba(46,125,50,.12),var(--surface));border:1.5px solid rgba(46,125,50,.3)">
+    <p style="font-size:16px;font-weight:900;color:var(--ink)">You're all set up 🎉</p>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-top:4px">Your onboarding is complete. Here's the ongoing work our team does behind the scenes to keep your marketing growing month after month.</p>
+  </div>
+  <div class="grid g2">
+    <div class="card card-pad">
+      <div class="card-head"><span class="card-title">Monthly Optimization</span><span class="pill pill-gold">ONGOING</span></div>
+      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.5;margin-top:8px">We fine-tune your Google &amp; Meta Ads every month — adjusting budgets, targeting, and creative to lower your cost per lead and get more out of every dollar.</p>
+    </div>
+    <div class="card card-pad">
+      <div class="card-head"><span class="card-title">Reporting</span><span class="pill pill-blue">MONTHLY</span></div>
+      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.5;margin-top:8px">You get a clear, plain-English report every month showing leads, spend, and revenue generated — so you always know exactly what your marketing is doing.</p>
+    </div>
+    <div class="card card-pad">
+      <div class="card-head"><span class="card-title">Review Generation &amp; Responses</span><span class="pill pill-gold">ONGOING</span></div>
+      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.5;margin-top:8px">We help you collect new 5-star reviews from happy customers and respond to every review that comes in — building trust and improving your local ranking.</p>
+    </div>
+    <div class="card card-pad">
+      <div class="card-head"><span class="card-title">Monthly Strategy Check-in</span><span class="pill pill-blue">MONTHLY</span></div>
+      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.5;margin-top:8px">A quick call to review your results together, answer your questions, and set the priorities for the month ahead — so we're always moving toward your goals.</p>
+    </div>
+  </div>
+</div>
 
 <div class="screen" id="s-client-projects"></div>
 <div class="screen" id="s-agency-todos"></div>
@@ -1843,6 +1847,12 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="btn-view" style="color:var(--gold);border-color:rgba(201,168,76,.4)" onclick="openModal('upload-video-modal')">Upload Video</button>
     </div>
   </div>
+  <div class="int-card" id="files-gdrive-card" style="margin-bottom:14px">
+    <div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" style="width:30px"></div>
+    <span class="int-card-name">Google Drive</span>
+    <span class="int-card-sub">Connect Google Drive to access and upload files directly from your Drive</span>
+    <button class="btn-connect" onclick="openOAuthModal('google-drive')">Connect</button>
+  </div>
   <div class="filter-row">
     <button class="f-btn active" onclick="switchFilesTab('all',this)">All</button>
     <button class="f-btn" onclick="switchFilesTab('docs',this)">Documents</button>
@@ -1985,6 +1995,11 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <div class="screen" id="s-settings">
   <div class="sec-head"><div><h2>Settings</h2><p>Manage integrations and preferences</p></div></div>
   <div class="grid g2">
+    <div class="card card-pad" id="layout-prefs-card" style="grid-column:1/-1">
+      <div class="card-head"><span class="card-title">Layout &amp; Navigation</span></div>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;margin:6px 0 10px">Show or hide sections in your sidebar. Changes apply instantly.</p>
+      <div id="layout-prefs-list"></div>
+    </div>
     <div class="card card-pad">
       <div class="card-head"><span class="card-title">Integrations</span></div>
       <div class="grid" style="gap:10px">
@@ -4251,9 +4266,9 @@ var POS_OB_STEPS = [
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
   agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo'],
-  admin: ['home','onboarding','campaigns','reviews','files','billing','reports','inbox','schedule','todos','notifications','help','profile'],
+  admin: ['home','onboarding','maintenance','campaigns','reviews','leads','files','billing','reports','inbox','schedule','todos','settings','notifications','help','profile'],
   user: ['todos','notes','files','inbox','profile'],
-  test: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
+  test: ['home','onboarding','maintenance','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
 };
 var agencyPermissions = JSON.parse(localStorage.getItem('cal-agency-perms') || 'null') || {};
 var adminPermissions = JSON.parse(localStorage.getItem('cal-admin-perms') || 'null') || {};
@@ -6643,15 +6658,9 @@ function healthBadge(score){
     var jobBtn=document.getElementById('nav-job-logging-btn');
     var leaderBtn=document.getElementById('nav-leaderboard-btn');
     var salesSubEl=document.getElementById('sales-sub');
-    if(role!=='test'){
-      if(salesLabel) salesLabel.style.display='none';
-      if(salesBtn) salesBtn.style.display='none';
-      if(salesSubEl) salesSubEl.style.display='none';
-    } else {
-      if(salesLabel) salesLabel.style.display='';
-      if(salesBtn) salesBtn.style.display='';
-      if(salesSubEl) salesSubEl.style.display='';
-    }
+    if(salesLabel) salesLabel.style.display='none';
+    if(salesBtn) salesBtn.style.display='none';
+    if(salesSubEl) salesSubEl.style.display='none';
     if(role==='admin'){
       if(proposalBtn) proposalBtn.style.display='none';
       if(jobBtn) jobBtn.style.display='none';
@@ -7623,6 +7632,161 @@ function healthBadge(score){
   }
   document.addEventListener('DOMContentLoaded',init);
   init();
+})();
+</script>
+
+<script>
+/* ============================================================
+   CAL OS — Dashboard Cleanup & Navigation Overhaul
+   Sales removal, onboarding placement, admin phase-based nav,
+   layout prefs, Google Drive card, dynamic admin CTA.
+   ============================================================ */
+(function(){
+  window.TITLES=window.TITLES||{};
+  window.TITLES.maintenance='Maintenance';
+
+  function calSlug(s){ return String(s||'local').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'local'; }
+  function calBizName(){
+    if(window.currentRole==='agency'||window.currentRole==='test'){
+      var a=(window.accounts||[]).find(function(x){ return x.id===window.currentAcctId; });
+      return a?a.name:'Business Account';
+    }
+    return (window.currentUser&&window.currentUser.company)||'Business Account';
+  }
+  function calOnbComplete(){
+    try{ var st=JSON.parse(localStorage.getItem('cal-onboarding-'+calSlug(calBizName()))||'null'); return !!(st&&st.completed); }catch(e){ return false; }
+  }
+
+  /* ---- Layout & Navigation prefs (req 4) ---- */
+  var LAYOUT_ITEMS={
+    agency:[['campaigns','Campaigns'],['reviews','Reviews & NFC'],['leads','Leads'],['seo','SEO'],['goals','Goals'],['roi','ROI Tracker'],['analytics','Analytics'],['social','Social Media'],['nps','Satisfaction'],['referrals','Referrals'],['pos','POS Builder'],['invoicing','Invoicing'],['proposals','Proposals'],['revenue','Revenue'],['whitelabel','White Label'],['booking','Book a Call'],['leaderboard','Review Leaderboard']],
+    admin:[['campaigns','Campaigns'],['reviews','Reviews & NFC'],['leads','Leads'],['reports','Reports'],['schedule','Schedule'],['todos','To-Dos']]
+  };
+  LAYOUT_ITEMS.test=LAYOUT_ITEMS.agency;
+  function layoutKey(role){ return 'cal-layout-prefs-'+(role||window.currentRole); }
+  function loadLayoutPrefs(role){ try{ return JSON.parse(localStorage.getItem(layoutKey(role))||'{}')||{}; }catch(e){ return {}; } }
+  function saveLayoutPrefs(role,p){ try{ localStorage.setItem(layoutKey(role),JSON.stringify(p)); }catch(e){} }
+
+  function navBtnsFor(key){
+    var out=[];
+    document.querySelectorAll('.nav-btn').forEach(function(b){
+      var oc=b.getAttribute('onclick')||'';
+      if(oc.indexOf("nav('"+key+"')")>=0) out.push(b);
+    });
+    return out;
+  }
+  function navItemVisible(key){
+    var vis=false; navBtnsFor(key).forEach(function(b){ if(b.style.display!=='none') vis=true; }); return vis;
+  }
+
+  function applyLayoutPrefs(){
+    var role=window.currentRole; var items=LAYOUT_ITEMS[role]; if(!items) return;
+    var prefs=loadLayoutPrefs(role);
+    items.forEach(function(it){
+      var key=it[0];
+      if(!prefs.hasOwnProperty(key)) return; /* no explicit choice -> leave default behavior */
+      var hide=prefs[key]===false;
+      navBtnsFor(key).forEach(function(b){ b.style.display=hide?'none':''; });
+    });
+  }
+
+  window.toggleLayoutPref=function(btn,key){
+    var role=window.currentRole; var prefs=loadLayoutPrefs(role);
+    var nowOff=btn.classList.toggle('off');
+    prefs[key]=!nowOff;
+    saveLayoutPrefs(role,prefs);
+    applyCalLayout();
+  };
+
+  function renderLayoutPrefs(){
+    var card=document.getElementById('layout-prefs-card');
+    var host=document.getElementById('layout-prefs-list');
+    if(!card||!host) return;
+    var role=window.currentRole; var items=LAYOUT_ITEMS[role];
+    if(!items){ card.style.display='none'; return; }
+    card.style.display='';
+    var prefs=loadLayoutPrefs(role);
+    host.innerHTML=items.map(function(it){
+      var on=prefs.hasOwnProperty(it[0])?(prefs[it[0]]!==false):navItemVisible(it[0]);
+      return '<div class="toggle-row"><div><p style="font-size:13px;font-weight:800;color:var(--ink)">'+it[1]+'</p></div><button class="sw'+(on?'':' off')+'" onclick="toggleLayoutPref(this,\''+it[0]+'\')"></button></div>';
+    }).join('');
+  }
+  window.renderLayoutPrefs=renderLayoutPrefs;
+
+  /* ---- nav label helper (preserves icon) ---- */
+  function setNavLabel(btn,label){
+    var nodes=btn.childNodes, set=false;
+    for(var i=nodes.length-1;i>=0;i--){
+      if(nodes[i].nodeType===3 && nodes[i].textContent.trim()){ nodes[i].textContent=label; set=true; break; }
+    }
+    if(!set) btn.appendChild(document.createTextNode(label));
+  }
+
+  /* ---- master layout application (req 1,2,3,5,7,8) ---- */
+  function applyCalLayout(){
+    var role=window.currentRole;
+    /* req 1 + 8: Sales hidden for every role */
+    ['nav-label-sales','nav-sales-btn','sales-sub'].forEach(function(id){ var e=document.getElementById(id); if(e) e.style.display='none'; });
+
+    /* req 2 + 3: Onboarding placement & admin phase-based nav */
+    var onbBtn=document.getElementById('nav-onboarding-btn');
+    if(onbBtn){
+      if(role==='agency'||role==='test'){
+        setNavLabel(onbBtn,'Onboarding'); onbBtn.setAttribute('onclick',"nav('onboarding')"); onbBtn.style.display='';
+        var cp=document.querySelector(".nav-btn[onclick=\"nav('client-projects')\"]");
+        if(cp && cp.nextSibling!==onbBtn){ cp.parentNode.insertBefore(onbBtn,cp.nextSibling); }
+      } else if(role==='admin'){
+        var home=document.querySelector(".nav-btn[onclick=\"nav('home')\"]");
+        if(home && home.nextSibling!==onbBtn){ home.parentNode.insertBefore(onbBtn,home.nextSibling); }
+        if(calOnbComplete()){ setNavLabel(onbBtn,'Maintenance'); onbBtn.setAttribute('onclick',"nav('maintenance')"); }
+        else { setNavLabel(onbBtn,'Onboarding'); onbBtn.setAttribute('onclick',"nav('onboarding')"); }
+        onbBtn.style.display='';
+      } else {
+        onbBtn.style.display='none';
+      }
+    }
+
+    /* req 7: admin home quick-action card switches Onboarding <-> Maintenance */
+    var cta=document.getElementById('admin-onb-cta');
+    if(cta){
+      var done=calOnbComplete();
+      cta.setAttribute('onclick',done?"nav('maintenance')":"nav('onboarding')");
+      var t=cta.querySelector('.admin-cta-title'); var s=cta.querySelector('.admin-cta-sub');
+      if(t) t.textContent=done?'Maintenance':'Onboarding';
+      if(s) s.textContent=done?'See what CAL is doing':'Track your setup';
+    }
+
+    /* req 5: Google Drive card visible for agency + admin (+ test) */
+    var gd=document.getElementById('files-gdrive-card');
+    if(gd) gd.style.display=(role==='agency'||role==='admin'||role==='test')?'':'none';
+
+    /* req 4: apply saved layout prefs */
+    applyLayoutPrefs();
+  }
+  window.applyCalLayout=applyCalLayout;
+
+  /* ---- hook into nav / launch / role setup so it stays applied ---- */
+  var _nav=window.nav;
+  window.nav=function(s){
+    var r=_nav?_nav(s):undefined;
+    try{ applyCalLayout(); }catch(e){}
+    if(window.currentScreen==='settings'){ try{ renderLayoutPrefs(); }catch(e){} }
+    return r;
+  };
+  var _launch=window.launchApp;
+  window.launchApp=function(){
+    if(_launch) _launch();
+    setTimeout(function(){ try{ applyCalLayout(); renderLayoutPrefs(); }catch(e){} },25);
+  };
+  if(window.setupRoleUI){
+    var _setup=window.setupRoleUI;
+    window.setupRoleUI=function(){ var r=_setup.apply(this,arguments); try{ applyCalLayout(); renderLayoutPrefs(); }catch(e){} return r; };
+  }
+  window.addEventListener('storage',function(e){
+    if(e && e.key && e.key.indexOf('cal-onboarding-')===0){ try{ applyCalLayout(); }catch(e2){} }
+  });
+  document.addEventListener('DOMContentLoaded',function(){ setTimeout(function(){ try{ applyCalLayout(); }catch(e){} },40); });
+  setTimeout(function(){ try{ applyCalLayout(); }catch(e){} },60);
 })();
 </script>
 
