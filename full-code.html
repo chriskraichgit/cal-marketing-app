@@ -1430,6 +1430,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="card card-pad admin-cta" onclick="openAiPanel()"><div class="admin-cta-ico" style="background:var(--ink)"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><div><p class="admin-cta-title">Ask CAL AI</p><p class="admin-cta-sub">Get instant answers</p></div></button>
     </div>
 
+    <div id="gbp-insights-widget" style="margin-top:14px"></div>
+
     <div id="gbp-reviews-widget" style="margin-top:14px"></div>
 
     <div class="card card-pad" style="margin-top:18px">
@@ -5812,6 +5814,52 @@ function loadGBPLocations(company){
     .catch(function(err){
       var statusEl=document.getElementById('gbp-location-status');
       if(statusEl) statusEl.textContent='Could not load GBP data';
+    });
+}
+function loadGBPInsightsWidget(containerId){
+  if(window.currentRole!=='admin'&&window.currentRole!=='agency') return;
+  var container=document.getElementById(containerId);
+  if(!container) return;
+  var company=window.currentCompanyId||'default';
+  container.innerHTML='<div class="card card-pad">'
+    +'<div class="card-head"><span class="card-title">GBP Performance <span style="font-size:10px;font-weight:700;color:var(--muted);margin-left:6px">LAST 30 DAYS</span></span>'
+    +'<button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="loadGBPInsightsWidget(\''+containerId+'\')">&#8635; Refresh</button></div>'
+    +'<div id="gbp-insights-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">'
+    +'<div style="text-align:center;padding:14px 8px;background:var(--surface);border-radius:10px"><div style="font-size:22px;font-weight:900;color:var(--ink)" id="gbp-kpi-calls">\u2014</div><div style="font-size:10px;font-weight:800;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em">\uD83D\uDCDE Calls</div></div>'
+    +'<div style="text-align:center;padding:14px 8px;background:var(--surface);border-radius:10px"><div style="font-size:22px;font-weight:900;color:var(--ink)" id="gbp-kpi-clicks">\u2014</div><div style="font-size:10px;font-weight:800;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em">\uD83C\uDF10 Website Clicks</div></div>'
+    +'<div style="text-align:center;padding:14px 8px;background:var(--surface);border-radius:10px"><div style="font-size:22px;font-weight:900;color:var(--ink)" id="gbp-kpi-directions">\u2014</div><div style="font-size:10px;font-weight:800;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em">\uD83D\uDCCD Directions</div></div>'
+    +'<div style="text-align:center;padding:14px 8px;background:var(--surface);border-radius:10px"><div style="font-size:22px;font-weight:900;color:var(--ink)" id="gbp-kpi-impressions">\u2014</div><div style="font-size:10px;font-weight:800;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em">\uD83D\uDC41 Impressions</div></div>'
+    +'</div></div>';
+  fetch('/api/gbp/locations?'+companyParam())
+    .then(function(r){ return r.json(); })
+    .then(function(data){
+      var locations=data.locations||data.accounts||[];
+      if(!locations.length){
+        container.innerHTML='<div class="card card-pad"><p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;padding:20px">No GBP location connected. <a href="#" onclick="event.preventDefault();nav(\'settings\')" style="color:var(--blue);font-weight:800">Connect in Settings \u2192</a></p></div>';
+        return;
+      }
+      var locRaw=locations[0].name||'';
+      var m=locRaw.match(/locations\/\d+/);
+      var locName=m?m[0]:locRaw;
+      return fetch('/api/gbp/insights?company='+encodeURIComponent(company)+'&location='+encodeURIComponent(locName));
+    })
+    .then(function(r){ if(r) return r.json(); })
+    .then(function(d){
+      if(!d) return;
+      if(d.error){
+        var kpis=document.getElementById('gbp-insights-kpis');
+        if(kpis) kpis.innerHTML='<p style="font-size:12px;color:var(--muted);font-weight:600;grid-column:1/-1;text-align:center;padding:16px">'+(d.error==='not_connected'?'Connect Google to see performance data.':'GBP data unavailable \u2014 location may still be pending verification.')+'</p>';
+        return;
+      }
+      function fmt(n){ return n>=1000?(n/1000).toFixed(1)+'k':String(n); }
+      var c=document.getElementById('gbp-kpi-calls');       if(c) c.textContent=fmt(d.calls||0);
+      var w=document.getElementById('gbp-kpi-clicks');      if(w) w.textContent=fmt(d.websiteClicks||0);
+      var dr=document.getElementById('gbp-kpi-directions'); if(dr) dr.textContent=fmt(d.directionRequests||0);
+      var im=document.getElementById('gbp-kpi-impressions');if(im) im.textContent=fmt(d.impressions||0);
+    })
+    .catch(function(){
+      var kpis=document.getElementById('gbp-insights-kpis');
+      if(kpis) kpis.innerHTML='<p style="font-size:12px;color:var(--muted);font-weight:600;grid-column:1/-1;text-align:center;padding:16px">Could not load GBP performance data.</p>';
     });
 }
 function loadGBPReviewsWidget(containerId){
@@ -10338,6 +10386,7 @@ function healthBadge(score){
     var fv=document.getElementById('home-full-view');
     if(fv) fv.style.display=admin?'none':'block';
     if(av) av.style.display=admin?'block':'none';
+    if(admin && typeof loadGBPInsightsWidget==='function') loadGBPInsightsWidget('gbp-insights-widget');
     if(admin && typeof loadGBPReviewsWidget==='function') loadGBPReviewsWidget('gbp-reviews-widget');
   };
 
