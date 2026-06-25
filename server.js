@@ -596,9 +596,11 @@ async function handleAuthGoogleCallback(res, qs) {
     const email = (info.data.email || '').toLowerCase();
     const name = info.data.name || '';
     const picture = info.data.picture || '';
+    const payload = JSON.stringify({ type: 'google-signin', success: true, email, name, picture });
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(`<!DOCTYPE html><html><body><script>
-      window.opener && window.opener.postMessage(${JSON.stringify({ type: 'google-signin', success: true, email, name, picture })}, '*');
+      try { sessionStorage.setItem('google-signin-result', ${JSON.stringify(payload)}); } catch(e) {}
+      window.opener && window.opener.postMessage(${payload}, '*');
       window.close();
     </script><p style="font-family:sans-serif;padding:20px">Signed in! You can close this window.</p></body></html>`);
   } catch (e) {
