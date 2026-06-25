@@ -8481,7 +8481,10 @@ function healthBadge(score){
     if(window.currentScreen==='roi' && typeof gateRoi==='function') try{ gateRoi(); }catch(e){}
     if(window.currentScreen==='revenue' && typeof gateRevenue==='function') try{ gateRevenue(); }catch(e){}
     if(window.currentScreen==='campaigns' && typeof gateCampaigns==='function') try{ gateCampaigns(); }catch(e){}
-    if(window.currentScreen==='onboarding' && typeof renderOnboarding==='function') try{ renderOnboarding(); }catch(e){}
+    if(window.currentScreen==='onboarding'){
+      if(window.currentRole==='admin' && typeof renderOnboardingScreen==='function') try{ renderOnboardingScreen(); }catch(e){}
+      else if(typeof renderOnboarding==='function') try{ renderOnboarding(); }catch(e){}
+    }
   };
 
   window.switchLoginTab=function(tab){
@@ -9688,6 +9691,28 @@ function healthBadge(score){
     st.steps[id]=Object.assign({done:false,note:''},cur,{note:val});
     onbSave(st);
   };
+  window.onbDeleteStep=function(stepId){
+    var st=onbLoad();
+    if(!st.deletedSteps) st.deletedSteps=[];
+    if(st.deletedSteps.indexOf(stepId)===-1) st.deletedSteps.push(stepId);
+    onbSave(st); renderOnboardingScreen();
+  };
+  window.onbDeleteCustomStep=function(stepId){
+    var st=onbLoad();
+    if(!st.customSteps) return;
+    st.customSteps=st.customSteps.filter(function(s){ return s.id!==stepId; });
+    if(st.steps) delete st.steps[stepId];
+    onbSave(st); renderOnboardingScreen();
+  };
+  window.onbAddCustomStep=function(){
+    var inp=document.getElementById('onb-add-step-input');
+    var label=inp?(inp.value||'').trim():'';
+    if(!label) return;
+    var st=onbLoad();
+    if(!st.customSteps) st.customSteps=[];
+    st.customSteps.push({id:'c-'+Date.now(),label:label});
+    onbSave(st); renderOnboardingScreen();
+  };
 
   /* ---- Home: onboarding timeline (req 1) ---- */
   function renderOnbHome(){
@@ -9802,8 +9827,22 @@ function healthBadge(score){
   }
   function renderOnboardingScreen(){
     var el=document.getElementById('s-onboarding'); if(!el) return;
-    var st=onbSyncCompletion(); var p=onbProgress(st);
+    var st=onbSyncCompletion();
     var canEdit=onbCanEdit();
+    var canModify=(window.currentRole==='admin');
+    var deletedSteps=st.deletedSteps||[];
+    var customSteps=st.customSteps||[];
+
+    // Effective journey = template minus deleted
+    var effJourney=ONB_JOURNEY.filter(function(s){ return deletedSteps.indexOf(s.id)===-1; });
+    var effCore=effJourney.filter(function(s){ return s.phase!=='maintenance'; });
+    var coreDone=effCore.filter(function(s){ return onbStep(st,s.id).done; }).length;
+    var customDone=customSteps.filter(function(s){ return onbStep(st,s.id).done; }).length;
+    var totalSteps=effCore.length+customSteps.length;
+    var totalDone=coreDone+customDone;
+    var pct=totalSteps?Math.round(totalDone/totalSteps*100):0;
+    var p={done:totalDone,total:totalSteps,pct:pct};
+
     if(st.completed && !canEdit){ el.innerHTML=renderOnbMaintenanceTab(st); return; }
     var phases=[
       {id:'onboarding',name:'Onboarding',sub:'We learn your business and build your plan.'},
@@ -9811,7 +9850,7 @@ function healthBadge(score){
       {id:'maintenance',name:'Maintenance',sub:'Ongoing growth, optimization, and reporting.'}
     ];
     function phaseDone(pid){
-      var steps=ONB_JOURNEY.filter(function(s){ return s.phase===pid && pid!=='maintenance'; });
+      var steps=effJourney.filter(function(s){ return s.phase===pid && pid!=='maintenance'; });
       return steps.length>0 && steps.every(function(s){ return onbStep(st,s.id).done; });
     }
     var curPhase=st.completed?'maintenance':(!phaseDone('onboarding')?'onboarding':'setup');
@@ -9823,8 +9862,11 @@ function healthBadge(score){
       var status=ph.id==='maintenance'?(st.completed?'current':'upcoming'):(phaseDone(ph.id)?'done':(curPhase===ph.id?'current':'upcoming'));
       return '<div class="onb-phase-chip '+status+'"><span class="onb-phase-dot"></span><div><p class="onb-phase-name">'+ph.name+'</p><p class="onb-phase-status">'+(status==='done'?'Complete':status==='current'?'In progress':'Up next')+'</p></div></div>';
     }).join('')+'</div>';
+
+    var _xBtn='style="flex-shrink:0;width:20px;height:20px;border-radius:5px;border:0;background:rgba(217,45,32,.09);color:#d92d20;font-size:13px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1"';
+
     var body=phases.map(function(ph){
-      var steps=ONB_JOURNEY.filter(function(s){ return s.phase===ph.id; });
+      var steps=effJourney.filter(function(s){ return s.phase===ph.id; });
       var ongoing=(ph.id==='maintenance');
       var editable=canEdit && !ongoing;
       var stepHtml=steps.map(function(s){
@@ -9840,11 +9882,31 @@ function healthBadge(score){
           : (editable
             ? '<textarea class="onb-note-input" placeholder="Add a note for your client..." oninput="onbSaveNote(\''+s.id+'\',this.value)">'+esc(ds.note||'')+'</textarea>'
             : (ds.note?'<p class="onb-tl-note">Note from CAL: '+esc(ds.note)+'</p>':''));
-        return '<div class="onb-step'+(ds.done?' done':'')+'">'+check+'<div class="onb-step-body"><div class="onb-step-head"><p class="onb-step-title">'+esc(s.title)+'</p>'+owner+'</div><p class="onb-step-desc">'+esc(s.desc)+'</p>'+note+'</div></div>';
+        var delHtml=canModify && !ongoing?'<button '+_xBtn+' onclick="onbDeleteStep(\''+s.id+'\')" title="Remove step">\u00d7</button>':'';
+        return '<div class="onb-step'+(ds.done?' done':'')+'">'+check+'<div class="onb-step-body"><div class="onb-step-head"><p class="onb-step-title">'+esc(s.title)+'</p>'+owner+delHtml+'</div><p class="onb-step-desc">'+esc(s.desc)+'</p>'+note+'</div></div>';
       }).join('');
       return '<div class="onb-phase-block"><div class="onb-phase-block-head"><h3>'+ph.name+'</h3><p>'+ph.sub+'</p></div>'+stepHtml+'</div>';
     }).join('');
-    el.innerHTML=header+prog+chips+body;
+
+    var customSection='';
+    if(canModify){
+      var customHtml=customSteps.map(function(s){
+        var ds=onbStep(st,s.id);
+        return '<div class="onb-step'+(ds.done?' done':'')+'"><span class="onb-check-btn'+(ds.done?' done':'')+'">'+(ds.done?'\u2713':'')+'</span>'
+          +'<div class="onb-step-body"><div class="onb-step-head"><p class="onb-step-title">'+esc(s.label)+'</p>'
+          +'<span class="onb-owner cal" style="background:rgba(0,0,0,.07);color:var(--muted)">CUSTOM</span>'
+          +'<button '+_xBtn+' onclick="onbDeleteCustomStep(\''+s.id+'\')" title="Remove">\u00d7</button>'
+          +'</div></div></div>';
+      }).join('');
+      var addRow='<div style="display:flex;gap:8px;align-items:center;padding:14px 0 2px">'
+        +'<input id="onb-add-step-input" placeholder="Add a custom step\u2026" style="flex:1;height:36px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:13px;font-weight:600;font-family:inherit;color:var(--ink);background:var(--surface)" onkeydown="if(event.key===\'Enter\')onbAddCustomStep()">'
+        +'<button onclick="onbAddCustomStep()" style="height:36px;padding:0 14px;border:none;border-radius:8px;background:var(--gold,#e5a100);color:#000;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;flex-shrink:0">+ Add</button>'
+        +'</div>';
+      customSection='<div class="onb-phase-block"><div class="onb-phase-block-head"><h3>Custom Steps</h3><p>Additional steps specific to your account.</p></div>'
+        +customHtml+addRow+'</div>';
+    }
+
+    el.innerHTML=header+prog+chips+body+customSection;
   }
 
   /* ---- Milestone banners (req 4) ---- */
@@ -10875,6 +10937,10 @@ var OB_STEPS=[
   {id:'review',label:'Request First Review'}
 ];
 function renderOnboarding(){
+  if(window.currentRole==='admin'){
+    if(typeof renderOnboardingScreen==='function') try{ renderOnboardingScreen(); }catch(e){}
+    return;
+  }
   var host=document.getElementById('s-onboarding');
   if(!host) return;
   var board=document.getElementById('ob-board');
