@@ -494,6 +494,7 @@ async function handleGoogleConnect(res) {
       'https://www.googleapis.com/auth/business.manage',
       'https://www.googleapis.com/auth/webmasters.readonly',
       'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/analytics.readonly',
     ],
   });
   jsonResponse(res, 200, { authUrl });
@@ -742,6 +743,61 @@ async function handleCalendarEvents(res, qs) {
   } catch (e) { jsonResponse(res, 200, { error: e.message, events: [] }); }
 }
 
+// ---- GA4 ----
+async function handleGA4Properties(res) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', properties: [] }); return; }
+  try {
+    const admin = google.analyticsadmin({ version: 'v1beta', auth: oauth2 });
+    const r = await admin.properties.list({ filter: 'parent:accounts/-' });
+    const properties = (r.data.properties || []).map(p => ({
+      id: p.name.replace('properties/', ''),
+      name: p.displayName,
+      timezone: p.timeZone,
+      currency: p.currencyCode,
+    }));
+    jsonResponse(res, 200, { properties });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, properties: [] }); }
+}
+
+async function handleGA4Report(req, res, qs) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', rows: [] }); return; }
+  const propertyId = qs.propertyId;
+  if (!propertyId) { jsonResponse(res, 400, { error: 'MISSING_PROPERTY_ID' }); return; }
+  let body = {};
+  if (req.method === 'POST') {
+    try { const raw = await readRequestBody(req, 32 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) {}
+  }
+  try {
+    const data = google.analyticsdata({ version: 'v1beta', auth: oauth2 });
+    const r = await data.properties.runReport({
+      property: `properties/${propertyId}`,
+      requestBody: {
+        dateRanges: body.dateRanges || [{ startDate: '28daysAgo', endDate: 'today' }],
+        metrics: body.metrics || [
+          { name: 'sessions' },
+          { name: 'activeUsers' },
+          { name: 'newUsers' },
+          { name: 'bounceRate' },
+          { name: 'averageSessionDuration' },
+          { name: 'conversions' },
+        ],
+        dimensions: body.dimensions || [{ name: 'date' }],
+        orderBys: body.orderBys || [{ dimension: { dimensionName: 'date' } }],
+        limit: body.limit || 30,
+      },
+    });
+    jsonResponse(res, 200, {
+      rows: r.data.rows || [],
+      totals: r.data.totals || [],
+      rowCount: r.data.rowCount || 0,
+      dimensionHeaders: r.data.dimensionHeaders || [],
+      metricHeaders: r.data.metricHeaders || [],
+    });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, rows: [] }); }
+}
+
 // ============ STRIPE ============
 async function stripeApiRequest(method, path, body) {
   const key = (process.env.STRIPE_SECRET_KEY || '').replace(/[^\x20-\x7E]/g, '').trim();
@@ -922,6 +978,8 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/gbp/reply' && req.method === 'POST') { await handleGBPReply(req, res); return; }
   if (urlPath === '/api/gsc/sites' && req.method === 'GET') { await handleGSCSites(res); return; }
   if (urlPath === '/api/gsc/analytics') { await handleGSCAnalytics(req, res, qs); return; }
+  if (urlPath === '/api/ga4/properties' && req.method === 'GET') { await handleGA4Properties(res); return; }
+  if (urlPath === '/api/ga4/report') { await handleGA4Report(req, res, qs); return; }
   if (urlPath === '/api/calendar/events' && req.method === 'GET') { await handleCalendarEvents(res, qs); return; }
   if (urlPath === '/api/stripe/connect' && req.method === 'POST') { await handleStripeConnect(req, res); return; }
   if (urlPath === '/api/stripe/status' && req.method === 'GET') { await handleStripeStatus(res); return; }
