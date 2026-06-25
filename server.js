@@ -709,6 +709,20 @@ function loadStripeConnect() { try { if (fs.existsSync(STRIPE_TOKEN_FILE)) retur
 function saveStripeConnect(data) { fs.writeFileSync(STRIPE_TOKEN_FILE, JSON.stringify(data, null, 2)); }
 function deleteStripeConnect() { try { if (fs.existsSync(STRIPE_TOKEN_FILE)) fs.unlinkSync(STRIPE_TOKEN_FILE); } catch (e) {} }
 
+// Auto-seed Stripe config on startup if key is set but file is missing
+if (process.env.STRIPE_SECRET_KEY && !fs.existsSync(STRIPE_TOKEN_FILE)) {
+  stripeApiRequest('GET', '/v1/account', null).then(function(r) {
+    if (r.status === 200 && r.body && r.body.id) {
+      saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
+      console.log('[Stripe] Auto-seeded config for account', r.body.id);
+    } else {
+      console.warn('[Stripe] Auto-seed: unexpected response status', r.status);
+    }
+  }).catch(function(e) {
+    console.error('[Stripe] Auto-seed failed:', e.message);
+  });
+}
+
 async function handleStripeConnect(req, res) {
   // For now: validate the secret key works and store a connected flag
   const key = process.env.STRIPE_SECRET_KEY;
