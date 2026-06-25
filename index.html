@@ -991,13 +991,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           </button>
         </div>
       </div>
-      <button class="nav-group-btn" id="sb-ob-btn" onclick="toggleNavGroup('sb-ob-sub',this)" style="margin-top:6px">
-        <span class="nav-group-inner">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
-        </span>
-        <svg class="nav-chevron" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>
-      </button>
-      <div class="nav-sub-group" id="sb-ob-sub"></div>
     </div>
 
     <!-- ═══ AGENCY NAV (shown for agency role) ═══ -->
@@ -1037,7 +1030,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </button>
 
       <div class="nav-label">Operations</div>
-      <button class="nav-btn" onclick="nav('onboarding')">
+      <button class="nav-btn" onclick="window.obSelectedAcctKey=null;nav('onboarding')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
       </button>
       <button class="nav-btn" onclick="nav('agency-todos')">
@@ -1087,7 +1080,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </button>
 
       <div class="nav-label">Client Tools</div>
-      <button class="nav-btn" id="nav-admin-onboarding-btn" onclick="nav('onboarding')">
+      <button class="nav-btn" id="nav-admin-onboarding-btn" onclick="window.obSelectedAcctKey=null;nav('onboarding')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg><span id="nav-admin-onboarding-label">Onboarding</span>
       </button>
       <button class="nav-btn" onclick="nav('todos')">
@@ -1183,7 +1176,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         </button>
       </div>
       <div class="nav-label">Operations</div>
-      <button class="nav-btn" id="nav-onboarding-btn" onclick="nav('onboarding')">
+      <button class="nav-btn" id="nav-onboarding-btn" onclick="window.obSelectedAcctKey=null;nav('onboarding')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
       </button>
       <button class="nav-btn" onclick="nav('client-projects')">
@@ -6097,26 +6090,6 @@ function buildSidebarAccounts(){
       acctsSub.appendChild(btn);
     });
   }
-  // Onboarding sub-group
-  var obSub=document.getElementById('sb-ob-sub');
-  if(obSub){
-    obSub.innerHTML='';
-    var obAccts=accts.filter(function(a){ return a.onboarding; });
-    if(!obAccts.length){
-      var empty=document.createElement('div');
-      empty.style.cssText='padding:6px 14px 6px 28px;font-size:11px;color:rgba(255,255,255,.3);font-weight:600';
-      empty.textContent='No accounts in onboarding';
-      obSub.appendChild(empty);
-    } else {
-      obAccts.forEach(function(a){
-        var btn=document.createElement('button');
-        btn.className='nav-btn';
-        btn.innerHTML='<span class="sb-acct-av" style="background:'+a.color+'">'+a.initials+'</span>'+a.name;
-        btn.onclick=(function(id){ return function(){ setCurrentAcct(id); nav('onboarding'); closeSidebar(); }; })(a.id);
-        obSub.appendChild(btn);
-      });
-    }
-  }
   // Sync current account display at top
   updateSbCurrentAcct((accts.find(function(a){ return a.id===currentAcctId; })||accts[0]));
 }
@@ -8508,6 +8481,7 @@ function healthBadge(score){
     if(window.currentScreen==='roi' && typeof gateRoi==='function') try{ gateRoi(); }catch(e){}
     if(window.currentScreen==='revenue' && typeof gateRevenue==='function') try{ gateRevenue(); }catch(e){}
     if(window.currentScreen==='campaigns' && typeof gateCampaigns==='function') try{ gateCampaigns(); }catch(e){}
+    if(window.currentScreen==='onboarding' && typeof renderOnboarding==='function') try{ renderOnboarding(); }catch(e){}
   };
 
   window.switchLoginTab=function(tab){
@@ -10286,8 +10260,9 @@ function healthBadge(score){
   window.atClearDone=function(){ var st=atLoad(); st.items=st.items.filter(function(x){return !x.done;}); atSave(st); renderAgencyTodos(); };
   window.atKeydown=function(e){ if(e.key==='Enter') window.atAdd(); };
   function atAssignSelect(id,cur){
+    var S='style="flex-shrink:0;height:30px;border:1px solid var(--border,#e2e8f0);border-radius:8px;padding:0 8px;font-size:12px;font-weight:800;font-family:inherit;color:var(--ink,#10243f);background:var(--surface,#fff);cursor:pointer;max-width:130px"';
     var opts='<option value=""'+(!cur?' selected':'')+'>Unassigned</option>'+CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(cur===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('');
-    return '<select class="cp-assign" onchange="atSetAssignee(\''+id+'\',this.value)">'+opts+'</select>';
+    return '<select '+S+' onchange="atSetAssignee(\''+id+'\',this.value)">'+opts+'</select>';
   }
   function renderAgencyTodos(){
     var el=document.getElementById('s-agency-todos'); if(!el) return;
@@ -10296,26 +10271,58 @@ function healthBadge(score){
     var items=st.items.filter(match);
     var open=items.filter(function(t){return !t.done;});
     var done=items.filter(function(t){return t.done;});
-    function openCount(who){ return st.items.filter(function(t){ return !t.done && (who==='all'||t.assignee===who); }).length; }
-    var chips='<div class="cp-filter">'
-      +'<button class="cp-chip'+(atFilter==='all'?' active':'')+'" onclick="atSetFilter(\'all\')">All<span class="cp-chip-n">'+openCount('all')+'</span></button>'
-      +CP_TEAM.map(function(m){ return '<button class="cp-chip'+(atFilter===m.id?' active':'')+'" onclick="atSetFilter(\''+m.id+'\')"><span class="cp-ava sm" style="background:'+m.color+'">'+m.initials+'</span>'+m.name+'<span class="cp-chip-n">'+openCount(m.id)+'</span></button>'; }).join('')
+    function openCount(who){ return st.items.filter(function(t){ return !t.done&&(who==='all'||t.assignee===who); }).length; }
+
+    // ── chips ─────────────────────────────────────────────────────────
+    var chipBase='display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 13px;border-radius:999px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;transition:all .14s;';
+    var chipOn =chipBase+'background:var(--ink,#10243f);border:1.5px solid var(--ink,#10243f);color:#fff;';
+    var chipOff=chipBase+'background:var(--surface,#fff);border:1.5px solid var(--border,#e2e8f0);color:var(--ink,#10243f);';
+    var badgeOn ='display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:var(--gold,#e5a100);color:#000;font-size:11px;font-weight:900;';
+    var badgeOff='display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:rgba(0,0,0,.09);color:inherit;font-size:11px;font-weight:900;';
+    var avaS='display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;font-size:9px;font-weight:900;flex-shrink:0;color:#000;';
+    var allActive=(atFilter==='all');
+    var chips='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'
+      +'<button style="'+( allActive?chipOn:chipOff)+'" onclick="atSetFilter(\'all\')">All <span style="'+(allActive?badgeOn:badgeOff)+'">'+openCount('all')+'</span></button>'
+      +CP_TEAM.map(function(m){
+        var on=(atFilter===m.id);
+        return '<button style="'+(on?chipOn:chipOff)+'" onclick="atSetFilter(\''+m.id+'\')">'
+          +'<span style="'+avaS+'background:'+m.color+'">'+m.initials+'</span>'
+          +m.name+' <span style="'+(on?badgeOn:badgeOff)+'">'+openCount(m.id)+'</span>'
+          +'</button>';
+      }).join('')
       +'</div>';
+
+    // ── add row ──────────────────────────────────────────────────────
+    var inputS='style="flex:1;height:40px;border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:0 14px;font-size:13px;font-weight:600;font-family:inherit;color:var(--ink,#10243f);background:var(--surface,#fff)"';
+    var selS='style="height:40px;border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:0 10px;font-size:13px;font-weight:700;font-family:inherit;color:var(--ink,#10243f);background:var(--surface,#fff);cursor:pointer"';
+    var addBtnS='style="height:40px;padding:0 18px;border:none;border-radius:10px;background:var(--gold,#e5a100);color:#000;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;flex-shrink:0"';
+    var newAssign='<select id="at-assign" '+selS+'><option value=""'+(atFilter==='all'?' selected':'')+'>Unassigned</option>'+CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(atFilter===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('')+'</select>';
+    var addRow='<div style="display:flex;gap:8px;align-items:center;margin-bottom:18px"><input id="at-input" '+inputS+' placeholder="Add a to-do\u2026" onkeydown="atKeydown(event)">'+newAssign+'<button '+addBtnS+' onclick="atAdd()">+ Add</button></div>';
+
+    // ── row renderer ──────────────────────────────────────────────────
+    var rowWrap='display:flex;align-items:center;gap:10px;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:12px;padding:11px 14px;margin-bottom:8px;';
+    var chkBase='flex-shrink:0;width:22px;height:22px;border-radius:6px;border:2px solid var(--border,#e2e8f0);background:transparent;color:#fff;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;';
+    var chkDone='flex-shrink:0;width:22px;height:22px;border-radius:6px;border:2px solid var(--green,#22c55e);background:var(--green,#22c55e);color:#fff;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;';
+    var xBtnS='style="flex-shrink:0;width:26px;height:26px;border-radius:6px;border:0;background:transparent;color:var(--muted,#94a3b8);font-size:18px;line-height:1;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"';
     function row(t){
-      return '<div class="at-item'+(t.done?' done':'')+'">'
-        +'<button class="at-check'+(t.done?' done':'')+'" onclick="atToggle(\''+t.id+'\')" aria-label="Toggle">'+(t.done?'\u2713':'')+'</button>'
-        +'<span class="at-text">'+esc(t.text)+'</span>'
+      var isDone=t.done;
+      return '<div style="'+rowWrap+(isDone?'opacity:.72;':'')+'">'
+        +'<button style="'+(isDone?chkDone:chkBase)+'" onclick="atToggle(\''+t.id+'\')" aria-label="Toggle">'+(isDone?'\u2713':'')+'</button>'
+        +'<span style="flex:1;font-size:14px;font-weight:700;color:var(--ink,#10243f);'+(isDone?'text-decoration:line-through;color:var(--muted,#94a3b8);':'')+'">'+esc(t.text)+'</span>'
         +atAssignSelect(t.id,t.assignee)
-        +'<button class="at-x" onclick="atDelete(\''+t.id+'\')" aria-label="Remove">\u00d7</button>'
+        +'<button '+xBtnS+' onclick="atDelete(\''+t.id+'\')" aria-label="Remove">\u00d7</button>'
       +'</div>';
     }
-    var newAssign='<select id="at-assign" class="cp-assign"><option value=""'+(atFilter==='all'?' selected':'')+'>Unassigned</option>'+CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(atFilter===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('')+'</select>';
+
+    var emptyState='<div style="padding:32px 20px;text-align:center;color:var(--muted,#94a3b8);font-weight:700;font-size:13px">Nothing to do \u2014 you\u2019re all caught up \u2705</div>';
+    var clearbtn=done.length?'<button class="btn-view" onclick="atClearDone()" style="font-size:12px">Clear completed</button>':'';
+
     el.innerHTML=''
-      +'<div class="sec-head"><div><h2>My To-Dos</h2><p>Agency tasks \u2014 assign them to your team and filter by person.</p></div>'+(done.length?'<button class="btn-view" onclick="atClearDone()">Clear completed</button>':'')+'</div>'
+      +'<div class="sec-head" style="margin-bottom:16px"><div><h2>My To-Dos</h2><p>Agency tasks \u2014 assign them to your team and filter by person.</p></div>'+clearbtn+'</div>'
       +chips
-      +'<div class="at-add"><input id="at-input" class="cp-add-input" placeholder="Add a to-do..." onkeydown="atKeydown(event)">'+newAssign+'<button class="cp-add-btn solid" onclick="atAdd()">+ Add</button></div>'
-      +'<div class="at-list">'+(open.map(row).join('')||'<p class="cp-empty">Nothing to do \u2014 you\u2019re all caught up.</p>')+'</div>'
-      +(done.length?'<p class="admin-section-label">Completed</p><div class="at-list at-done-list">'+done.map(row).join('')+'</div>':'');
+      +addRow
+      +(open.map(row).join('')||emptyState)
+      +(done.length?'<p style="font-size:11px;font-weight:800;color:var(--muted,#94a3b8);letter-spacing:.07em;text-transform:uppercase;margin:20px 0 10px">Completed ('+done.length+')</p>'+done.map(row).join(''):'');
   }
 
   function injectAgencyToolsCSS(){
@@ -10364,7 +10371,11 @@ function healthBadge(score){
       +'.cp-userhead-name{font-size:16px;font-weight:900;color:var(--ink)}.cp-userhead-sub{font-size:12px;font-weight:700;color:var(--muted);margin-top:2px}'
       +'.cp-ugroup{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--soft);padding:12px 16px 14px;margin-bottom:12px}'
       +'.cp-ugroup-name{font-size:13px;font-weight:900;color:var(--ink);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}'
-      +'.sec-head .cp-newclient{margin-top:0}';
+      +'.sec-head .cp-newclient{margin-top:0}'
+      +'.ob-acct-step{display:flex;align-items:center;gap:13px;padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer;transition:opacity .15s}'
+      +'.ob-acct-step:last-child{border-bottom:none}'
+      +'.ob-acct-step.done{opacity:.7}'
+      +'.ob-acct-step:hover{opacity:.85}';
     document.head.appendChild(s);
   }
 
@@ -10375,6 +10386,8 @@ function healthBadge(score){
     if(window.currentScreen==='agency-todos') renderAgencyTodos();
     return r;
   };
+
+  window.obSelectedAcctKey=null;
 
   var _priorLaunchAgency=window.launchApp;
   window.launchApp=function(){
@@ -10762,44 +10775,84 @@ function switchSettingsTab(tab,btn){
 function renderSettingsTabContent(tab,pane){
   if(!pane||pane.dataset.loaded) return;
   pane.dataset.loaded='1';
-  var role=window.currentRole||'admin';
+  var W='style="max-width:580px;display:flex;flex-direction:column;gap:14px"';
   if(tab==='team'){
-    pane.innerHTML='<div class="sec-head" style="padding:0 0 12px 0"><h2 style="font-size:16px">Team & Access</h2><button class="btn-gold" onclick="openModal(\'team-invite-modal\')">+ Invite</button></div>'
-      +'<div class="card"><p style="font-size:13px;color:var(--muted);padding:12px 0">Team member list is managed on the <button class="link-btn" onclick="nav(\'team\')">Team screen</button>.</p></div>';
+    pane.innerHTML='<div '+W+'>'
+      +'<div class="sec-head" style="padding:0;margin-bottom:0"><div><h3 style="font-size:15px;font-weight:800">Team & Access</h3><p style="font-size:12px;color:var(--muted)">Invite team members and manage roles</p></div><button class="btn-gold" onclick="openModal(\'team-invite-modal\')">+ Invite</button></div>'
+      +'<div class="card card-pad"><p style="font-size:13px;color:var(--muted);font-weight:600">Full team management is on the <button class="link-btn" onclick="nav(\'team\')" style="font-weight:800;color:var(--blue)">Team screen</button>. Use the button above to send a quick invite.</p></div>'
+      +'</div>';
   } else if(tab==='agency-admin'){
-    pane.innerHTML='<div class="card"><p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Agency Admin Panel</p>'
-      +'<p style="font-size:12px;color:var(--muted);line-height:1.7">Manage agency-level settings, white-label domains, billing, and account overrides.</p>'
-      +'<button class="btn-ghost" style="margin-top:16px" onclick="nav(\'agency-admin\')">Open Agency Admin</button></div>';
+    pane.innerHTML='<div '+W+'>'
+      +'<div class="card card-pad" style="display:flex;align-items:center;gap:16px">'
+        +'<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#f59e0b);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>'
+        +'<div style="flex:1"><p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">Agency Admin Panel</p><p style="font-size:12px;color:var(--muted);font-weight:600;margin:3px 0 0">Manage accounts, billing overrides, and agency settings</p></div>'
+        +'<button class="btn-ghost" onclick="nav(\'agency-admin\')" style="flex-shrink:0">Open →</button>'
+      +'</div>'
+      +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:10px">'
+        +'<p style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Quick Actions</p>'
+        +'<button class="btn-ghost" style="text-align:left;justify-content:flex-start" onclick="nav(\'billing\')">💳  Billing & Subscriptions</button>'
+        +'<button class="btn-ghost" style="text-align:left;justify-content:flex-start" onclick="nav(\'team\')">👥  Team Management</button>'
+        +'<button class="btn-ghost" style="text-align:left;justify-content:flex-start" onclick="switchSettingsTab(\'whitelabel\',document.querySelector(\'[onclick*=whitelabel]\'))">🎨  White Label Settings</button>'
+      +'</div>'
+      +'</div>';
   } else if(tab==='permissions'){
-    pane.innerHTML='<div class="card"><p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Permissions</p>'
-      +'<p style="font-size:12px;color:var(--muted);line-height:1.7">Role-based access and account assignments are managed on the Permissions screen.</p>'
-      +'<button class="btn-ghost" style="margin-top:16px" onclick="nav(\'permissions\')">Open Permissions</button></div>';
+    pane.innerHTML='<div '+W+'>'
+      +'<div class="card card-pad" style="display:flex;align-items:center;gap:16px">'
+        +'<div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--blue),#3b82f6);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>'
+        +'<div style="flex:1"><p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">Permissions & Access</p><p style="font-size:12px;color:var(--muted);font-weight:600;margin:3px 0 0">Role-based access control for all accounts</p></div>'
+        +'<button class="btn-ghost" onclick="nav(\'permissions\')" style="flex-shrink:0">Open →</button>'
+      +'</div>'
+      +'<div class="card card-pad"><p style="font-size:13px;font-weight:600;color:var(--muted);line-height:1.7">Assign team members to client accounts, set Admin or Staff roles, and send portal invitations — all managed on the <button class="link-btn" onclick="nav(\'permissions\')" style="font-weight:800;color:var(--blue)">Permissions screen</button>.</p></div>'
+      +'</div>';
   } else if(tab==='whitelabel'){
-    pane.innerHTML='<div class="card" style="display:flex;flex-direction:column;gap:14px">'
-      +'<p style="font-size:13px;font-weight:800">White Label</p>'
-      +'<div class="form-field"><label class="form-label">Portal Domain</label><input class="input-std" placeholder="portal.youragency.com" value=""></div>'
-      +'<div class="form-field"><label class="form-label">Agency Name</label><input class="input-std" placeholder="Your Agency Name" value="CAL Marketing"></div>'
-      +'<div class="form-field"><label class="form-label">Primary Color</label><input class="input-std" type="color" value="#e5a100" style="height:40px"></div>'
-      +'<button class="btn-gold" style="align-self:flex-start" onclick="this.textContent=\'Saved!\'">Save Changes</button></div>';
+    pane.innerHTML='<div '+W+'>'
+      +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:14px">'
+        +'<div><p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">White Label</p><p style="font-size:12px;color:var(--muted);font-weight:600;margin:4px 0 0">Customize the portal for your brand</p></div>'
+        +'<div class="form-field"><label class="form-label">Portal Domain</label><input class="input-std" placeholder="portal.youragency.com"></div>'
+        +'<div class="form-field"><label class="form-label">Agency Name</label><input class="input-std" placeholder="Your Agency Name" value="CAL Marketing"></div>'
+        +'<div class="form-field"><label class="form-label">Primary Color</label><div style="display:flex;align-items:center;gap:10px"><input type="color" value="#e5a100" style="width:44px;height:44px;border:1px solid var(--border);border-radius:8px;padding:3px;cursor:pointer"><span style="font-size:13px;font-weight:700;color:var(--muted)">#e5a100</span></div></div>'
+        +'<button class="btn-gold" style="align-self:flex-start" onclick="this.textContent=\'Saved! \u2713\'">Save Changes</button>'
+      +'</div>'
+      +'</div>';
   } else if(tab==='help'){
-    pane.innerHTML='<div class="card" style="display:flex;flex-direction:column;gap:14px">'
-      +'<p style="font-size:13px;font-weight:800">Help & Support</p>'
-      +'<a class="btn-ghost" style="text-align:center" href="mailto:support@cal.marketing">Email Support</a>'
-      +'<a class="btn-ghost" style="text-align:center" href="https://cal.marketing" target="_blank">Visit Help Center</a></div>';
+    pane.innerHTML='<div '+W+'>'
+      +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:10px">'
+        +'<p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">Help & Support</p>'
+        +'<a href="mailto:support@cal.marketing" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none">'
+          +'<div style="width:36px;height:36px;border-radius:9px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>'
+          +'<div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Email Support</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">support@cal.marketing</p></div>'
+        +'</a>'
+        +'<a href="https://cal.marketing" target="_blank" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none">'
+          +'<div style="width:36px;height:36px;border-radius:9px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>'
+          +'<div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Help Center</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">cal.marketing</p></div>'
+        +'</a>'
+        +'<div onclick="nav(\'schedule\')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);cursor:pointer">'
+          +'<div style="width:36px;height:36px;border-radius:9px;background:#25D366;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>'
+          +'<div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Book a Strategy Call</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Schedule time with your account manager</p></div>'
+        +'</div>'
+      +'</div>'
+      +'</div>';
   } else if(tab==='profile'){
-    pane.innerHTML='<div class="card" style="display:flex;flex-direction:column;gap:14px">'
-      +'<p style="font-size:13px;font-weight:800">Your Profile</p>'
-      +'<div class="form-field"><label class="form-label">Full Name</label><input class="input-std" id="stab-pf-name" placeholder="Your Name"></div>'
-      +'<div class="form-field"><label class="form-label">Email</label><input class="input-std" id="stab-pf-email" type="email" placeholder="you@company.com"></div>'
-      +'<div class="form-field"><label class="form-label">Phone</label><input class="input-std" id="stab-pf-phone" type="tel" placeholder="+1 (555) 000-0000"></div>'
-      +'<button class="btn-gold" style="align-self:flex-start" onclick="this.textContent=\'Saved!\'">Save Profile</button></div>';
+    pane.innerHTML='<div '+W+'>'
+      +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:14px">'
+        +'<p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">Your Profile</p>'
+        +'<div class="form-field"><label class="form-label">Full Name</label><input class="input-std" id="stab-pf-name" placeholder="Your Name"></div>'
+        +'<div class="form-field"><label class="form-label">Email</label><input class="input-std" id="stab-pf-email" type="email" placeholder="you@company.com"></div>'
+        +'<div class="form-field"><label class="form-label">Phone</label><input class="input-std" id="stab-pf-phone" type="tel" placeholder="+1 (555) 000-0000"></div>'
+        +'<button class="btn-gold" style="align-self:flex-start" onclick="this.textContent=\'Saved! \u2713\'">Save Profile</button>'
+      +'</div>'
+      +'</div>';
   } else if(tab==='notifications'){
-    pane.innerHTML='<div class="card" style="display:flex;flex-direction:column;gap:12px">'
-      +'<p style="font-size:13px;font-weight:800">Notifications</p>'
-      +['New lead received','New review posted','Invoice paid','Campaign report ready','Weekly summary email'].map(function(label){
-        return '<label style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer">'
-          +'<input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)">'+label+'</label>';
-      }).join('')+'</div>';
+    pane.innerHTML='<div '+W+'>'
+      +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:12px">'
+        +'<p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">Notification Preferences</p>'
+        +['New lead received','New 5-star review posted','Invoice paid','Campaign report ready','Weekly performance digest'].map(function(label){
+          return '<label style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">'
+            +'<span style="font-size:13px;font-weight:700;color:var(--ink)">'+label+'</span>'
+            +'<input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold);flex-shrink:0"></label>';
+        }).join('')
+      +'</div>'
+      +'</div>';
   }
 }
 
@@ -10819,51 +10872,148 @@ var OB_STEPS=[
 function renderOnboarding(){
   var host=document.getElementById('s-onboarding');
   if(!host) return;
-  var secHead=host.querySelector('.sec-head');
-  var board=host.querySelector('#ob-board');
+  var board=document.getElementById('ob-board');
   if(!board){
     board=document.createElement('div');
     board.id='ob-board';
     host.appendChild(board);
   }
-  var weeks=_getObWeeks();
-  var allRows='';
-  weeks.forEach(function(wk){
-    var acctData=wk.accounts;
-    var cols=acctData.map(function(a){
-      var data=_getJSON('cal-onboarding-'+a.key,{steps:{}});
-      var steps=data.steps||{};
-      var done=OB_STEPS.filter(function(s){ return steps[s.id]; }).length;
-      var pct=Math.round(done/OB_STEPS.length*100);
-      var stepsHtml=OB_STEPS.map(function(s){
-        var checked=!!steps[s.id];
-        return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:'+(checked?'var(--muted)':'var(--text)')+';cursor:pointer;padding:3px 0;text-decoration:'+(checked?'line-through':'none')+'">'
-          +'<input type="checkbox" '+(checked?'checked':'')+' onchange="toggleObStep(\''+a.key+'\',\''+s.id+'\')" style="accent-color:var(--gold);width:14px;height:14px;flex-shrink:0">'+s.label+'</label>';
-      }).join('');
-      return '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;cursor:default">'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
-        +'<p style="font-size:13px;font-weight:800;margin:0">'+a.name+'</p>'
-        +'<span class="pill pill-'+(pct===100?'green':pct>0?'gold':'muted')+'">'+pct+'%</span>'
-        +'</div>'
-        +'<div style="background:var(--border);border-radius:4px;height:4px"><div style="background:var(--gold);height:4px;border-radius:4px;width:'+pct+'%;transition:width .3s"></div></div>'
-        +'<p style="font-size:11px;color:var(--muted);margin:0">'+a.plan+' · Added '+a.added+'</p>'
-        +'<div style="display:flex;flex-direction:column;gap:0">'+stepsHtml+'</div>'
-        +'<button class="btn-ghost" style="font-size:11px;margin-top:4px" onclick="openClientPortal(\''+a.key+'\')">Open Portal →</button>'
+
+  // ── Single-account view ─────────────────────────────────────────────
+  if(window.obSelectedAcctKey){
+    var selKey=window.obSelectedAcctKey;
+    // look up account info: try cal-account-meta first, then DEFAULT_ACCOUNTS
+    var _aInfo={name:selKey,plan:'',color:'#e5a100',initials:'?'};
+    try{
+      var _aMeta=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
+      if(_aMeta[selKey]){
+        var _am=_aMeta[selKey];
+        _aInfo.name=_am.name||_am.bizName||selKey;
+        _aInfo.plan=_am.plan||'';
+        _aInfo.color=_am.color||'#e5a100';
+        var _ini=_aInfo.name.split(' ').slice(0,2).map(function(w){ return w[0]?w[0].toUpperCase():''; }).join('');
+        _aInfo.initials=_ini||'?';
+      }
+    }catch(_e){}
+    if(_aInfo.name===selKey&&typeof DEFAULT_ACCOUNTS!=='undefined'){
+      var _da=DEFAULT_ACCOUNTS.find(function(a){ return a.id===selKey; });
+      if(_da){ _aInfo.name=_da.name; _aInfo.plan=_da.plan||''; _aInfo.color=_da.color||'#e5a100'; _aInfo.initials=_da.initials||'?'; }
+    }
+    var _obData=JSON.parse(localStorage.getItem('cal-onboarding-'+selKey)||'{"steps":{}}');
+    var _obChecks=_obData.steps||{};
+    var _deleted=_obData.deletedSteps||[];
+    var _custom=_obData.customSteps||[];
+    // Effective step list: template minus deleted + custom
+    var _effTemplate=OB_STEPS.filter(function(s){ return _deleted.indexOf(s.id)===-1; });
+    var _effAll=_effTemplate.concat(_custom.map(function(s){ return {id:s.id,label:s.label,_custom:true}; }));
+    var _obDone=_effAll.filter(function(s){ return _obChecks[s.id]; }).length;
+    var _obPct=_effAll.length?Math.round(_obDone/_effAll.length*100):0;
+
+    var _delBtnS='style="flex-shrink:0;width:22px;height:22px;border-radius:6px;border:0;background:rgba(217,45,32,.08);color:var(--red,#d92d20);font-size:14px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"';
+    var _stepsHtml=_effAll.map(function(s){
+      var chk=!!_obChecks[s.id];
+      var isCustom=!!s._custom;
+      var delFn=isCustom
+        ? 'deleteObCustomStep(\''+selKey+'\',\''+s.id+'\')'
+        : 'deleteObTemplateStep(\''+selKey+'\',\''+s.id+'\')';
+      return '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">'
+        +'<input type="checkbox" '+(chk?'checked':'')+' onchange="toggleObStep(\''+selKey+'\',\''+s.id+'\')" style="accent-color:var(--gold);width:16px;height:16px;flex-shrink:0;cursor:pointer">'
+        +'<span style="flex:1;font-size:13px;font-weight:700;color:'+(chk?'var(--muted)':'var(--ink)')+';text-decoration:'+(chk?'line-through':'none')+'">'+esc(s.label)+'</span>'
+        +(isCustom?'<span style="font-size:10px;font-weight:800;color:var(--muted);background:rgba(0,0,0,.06);border-radius:4px;padding:2px 6px">CUSTOM</span>':'')
+        +'<span class="pill pill-'+(chk?'green':'muted')+'">'+( chk?'Done':'Pending')+'</span>'
+        +'<button '+_delBtnS+' onclick="'+delFn+'" title="Remove step">\u00d7</button>'
         +'</div>';
     }).join('');
-    allRows+='<div style="margin-bottom:24px">'
-      +'<p style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:12px">'+wk.label+'</p>'
-      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">'+cols+'</div>'
+
+    // Add-step row
+    var _addRow='<div style="display:flex;gap:8px;align-items:center;padding:12px 0 4px">'
+      +'<input id="ob-add-step-input" placeholder="Add a custom step\u2026" style="flex:1;height:36px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:13px;font-weight:600;font-family:inherit;color:var(--ink);background:var(--surface)" onkeydown="if(event.key===\'Enter\')addObCustomStep(\''+selKey+'\')">'
+      +'<button onclick="addObCustomStep(\''+selKey+'\')" style="height:36px;padding:0 14px;border:none;border-radius:8px;background:var(--gold,#e5a100);color:#000;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;flex-shrink:0">+ Add</button>'
+      +'</div>';
+
+    board.innerHTML=''
+      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">'
+        +'<button class="btn-ghost" style="font-size:12px" onclick="window.obSelectedAcctKey=null;buildSidebarAccounts&&buildSidebarAccounts();renderOnboarding()">← All Accounts</button>'
+      +'</div>'
+      +'<div class="card" style="overflow:hidden">'
+        +'<div style="background:linear-gradient(135deg,var(--ink,#10243f),#1b3a6b);padding:20px 22px;display:flex;align-items:center;gap:16px">'
+          +'<div style="width:46px;height:46px;border-radius:12px;background:'+_aInfo.color+';display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:#000;flex-shrink:0">'+_aInfo.initials+'</div>'
+          +'<div style="flex:1">'
+            +'<p style="font-size:17px;font-weight:900;color:#fff;margin:0">'+_aInfo.name+'</p>'
+            +'<p style="font-size:12px;color:rgba(255,255,255,.65);font-weight:600;margin:3px 0 0">'+(_aInfo.plan?_aInfo.plan+' · ':'')+_obDone+' of '+_effAll.length+' steps complete</p>'
+          +'</div>'
+          +'<span style="font-family:Barlow Condensed,sans-serif;font-size:32px;font-weight:900;color:var(--gold)">'+_obPct+'%</span>'
+        +'</div>'
+        +'<div style="height:6px;background:rgba(0,0,0,.08)"><div style="height:6px;background:linear-gradient(90deg,var(--gold),var(--green));width:'+_obPct+'%;transition:width .4s"></div></div>'
+        +'<div style="padding:8px 22px 0;display:flex;flex-direction:column">'+_stepsHtml+'</div>'
+        +'<div style="padding:4px 22px 16px">'+_addRow+'</div>'
+        +'<div style="padding:14px 22px 18px;display:flex;gap:10px;border-top:1px solid var(--border)">'
+          +'<button class="btn-gold" onclick="openObAccount(\''+selKey+'\')">Manage in Client Projects →</button>'
+        +'</div>'
+      +'</div>';
+    return;
+  }
+  // ── Board view (all accounts) ────────────────────────────────────────
+
+  var windows=_getObWindows();
+  var allRows='';
+  windows.forEach(function(wk){
+    var acctData=wk.accounts;
+    var cols=acctData.map(function(a){
+      var data=JSON.parse(localStorage.getItem('cal-onboarding-'+a.key)||'{"steps":{}}');
+      var steps=data.steps||{};
+      var _bDeleted=data.deletedSteps||[];
+      var _bCustom=data.customSteps||[];
+      var _bEff=OB_STEPS.filter(function(s){ return _bDeleted.indexOf(s.id)===-1; }).concat(_bCustom.map(function(s){ return {id:s.id,label:s.label}; }));
+      var done=_bEff.filter(function(s){ return steps[s.id]; }).length;
+      var pct=_bEff.length?Math.round(done/_bEff.length*100):0;
+      var stepsHtml=_bEff.map(function(s){
+        var checked=!!steps[s.id];
+        return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:'+(checked?'var(--muted)':'var(--ink)')+';cursor:pointer;padding:3px 0;text-decoration:'+(checked?'line-through':'none')+'">'
+          +'<input type="checkbox" '+(checked?'checked':'')+' onchange="toggleObStep(\''+a.key+'\',\''+s.id+'\')" style="accent-color:var(--gold);width:14px;height:14px;flex-shrink:0">'+esc(s.label)+'</label>';
+      }).join('');
+      var acctName=a.name||a.bizName||a.key;
+      return '<div class="card" style="padding:0;display:flex;flex-direction:column;overflow:hidden">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer" onclick="openObAccount(\''+a.key+'\')">'
+          +'<div><p style="font-size:13px;font-weight:800;margin:0;color:var(--ink)">'+acctName+'</p>'
+          +'<p style="font-size:11px;color:var(--muted);font-weight:600;margin:2px 0 0">'+(a.plan||'')+'</p></div>'
+          +'<span class="pill pill-'+(pct===100?'green':pct>0?'gold':'muted')+'">'+pct+'%</span>'
+        +'</div>'
+        +'<div style="padding:12px 16px 0">'
+          +'<div style="background:var(--border);border-radius:4px;height:5px;margin-bottom:10px"><div style="background:var(--gold);height:5px;border-radius:4px;width:'+pct+'%;transition:width .3s"></div></div>'
+          +'<div style="display:flex;flex-direction:column;gap:0">'+stepsHtml+'</div>'
+        +'</div>'
+        +'<div style="padding:10px 16px;display:flex;gap:8px;margin-top:4px">'
+          +'<button class="btn-gold" style="font-size:12px;flex:1" onclick="openObAccount(\''+a.key+'\')">Manage →</button>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+    allRows+='<div style="margin-bottom:28px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">'
+        +'<p style="font-size:12px;font-weight:800;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin:0">'+wk.label+'</p>'
+        +'<span class="pill pill-muted">'+acctData.length+' client'+(acctData.length===1?'':'s')+'</span>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px">'+cols+'</div>'
       +'</div>';
   });
   if(!allRows){
-    allRows='<div class="empty-state"><p>No clients in onboarding yet.</p><button class="btn-gold" onclick="openModal(\'add-client-modal\')">+ Add Client</button></div>';
+    allRows='<div class="card card-pad" style="text-align:center;padding:40px 24px">'
+      +'<svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 12px"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>'
+      +'<p style="font-size:14px;font-weight:800;color:var(--ink);margin:0 0 6px">No clients in this window</p>'
+      +'<p style="font-size:13px;color:var(--muted);font-weight:600;margin:0 0 16px">Add a client to start tracking their onboarding</p>'
+      +'<button class="btn-gold" onclick="openModal(\'add-client-modal\')">+ Add Client</button>'
+      +'</div>';
   }
   board.innerHTML=allRows;
 }
-function _getObWeeks(){
+function _getObWindows(){
   var now=new Date();
   var result=[];
+  var ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function fmtRange(s,e){
+    if(s.getMonth()===e.getMonth()) return ms[s.getMonth()]+' '+s.getDate()+'\u2013'+e.getDate()+', '+s.getFullYear();
+    return ms[s.getMonth()]+' '+s.getDate()+' \u2013 '+ms[e.getMonth()]+' '+e.getDate()+', '+s.getFullYear();
+  }
   try{
     var meta=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
     var accts=Object.keys(meta).map(function(k){ return Object.assign({key:k},meta[k]); });
@@ -10875,25 +11025,46 @@ function _getObWeeks(){
         {key:'a4',name:'Houses Auto Body',plan:'Standard',added:'2026-06-25'}
       ];
     }
-    for(var i=0;i<5;i++){
-      var wkStart=new Date(now);
-      wkStart.setDate(now.getDate()-now.getDay()+i*7);
-      var wkEnd=new Date(wkStart); wkEnd.setDate(wkStart.getDate()+6);
-      var label=_fmtObWeek(wkStart,wkEnd);
-      var wkAccts=accts.filter(function(a){
-        if(!a.added) return i===0;
-        var d=new Date(a.added);
-        return d>=wkStart&&d<=wkEnd;
+    // Build fixed bi-monthly windows: 1-14 and 15-end, for last 2 months + current
+    var checked={};
+    for(var mOff=-2;mOff<=1;mOff++){
+      var yr=now.getFullYear(), mo=now.getMonth()+mOff;
+      if(mo<0){ yr--; mo+=12; } if(mo>11){ yr++; mo-=12; }
+      var lastDay=new Date(yr,mo+1,0).getDate();
+      [[1,14],[15,lastDay]].forEach(function(pair){
+        var s=new Date(yr,mo,pair[0]);
+        var e=new Date(yr,mo,pair[1],23,59,59);
+        var label=fmtRange(s,new Date(yr,mo,pair[1]));
+        // mark current window
+        var isCurrent=(now>=s&&now<=e);
+        var matched=accts.filter(function(a){
+          if(!a.added) return isCurrent; // no date → put in current window
+          var d=new Date(a.added+'T00:00:00');
+          return d>=s&&d<=e;
+        });
+        if(matched.length>0&&!checked[label]){
+          checked[label]=true;
+          result.push({label:label,accounts:matched,isCurrent:isCurrent});
+        }
       });
-      if(wkAccts.length>0) result.push({label:label,accounts:wkAccts});
     }
   }catch(e){}
+  // Always show current window even if empty
+  if(!result.length){
+    var yr2=now.getFullYear(),mo2=now.getMonth();
+    var d2=now.getDate();
+    var s2,e2;
+    if(d2<=14){ s2=new Date(yr2,mo2,1); e2=new Date(yr2,mo2,14); }
+    else{ s2=new Date(yr2,mo2,15); e2=new Date(yr2,mo2+1,0); }
+    var ms2=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    result.push({label:ms2[mo2]+' '+s2.getDate()+'\u2013'+e2.getDate()+', '+yr2,accounts:[],isCurrent:true});
+  }
   return result;
 }
 function _fmtObWeek(s,e){
   var ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  if(s.getMonth()===e.getMonth()) return ms[s.getMonth()]+' '+s.getDate()+' – '+e.getDate()+', '+s.getFullYear();
-  return ms[s.getMonth()]+' '+s.getDate()+' – '+ms[e.getMonth()]+' '+e.getDate()+', '+s.getFullYear();
+  if(s.getMonth()===e.getMonth()) return ms[s.getMonth()]+' '+s.getDate()+' \u2013 '+e.getDate()+', '+s.getFullYear();
+  return ms[s.getMonth()]+' '+s.getDate()+' \u2013 '+ms[e.getMonth()]+' '+e.getDate()+', '+s.getFullYear();
 }
 function toggleObStep(acctKey,stepId){
   try{
@@ -10904,30 +11075,104 @@ function toggleObStep(acctKey,stepId){
     renderOnboarding();
   }catch(e){}
 }
-function openClientPortal(key){
+window.addObCustomStep=function(acctKey){
+  var inp=document.getElementById('ob-add-step-input');
+  var label=inp?(inp.value||'').trim():'';
+  if(!label) return;
+  try{
+    var data=JSON.parse(localStorage.getItem('cal-onboarding-'+acctKey)||'{"steps":{}}');
+    if(!data.customSteps) data.customSteps=[];
+    data.customSteps.push({id:'c-'+Date.now(),label:label});
+    localStorage.setItem('cal-onboarding-'+acctKey,JSON.stringify(data));
+    renderOnboarding();
+  }catch(e){}
+};
+window.deleteObTemplateStep=function(acctKey,stepId){
+  if(!confirm('Remove "'+stepId+'" step from this account?')) return;
+  try{
+    var data=JSON.parse(localStorage.getItem('cal-onboarding-'+acctKey)||'{"steps":{}}');
+    if(!data.deletedSteps) data.deletedSteps=[];
+    if(data.deletedSteps.indexOf(stepId)===-1) data.deletedSteps.push(stepId);
+    localStorage.setItem('cal-onboarding-'+acctKey,JSON.stringify(data));
+    renderOnboarding();
+  }catch(e){}
+};
+window.deleteObCustomStep=function(acctKey,stepId){
+  try{
+    var data=JSON.parse(localStorage.getItem('cal-onboarding-'+acctKey)||'{"steps":{}}');
+    if(!data.customSteps) return;
+    data.customSteps=data.customSteps.filter(function(s){ return s.id!==stepId; });
+    if(data.steps) delete data.steps[stepId];
+    localStorage.setItem('cal-onboarding-'+acctKey,JSON.stringify(data));
+    renderOnboarding();
+  }catch(e){}
+};
+function openClientPortal(key){ openObAccount(key); }
+function openObAccount(key){
   if(!key) return;
   try{
     var meta=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
-    if(meta[key]){
-      if(typeof setCurrentAcct==='function') setCurrentAcct(key);
+    var acct=meta[key];
+    var acctName=acct?(acct.name||acct.bizName||key):key;
+    // Ensure the account exists in client-projects, seeded with the standard OB steps
+    var cpRaw=localStorage.getItem('cal-client-projects-v2');
+    var cpData=cpRaw?JSON.parse(cpRaw):null;
+    if(!cpData||!cpData.clients) cpData=null;
+    if(cpData){
+      var already=cpData.clients.find(function(c){ return c.id===key||(c.name||'').toLowerCase()===(acctName||'').toLowerCase(); });
+      if(!already){
+        var obRaw=JSON.parse(localStorage.getItem('cal-onboarding-'+key)||'{"steps":{}}');
+        var obSteps=obRaw.steps||{};
+        var newTasks=typeof OB_STEPS!=='undefined'?OB_STEPS.map(function(s){
+          return {id:s.id,text:s.label,done:!!obSteps[s.id],assignee:''};
+        }):[{id:'k1',text:'Kickoff call scheduled',done:false,assignee:''},{id:'k2',text:'Collect brand assets & logins',done:false,assignee:''},{id:'k3',text:'Audit current marketing',done:false,assignee:''},{id:'k4',text:'Build campaigns',done:false,assignee:''},{id:'k5',text:'Launch campaigns',done:false,assignee:''}];
+        cpData.clients.unshift({
+          id:key,
+          name:acctName,
+          started:(acct&&acct.added)||new Date().toISOString().slice(0,10),
+          expanded:true,
+          tasks:newTasks
+        });
+        localStorage.setItem('cal-client-projects-v2',JSON.stringify(cpData));
+      } else {
+        // Expand that client
+        already.expanded=true;
+        localStorage.setItem('cal-client-projects-v2',JSON.stringify(cpData));
+      }
     }
   }catch(e){}
-  nav('home');
+  nav('client-projects');
 }
 function submitAddClient(){
   var nameEl=document.getElementById('add-client-name');
   var planEl=document.getElementById('add-client-plan');
   if(!nameEl||!nameEl.value.trim()) return;
-  var key='acct-'+Date.now();
+  var bizName=nameEl.value.trim();
+  var key='ob-'+Date.now();
   try{
     var all=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
     var today=new Date().toISOString().slice(0,10);
-    all[key]={name:nameEl.value.trim(),bizName:nameEl.value.trim(),plan:planEl?planEl.value:'Standard',added:today,color:'#e5a100'};
+    all[key]={name:bizName,bizName:bizName,plan:planEl?planEl.value:'Standard',added:today,color:'#e5a100'};
     localStorage.setItem('cal-account-meta',JSON.stringify(all));
+    // Also add to client-projects immediately
+    var cpRaw=localStorage.getItem('cal-client-projects-v2');
+    var cpData=cpRaw?JSON.parse(cpRaw):null;
+    if(cpData&&cpData.clients){
+      var alreadyCp=cpData.clients.find(function(c){ return (c.name||'').toLowerCase()===bizName.toLowerCase(); });
+      if(!alreadyCp){
+        var tasks=typeof OB_STEPS!=='undefined'?OB_STEPS.map(function(s){ return {id:s.id,text:s.label,done:false,assignee:''}; }):[{id:'k1',text:'Kickoff call scheduled',done:false,assignee:''},{id:'k2',text:'Collect brand assets & logins',done:false,assignee:''},{id:'k3',text:'Audit current marketing',done:false,assignee:''},{id:'k4',text:'Build campaigns',done:false,assignee:''}];
+        cpData.clients.unshift({id:key,name:bizName,started:today,expanded:false,tasks:tasks});
+        localStorage.setItem('cal-client-projects-v2',JSON.stringify(cpData));
+      }
+    }
   }catch(e){}
   closeModal('add-client-modal');
   nameEl.value='';
+  if(planEl) planEl.value='Standard';
   renderOnboarding();
+  // Refresh sidebar if function exists
+  if(typeof buildSidebarAccounts==='function') try{ buildSidebarAccounts(); }catch(ex){}
+  if(typeof renderObSidebar==='function') try{ renderObSidebar(); }catch(ex){}
 }
 
 // ============ PERMISSIONS SCREEN ============
@@ -10989,23 +11234,6 @@ function submitPermInvite(){
   renderPermForAccount(document.getElementById('perm-acct-select')?document.getElementById('perm-acct-select').value:'');
 }
 
-// ============ ONBOARDING SIDEBAR ============
-function fillObSidebar(){
-  var sub=document.getElementById('sb-ob-sub');
-  if(!sub||sub.dataset.filled) return;
-  sub.dataset.filled='1';
-  var integrations=[
-    {label:'Google Ads',icon:'🔵',color:'#4285F4'},
-    {label:'Meta Ads',icon:'🟦',color:'#1877F2'},
-    {label:'Google Business',icon:'🟢',color:'#34A853'},
-    {label:'Calendar',icon:'📅',color:'#EA4335'},
-    {label:'Stripe',icon:'💳',color:'#635BFF'}
-  ];
-  sub.innerHTML=integrations.map(function(ig){
-    return '<button class="nav-btn" onclick="openOAuthFor(\''+ig.label+'\')" style="padding-left:28px;font-size:12px">'
-      +'<span style="margin-right:6px">'+ig.icon+'</span>'+ig.label+'</button>';
-  }).join('');
-}
 function openOAuthFor(platform){
   var modal=document.getElementById('oauth-modal');
   if(!modal){ nav('onboarding'); return; }
