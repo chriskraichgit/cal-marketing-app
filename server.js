@@ -679,7 +679,7 @@ async function handleCalendarEvents(res, qs) {
 
 // ============ STRIPE ============
 async function stripeApiRequest(method, path, body) {
-  const key = process.env.STRIPE_SECRET_KEY;
+  const key = (process.env.STRIPE_SECRET_KEY || '').replace(/[^\x20-\x7E]/g, '').trim();
   if (!key) throw new Error('STRIPE_SECRET_KEY not set');
   return new Promise((resolve, reject) => {
     const data = body ? new URLSearchParams(body).toString() : null;
@@ -727,14 +727,15 @@ async function handleStripeConnect(req, res) {
 async function handleStripeStatus(res) {
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) { jsonResponse(res, 200, { connected: false, configured: false }); return; }
-  const saved = loadStripeConnect();
-  if (!saved) { jsonResponse(res, 200, { connected: false, configured: true }); return; }
   try {
     const r = await stripeApiRequest('GET', '/v1/account', null);
-    if (r.status === 200) {
+    if (r.status === 200 && r.body.id) {
+      // Auto-save on first successful status check so future calls stay fast
+      const saved = loadStripeConnect();
+      if (!saved) saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
       jsonResponse(res, 200, { connected: true, configured: true, accountId: r.body.id, email: r.body.email, country: r.body.country });
     } else {
-      jsonResponse(res, 200, { connected: false, configured: true });
+      jsonResponse(res, 200, { connected: false, configured: true, error: r.body.error?.message });
     }
   } catch (e) { jsonResponse(res, 200, { connected: false, configured: true, error: e.message }); }
 }
