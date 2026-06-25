@@ -95,7 +95,8 @@ a{text-decoration:none}
 .sidebar-logo{width:34px;height:34px;object-fit:contain;border-radius:8px;background:#fff;padding:3px;flex-shrink:0}
 .brand-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#fff;line-height:1;white-space:nowrap}
 .brand-sub{font-size:10px;color:rgba(255,255,255,.5);font-weight:700;margin-top:1px}
-.nav-scroll{flex:1;overflow:hidden;display:flex;flex-direction:column;padding:8px 8px 0;min-height:0}
+.nav-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:8px 8px 16px;min-height:0;scrollbar-width:none}
+.nav-scroll::-webkit-scrollbar{display:none}
 .nav-view{flex:1;overflow-y:auto;scrollbar-width:none;padding-bottom:8px}
 .nav-view::-webkit-scrollbar{display:none}
 .sb-view-btn{display:flex;align-items:center;gap:9px;width:calc(100% - 20px);margin:0 10px 8px;padding:9px 12px;border:1px solid rgba(255,255,255,.18);border-radius:10px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.75);font-size:12px;font-weight:700;cursor:pointer;transition:all .14s;font-family:inherit;flex-shrink:0}
@@ -998,17 +999,16 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </button>
       <div class="nav-sub-group" id="sb-ob-sub"></div>
     </div>
-    <!-- ═══ VIEW 1: Main (everyday use) ═══ -->
-    <div class="nav-view" id="nav-view-main">
-      <div class="nav-label" id="nav-label-overview">Overview</div>
+
+    <!-- ═══ AGENCY NAV (shown for agency role) ═══ -->
+    <div id="nav-agency" style="display:none">
+      <div class="nav-label">Main</div>
       <button class="nav-btn" onclick="nav('home')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
       </button>
       <button class="nav-btn" onclick="nav('analytics')">
         <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics
       </button>
-
-      <div class="nav-label">Marketing</div>
       <button class="nav-btn" onclick="nav('campaigns')">
         <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7 12,2"/><polyline points="2,17 12,22 22,17"/><polyline points="2,12 12,17 22,12"/></svg>Campaigns
       </button>
@@ -1019,10 +1019,121 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="nav-btn" onclick="nav('leads')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Leads
       </button>
+      <button class="nav-btn" onclick="nav('inbox')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Inbox
+        <span class="nav-badge" id="inbox-badge">2</span>
+      </button>
+      <button class="nav-btn" onclick="nav('schedule')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
+      </button>
+      <button class="nav-btn" onclick="nav('files')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Files
+      </button>
+      <button class="nav-btn" onclick="nav('billing')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
+      </button>
+      <button class="nav-btn" onclick="nav('reports')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports
+      </button>
+
+      <div class="nav-label">Operations</div>
+      <button class="nav-btn" onclick="nav('onboarding')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
+      </button>
+      <button class="nav-btn" onclick="nav('agency-todos')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>To-Dos
+      </button>
+      <button class="nav-btn" onclick="nav('notes')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Notes
+      </button>
+
+      <div class="nav-label">Settings</div>
+      <button class="nav-btn" onclick="nav('settings')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
+      </button>
+    </div>
+
+    <!-- ═══ ADMIN NAV (shown for admin role) ═══ -->
+    <div id="nav-admin" style="display:none">
+      <div class="nav-label">Main</div>
+      <button class="nav-btn" onclick="nav('home')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
+      </button>
+      <button class="nav-btn" onclick="nav('campaigns')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7 12,2"/><polyline points="2,17 12,22 22,17"/><polyline points="2,12 12,17 22,12"/></svg>Campaigns
+      </button>
+      <button class="nav-btn" onclick="nav('reviews')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC
+        <span class="nav-badge" id="reviews-badge-admin">3</span>
+      </button>
+      <button class="nav-btn" onclick="nav('leads')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Leads
+      </button>
+      <button class="nav-btn" onclick="nav('inbox')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Inbox
+        <span class="nav-badge" id="inbox-badge-admin">2</span>
+      </button>
+      <button class="nav-btn" onclick="nav('schedule')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
+      </button>
+      <button class="nav-btn" onclick="nav('files')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Files
+      </button>
+      <button class="nav-btn" onclick="nav('billing')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
+      </button>
+      <button class="nav-btn" onclick="nav('reports')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports
+      </button>
+
+      <div class="nav-label">Client Tools</div>
+      <button class="nav-btn" id="nav-admin-onboarding-btn" onclick="nav('onboarding')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg><span id="nav-admin-onboarding-label">Onboarding</span>
+      </button>
+      <button class="nav-btn" onclick="nav('todos')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>To-Dos
+      </button>
+      <button class="nav-btn" onclick="nav('notes')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Notes
+      </button>
+
+      <div class="nav-label">Engagement</div>
+      <button class="nav-btn" onclick="nav('nps')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Satisfaction
+      </button>
+      <button class="nav-btn" onclick="nav('referrals')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Referrals
+      </button>
+
+      <div class="nav-label">Settings</div>
+      <button class="nav-btn" onclick="nav('settings')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
+      </button>
+    </div>
+
+    <!-- ═══ TEST/ADVANCED NAV (shown for test role — everything) ═══ -->
+    <div id="nav-test" style="display:none">
+      <div class="nav-label">Overview</div>
+      <button class="nav-btn" onclick="nav('home')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
+      </button>
+      <button class="nav-btn" onclick="nav('analytics')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics
+      </button>
+      <div class="nav-label">Marketing</div>
+      <button class="nav-btn" onclick="nav('campaigns')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7 12,2"/><polyline points="2,17 12,22 22,17"/><polyline points="2,12 12,17 22,12"/></svg>Campaigns
+      </button>
+      <button class="nav-btn" onclick="nav('reviews')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC
+        <span class="nav-badge">3</span>
+      </button>
+      <button class="nav-btn" onclick="nav('leads')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Leads
+      </button>
       <button class="nav-btn" onclick="nav('content')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Content AI
       </button>
-
       <div class="nav-label">Client</div>
       <button class="nav-btn" onclick="nav('inbox')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Inbox
@@ -1031,34 +1142,32 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="nav-btn" onclick="nav('schedule')">
         <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
       </button>
-      <button class="nav-btn" onclick="nav('projects')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Projects
-      </button>
       <button class="nav-btn" onclick="nav('files')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Files
       </button>
       <button class="nav-btn" onclick="nav('billing')">
         <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
       </button>
-
-      <div class="nav-label">Settings</div>
-      <button class="nav-btn" onclick="nav('settings')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
+      <div class="nav-label">Performance</div>
+      <button class="nav-btn" onclick="nav('goals')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals
       </button>
-      <button class="nav-btn" onclick="nav('profile')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile Settings
+      <button class="nav-btn" onclick="nav('roi')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>ROI Tracker
       </button>
-      <button class="nav-btn" onclick="nav('notifications')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Notifications
+      <button class="nav-btn" onclick="nav('leaderboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg>Leaderboard
       </button>
-      <button class="nav-btn" onclick="nav('help')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Help &amp; Support
+      <button class="nav-btn" onclick="nav('nps')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Satisfaction
       </button>
-    </div>
-
-    <!-- ═══ VIEW 2: Advanced (tools, admin, settings) ═══ -->
-    <div class="nav-view" id="nav-view-advanced" style="display:none">
-      <div class="nav-label" id="nav-label-sales">Sales</div>
+      <button class="nav-btn" onclick="nav('referrals')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Referrals
+      </button>
+      <button class="nav-btn" onclick="nav('reports')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports
+      </button>
+      <div class="nav-label">Sales</div>
       <button class="nav-group-btn" id="nav-sales-btn" onclick="toggleNavGroup('sales-sub',this)">
         <span class="nav-group-inner">
           <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14v2.92z"/></svg>Sales
@@ -1073,27 +1182,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <svg class="nav-icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Training
         </button>
       </div>
-
-      <div class="nav-label">Performance</div>
-      <button class="nav-btn" onclick="nav('goals')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals
-      </button>
-      <button class="nav-btn" onclick="nav('roi')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>ROI Tracker
-      </button>
-      <button class="nav-btn" id="nav-leaderboard-btn" onclick="nav('leaderboard')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg>Leaderboard
-      </button>
-      <button class="nav-btn" id="nav-nps-btn" onclick="nav('nps')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>Satisfaction
-      </button>
-      <button class="nav-btn" id="nav-referrals-btn" onclick="nav('referrals')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Referrals
-      </button>
-      <button class="nav-btn" onclick="nav('reports')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports
-      </button>
-
       <div class="nav-label">Operations</div>
       <button class="nav-btn" id="nav-onboarding-btn" onclick="nav('onboarding')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
@@ -1110,47 +1198,44 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="nav-btn" onclick="nav('notes')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Notes
       </button>
-      <button class="nav-btn" id="nav-job-logging-btn" onclick="nav('job-logging')">
+      <button class="nav-btn" onclick="nav('job-logging')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Job Tracker
       </button>
-
       <div class="nav-label">Tools</div>
       <button class="nav-btn" onclick="nav('seo')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>SEO
       </button>
-      <button class="nav-btn" id="nav-social-btn" onclick="nav('social')">
+      <button class="nav-btn" onclick="nav('social')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Social Media
       </button>
-      <button class="nav-btn" id="nav-pos-btn" onclick="nav('pos')">
+      <button class="nav-btn" onclick="nav('pos')">
         <svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>POS Builder
       </button>
-      <button class="nav-btn" id="nav-invoicing-btn" onclick="nav('invoicing')" style="display:none">
+      <button class="nav-btn" onclick="nav('invoicing')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Invoicing
       </button>
-      <button class="nav-btn" id="nav-booking-btn" onclick="nav('booking')" style="display:none">
+      <button class="nav-btn" onclick="nav('booking')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>Book a Call
       </button>
-
-      <div class="nav-label" id="nav-label-admin">Admin</div>
-      <button class="nav-btn" id="nav-team-btn" onclick="nav('team')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Team
-      </button>
-      <button class="nav-btn" id="nav-agency-admin-btn" onclick="nav('agency-admin')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>Agency Admin
-      </button>
-      <button class="nav-btn" id="nav-permissions-btn" onclick="nav('permissions')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Permissions
-      </button>
-      <button class="nav-btn" id="nav-proposals-btn" onclick="nav('proposals')" style="display:none">
+      <button class="nav-btn" onclick="nav('proposals')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.66V20a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h5.34"/><polygon points="18,2 22,6 12,16 8,16 8,12 18,2"/></svg>Proposals
       </button>
-      <button class="nav-btn" id="nav-whitelabel-btn" onclick="nav('whitelabel')" style="display:none">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>White Label
+      <div class="nav-label">Admin</div>
+      <button class="nav-btn" onclick="nav('team')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Team
       </button>
-      <button class="nav-btn" id="nav-revenue-btn" onclick="nav('revenue')" style="display:none">
+      <button class="nav-btn" onclick="nav('agency-admin')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>Agency Admin
+      </button>
+      <button class="nav-btn" onclick="nav('permissions')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Permissions
+      </button>
+      <button class="nav-btn" onclick="nav('revenue')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Revenue
       </button>
-
+      <button class="nav-btn" onclick="nav('whitelabel')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>White Label
+      </button>
       <div class="nav-label">Settings</div>
       <button class="nav-btn" onclick="nav('settings')">
         <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
@@ -1166,12 +1251,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </button>
     </div>
   </div>
-  <!-- View toggle button — switches between Main and Advanced (GHL-style) -->
-  <button class="sb-view-btn" id="sb-view-btn" onclick="toggleSbView()">
-    <svg id="sb-view-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    <span id="sb-view-btn-label">Advanced</span>
-    <svg class="sb-vb-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
-  </button>
   <div class="sidebar-footer">Powered by <strong>CAL Marketing</strong></div>
 </nav>
 
@@ -1183,6 +1262,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
   <div class="nav-scroll">
     <div class="nav-label">My Work</div>
+    <button class="nav-btn" onclick="nav('home')">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
+    </button>
     <button class="nav-btn" onclick="nav('todos')">
       <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>To-Dos
     </button>
@@ -1446,7 +1528,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 </div>
 
 <!-- ============ SCREEN: ONBOARDING (CAL Journey) ============ -->
-<div class="screen" id="s-onboarding"></div>
+<div class="screen" id="s-onboarding">
+  <div class="sec-head"><div><h2>Onboarding</h2><p>2-week rolling windows · up to 5 accounts each</p></div><button class="btn-primary" onclick="openModal('add-client-modal')">+ Add Client</button></div>
+  <div id="ob-board"></div>
+</div>
 
 <!-- ============ SCREEN: MAINTENANCE ============ -->
 <div class="screen" id="s-maintenance">
@@ -3147,7 +3232,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 </div>
 <!-- ============ SCREEN: SETTINGS ============ -->
 <div class="screen" id="s-settings">
-  <div class="sec-head"><div><h2>Settings</h2><p>Manage integrations and preferences</p></div></div>
+  <div class="sec-head"><div><h2>Settings</h2><p>Manage your account and preferences</p></div></div>
+  <div class="tabs-row" id="settings-tabs-row" style="margin-bottom:16px;flex-wrap:wrap;display:none"></div>
+  <div id="stab-general">
   <div class="grid g2">
     <div class="card card-pad" id="layout-prefs-card" style="grid-column:1/-1">
       <div class="card-head"><span class="card-title">Layout &amp; Navigation</span></div>
@@ -3225,6 +3312,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </div>
     </div>
   </div>
+  </div><!-- /stab-general -->
+  <div id="stab-team" style="display:none"></div>
+  <div id="stab-agency-admin" style="display:none"></div>
+  <div id="stab-permissions" style="display:none"></div>
+  <div id="stab-whitelabel" style="display:none"></div>
+  <div id="stab-help" style="display:none"></div>
+  <div id="stab-profile" style="display:none"></div>
+  <div id="stab-notifications" style="display:none"></div>
 </div>
 
 <!-- ============ SCREEN: PROFILE ============ -->
@@ -3834,9 +3929,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
 </div>
 <div class="screen" id="s-permissions">
-  <div class="sec-head"><div><h2>Permission Controls</h2><p>Pick a client account, then set each team member's role and what they can access</p></div></div>
+  <div class="sec-head"><div><h2>Permissions</h2><p>Invite team members and manage access by account and role</p></div><button class="btn-primary" onclick="openModal('perm-invite-modal')">+ Invite Member</button></div>
   <div class="card card-pad" style="margin-bottom:14px">
-    <label class="form-label" style="display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Client Account</label>
+    <label class="form-label" style="display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Filter by Account</label>
     <select class="input-std" id="perm-acct-select" onchange="renderPermForAccount(this.value)" style="max-width:380px"></select>
   </div>
   <div id="perm-acct-users"></div>
@@ -4080,6 +4175,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div class="sec-head">
     <div><h2>Client Satisfaction</h2><p>NPS tracking, survey responses and customer sentiment</p></div>
     <button class="btn-primary" onclick="showToast('Survey sent to all active clients.','green')">Send Survey</button>
+  </div>
+  <!-- Google Review CTA -->
+  <div class="card" style="border:1.5px solid var(--gold);background:rgba(201,168,76,.07);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px">
+    <div>
+      <p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:3px">⭐ Enjoying CAL? Leave us a Google Review</p>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.5">Your kind words help other businesses find us — and mean the world to our team. Takes 30 seconds!</p>
+    </div>
+    <a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="btn-gold" style="white-space:nowrap;text-decoration:none">Leave a Review ⭐</a>
   </div>
   <!-- Hero NPS card -->
   <div class="card" style="text-align:center;padding:36px 32px;margin-bottom:16px;background:linear-gradient(135deg,var(--blue) 0%,#1a4a90 100%)">
@@ -5177,6 +5280,32 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
 </div>
 
+<!-- PERMISSION INVITE MODAL -->
+<div class="modal-overlay hidden" id="perm-invite-modal" onclick="if(event.target===this)closeModal('perm-invite-modal')">
+  <div class="modal">
+    <div class="modal-head"><h2>Invite Team Member</h2><button class="icon-btn" onclick="closeModal('perm-invite-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="form-field" style="margin-bottom:12px"><label class="form-label">Email Address</label><input class="input-std" id="pi-email" type="email" placeholder="colleague@company.com"></div>
+      <div class="form-field" style="margin-bottom:12px" id="pi-acct-wrap"><label class="form-label">Assign to Account</label><select class="input-std" id="pi-acct"></select></div>
+      <div class="form-field"><label class="form-label">Role</label><select class="input-std" id="pi-role" onchange="updatePermInviteNote(this.value)"><option value="admin">Admin</option><option value="staff" selected>Staff</option></select></div>
+      <p style="font-size:11px;font-weight:700;color:var(--muted);margin-top:10px;line-height:1.7" id="pi-role-note">Staff can access To-Dos, Inbox, and Files. Admins get full dashboard access for their assigned account.</p>
+    </div>
+    <div class="modal-actions"><button class="btn-gold" onclick="submitPermInvite()">Send Invite</button><button class="btn-ghost" onclick="closeModal('perm-invite-modal')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal-overlay hidden" id="add-client-modal" onclick="if(event.target===this)closeModal('add-client-modal')">
+  <div class="modal">
+    <div class="modal-head"><h2>Add Client</h2><button class="icon-btn" onclick="closeModal('add-client-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="form-field" style="margin-bottom:12px"><label class="form-label">Business Name</label><input class="input-std" id="add-client-name" placeholder="e.g. Smith Roofing Co."></div>
+      <div class="form-field"><label class="form-label">Plan</label><select class="input-std" id="add-client-plan"><option value="Standard">Standard</option><option value="Premium">Premium</option><option value="Deluxe">Deluxe</option></select></div>
+    </div>
+    <div class="modal-actions"><button class="btn-gold" onclick="submitAddClient()">Add to Onboarding</button><button class="btn-ghost" onclick="closeModal('add-client-modal')">Cancel</button></div>
+  </div>
+</div>
+
 <!-- VIDEO PLAYER MODAL -->
 <div class="modal-overlay hidden" id="video-player-modal" onclick="if(event.target===this)closeModal('video-player-modal')">
   <div class="modal" style="max-width:600px">
@@ -5248,7 +5377,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 .welcome-banner-text{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:#000}
 @keyframes notif-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}
 .notif-dot-pulse{animation:notif-pulse 1.5s ease-in-out infinite}
-.nav-scroll{flex:1;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.nav-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-height:0}
 .table-wrap{overflow-x:auto}
 @media(max-width:700px){
   body.has-acct-switch .topbar-logo{display:none}
@@ -5315,7 +5444,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     '.welcome-banner-text{font-family:"Barlow Condensed",sans-serif;font-size:18px;font-weight:900;color:#000}',
     '@keyframes notif-pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.35)}}',
     '.notif-dot-pulse{animation:notif-pulse 1.5s ease-in-out infinite}',
-    '.nav-scroll{flex:1;overflow:hidden;display:flex;flex-direction:column}',
+    '.nav-scroll{flex:1;overflow-y:auto;display:flex;flex-direction:column}',
     '.table-wrap{overflow-x:auto}',
     '@media(max-width:600px){.modal{border-radius:20px 20px 0 0!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;transform:none!important;max-width:100%!important;width:100%!important;margin:0!important}}',
     '@media(max-width:400px){.grid.g2,.grid.g3,.grid.g4{grid-template-columns:1fr!important}}',
@@ -5762,19 +5891,25 @@ function setupRoleUI(){
   var pfEmail=document.getElementById('pf-email'); if(pfEmail) pfEmail.value=u.email;
   var pfPhone=document.getElementById('pf-phone'); if(pfPhone) pfPhone.value=u.phone||'';
   var pfTitle=document.getElementById('pf-title'); if(pfTitle) pfTitle.value=u.title||'';
-  // Sidebars
+  // ── Sidebars ──
   var sbFull=document.getElementById('sidebar-full');
   var sbUser=document.getElementById('sidebar-user');
+  var navAgency=document.getElementById('nav-agency');
+  var navAdmin=document.getElementById('nav-admin');
+  var navTest=document.getElementById('nav-test');
   if(currentRole==='user'){
     if(sbFull) sbFull.style.display='none';
-    if(sbUser){ sbUser.style.display='flex'; }
+    if(sbUser) sbUser.style.display='flex';
     var cn=document.getElementById('sb-company-name-user'); if(cn) cn.textContent=u.company||'Staff';
   } else {
     if(sbFull) sbFull.style.display='flex';
     if(sbUser) sbUser.style.display='none';
     var cn2=document.getElementById('sb-company-name'); if(cn2) cn2.textContent=u.company||(currentRole==='agency'?'CAL Marketing':'Portal');
+    if(navAgency) navAgency.style.display=(currentRole==='agency')?'':'none';
+    if(navAdmin)  navAdmin.style.display =(currentRole==='admin') ?'':'none';
+    if(navTest)   navTest.style.display  =(currentRole==='test')  ?'':'none';
   }
-  // Account switcher — topbar for test/admin, sidebar for agency
+  // ── Account switcher ──
   var accWrap=document.getElementById('acct-switcher-wrap');
   var sbAgency=document.getElementById('sb-agency-section');
   if(currentRole==='agency'){
@@ -5783,6 +5918,7 @@ function setupRoleUI(){
     if(sbAgency) sbAgency.style.display='';
     buildAcctDd(); setCurrentAcct('a1');
     buildSidebarAccounts();
+    setTimeout(fillObSidebar,200);
   } else if(currentRole==='test'){
     if(accWrap) accWrap.style.display='block';
     document.body.classList.add('has-acct-switch');
@@ -5793,73 +5929,31 @@ function setupRoleUI(){
     if(accWrap) accWrap.style.display='none';
     if(sbAgency) sbAgency.style.display='none';
   }
-  // Nav visibility — permission-based
-  var perms=getPermissions(currentRole, currentUser?currentUser.email:'');
-  document.querySelectorAll('.nav-btn').forEach(function(btn){
-    var oc=btn.getAttribute('onclick')||'';
-    var match=oc.match(/nav\('([^']+)'\)/);
-    if(match){ btn.style.display=perms.indexOf(match[1])>=0?'':'none'; }
-  });
-  document.querySelectorAll('.nav-label').forEach(function(lbl){ lbl.style.display=''; });
-  // Updates feed
+  // ── Admin onboarding label: switches to "Maintenance" when onboarding complete ──
+  if(currentRole==='admin'){
+    var obLbl=document.getElementById('nav-admin-onboarding-label');
+    if(obLbl){
+      var acctKey=typeof window.acctKey==='function'?window.acctKey():'';
+      var obData=acctKey?JSON.parse(localStorage.getItem('cal-onboarding-'+acctKey)||'null'):null;
+      var obDone=obData&&obData.completedAt;
+      obLbl.textContent=obDone?'Maintenance':'Onboarding';
+    }
+  }
+  // ── Updates feed ──
   var postRow=document.getElementById('updates-post-row');
   if(postRow) postRow.style.display=(currentRole==='agency'||currentRole==='test')?'':'none';
-  // Todos
+  // ── Todos view ──
   var kanban=document.getElementById('todos-kanban');
   var simple=document.getElementById('todos-simple');
   if(kanban) kanban.style.display=currentRole==='user'?'none':'';
   if(simple) simple.style.display=currentRole==='user'?'':'none';
-  // Nav section labels
-  var nlSales=document.getElementById('nav-label-sales');
-  var nlAdmin=document.getElementById('nav-label-admin');
-  if(currentRole==='user'){
-    if(nlSales) nlSales.style.display='none';
-    if(nlAdmin) nlAdmin.style.display='none';
-  } else if(currentRole==='admin'){
-    if(nlSales) nlSales.style.display='none';
-    var salesBtn=document.getElementById('nav-sales-btn'); if(salesBtn) salesBtn.style.display='none';
-    var salesSub=document.getElementById('sales-sub'); if(salesSub) salesSub.style.display='none';
-    if(nlAdmin){ nlAdmin.style.display='none'; }
-  } else if(currentRole==='agency'){
-    if(nlSales) nlSales.style.display='none';
-    var salesBtnAg=document.getElementById('nav-sales-btn'); if(salesBtnAg) salesBtnAg.style.display='none';
-    var salesSubAg=document.getElementById('sales-sub'); if(salesSubAg) salesSubAg.style.display='none';
-    if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Admin'; }
-  } else {
-    if(nlSales) nlSales.style.display='';
-    var salesBtnT=document.getElementById('nav-sales-btn'); if(salesBtnT) salesBtnT.style.display='';
-    var salesSubT=document.getElementById('sales-sub'); if(salesSubT) salesSubT.style.display='';
-    if(nlAdmin){ nlAdmin.style.display=''; nlAdmin.textContent='Admin'; }
-  }
-  // PART 6 — test-only screens hidden for non-test non-agency roles
-  var testOnlyScreens=['pos','content','sales','whitelabel','booking','goals','client-projects','agency-todos'];
-  if(currentRole!=='agency'&&currentRole!=='test'){
-    testOnlyScreens.forEach(function(sc){
-      document.querySelectorAll('.nav-btn').forEach(function(btn){
-        var oc=btn.getAttribute('onclick')||'';
-        if(oc.indexOf("nav('"+sc+"')")>=0) btn.style.display='none';
-      });
-    });
-  }
-  // BUG6 — Agency nav cleanup: hide items not relevant to agency view
-  if(currentRole==='agency'){
-    var agencyHide=['pos','whitelabel','booking','goals','roi','content','invoicing','proposals','revenue'];
-    agencyHide.forEach(function(sc){
-      document.querySelectorAll('.nav-btn').forEach(function(btn){
-        var oc=btn.getAttribute('onclick')||'';
-        if(oc.indexOf("nav('"+sc+"')")>=0) btn.style.display='none';
-      });
-    });
-  }
-  // Theme switch
+  // ── Theme switch ──
   var sw=document.getElementById('theme-sw');
   if(sw) sw.classList.toggle('off',document.documentElement.getAttribute('data-theme')!=='dark');
-  // Sales coaching — agency only
+  // ── Sales coaching — agency only ──
   var scw=document.getElementById('sales-coaching-wrap');
   if(scw) scw.style.display=(currentRole==='agency')?'':'none';
-  // Sidebar drag-to-reorder
-  try{ loadSbOrder(); initSbDrag(); }catch(ex){}
-  // My Access card — admin only
+  // ── My Access card — admin only ──
   renderMyAccess();
 }
 
@@ -5928,6 +6022,8 @@ function nav(screen){
   if(screen==='job-logging') renderJobLogs();
   if(screen==='social'){ if(!currentAcctId) currentAcctId='local'; loadSocialConnections(); }
   if(screen==='files') initGDriveCard();
+  if(screen==='settings') renderSettingsTabs();
+  if(screen==='onboarding') renderOnboarding();
 }
 function initHomeScreen(){
   // ROI calculator null-check init
@@ -6044,8 +6140,8 @@ function sbNavSearch(val){
   var cl=document.getElementById('sb-search-clear');
   if(cl) cl.style.display=val?'':'none';
   var q=(val||'').toLowerCase().trim();
-  var activeViewId=(_sbView==='advanced')?'nav-view-advanced':'nav-view-main';
-  var view=document.getElementById(activeViewId); if(!view) return;
+  var roleNavId=currentRole==='agency'?'nav-agency':currentRole==='admin'?'nav-admin':currentRole==='test'?'nav-test':null;
+  var view=roleNavId?document.getElementById(roleNavId):null; if(!view) return;
   view.querySelectorAll('.nav-btn').forEach(function(btn){
     var txt=(btn.textContent||'').toLowerCase();
     btn.style.display=(!q||txt.indexOf(q)>=0)?'':'none';
@@ -6110,7 +6206,7 @@ function _sbDp(e){
   e.preventDefault(); e.stopPropagation();
   this.classList.remove('sb-drag-over');
   if(!_sbDragEl||_sbDragEl===this) return;
-  var view=this.closest('.nav-view');
+  var view=this.closest('#nav-agency,#nav-admin,#nav-test');
   if(!view||!view.contains(_sbDragEl)) return;
   var srcSub=null;
   var nxt=_sbDragEl.nextElementSibling;
@@ -6134,7 +6230,7 @@ function _sbDe(){
   _sbDragEl=null;
 }
 function initSbDrag(){
-  ['nav-view-main','nav-view-advanced'].forEach(function(viewId){
+  ['nav-agency','nav-admin','nav-test'].forEach(function(viewId){
     var view=document.getElementById(viewId); if(!view) return;
     Array.from(view.children).forEach(function(el){
       if(el.classList.contains('nav-sub-group')) return;
@@ -6148,14 +6244,14 @@ function initSbDrag(){
   });
 }
 function saveSbOrder(){
-  ['nav-view-main','nav-view-advanced'].forEach(function(viewId){
+  ['nav-agency','nav-admin','nav-test'].forEach(function(viewId){
     var view=document.getElementById(viewId); if(!view) return;
     var order=Array.from(view.children).map(sbElemKey);
     try{ localStorage.setItem('sb_order_'+viewId,JSON.stringify(order)); }catch(ex){}
   });
 }
 function loadSbOrder(){
-  ['nav-view-main','nav-view-advanced'].forEach(function(viewId){
+  ['nav-agency','nav-admin','nav-test'].forEach(function(viewId){
     var view=document.getElementById(viewId); if(!view) return;
     var saved; try{ saved=JSON.parse(localStorage.getItem('sb_order_'+viewId)||'null'); }catch(ex){}
     if(!saved||!Array.isArray(saved)||!saved.length) return;
@@ -6164,31 +6260,7 @@ function loadSbOrder(){
     saved.forEach(function(key){ var el=keyMap[key]; if(el) view.appendChild(el); });
   });
 }
-
-// ============ SIDEBAR VIEW TOGGLE (Main ↔ Advanced) ============
-var _sbView='main';
-function toggleSbView(){
-  var main=document.getElementById('nav-view-main');
-  var adv=document.getElementById('nav-view-advanced');
-  var lbl=document.getElementById('sb-view-btn-label');
-  var icon=document.getElementById('sb-view-icon');
-  var arrow=document.querySelector('.sb-vb-arrow');
-  if(_sbView==='main'){
-    _sbView='advanced';
-    if(main) main.style.display='none';
-    if(adv) adv.style.display='block';
-    if(lbl) lbl.textContent='Main';
-    if(icon) icon.innerHTML='<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>';
-    if(arrow) arrow.innerHTML='<polyline points="15,18 9,12 15,6"/>';
-  } else {
-    _sbView='main';
-    if(main) main.style.display='block';
-    if(adv) adv.style.display='none';
-    if(lbl) lbl.textContent='Advanced';
-    if(icon) icon.innerHTML='<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>';
-    if(arrow) arrow.innerHTML='<polyline points="9,18 15,12 9,6"/>';
-  }
-}
+function toggleSbView(){ }
 
 // ============ GOOGLE MAPS PLACES ============
 var _mapsKey='';
@@ -9213,6 +9285,7 @@ function healthBadge(score){
   function renderSatisfaction(){
     var el=screen('nps'); if(!el) return;
     el.innerHTML=`<div class="sec-head"><div><h2>Client Satisfaction</h2><p>Track customer happiness, response trends, and at-risk feedback.</p></div><button class="cal-action" onclick="showToast('Survey queued.','green')">Send Survey</button></div>
+      <div class="card" style="border:1.5px solid var(--gold);background:rgba(201,168,76,.07);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px"><div><p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:3px">⭐ Enjoying CAL? Leave us a Google Review</p><p style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.5">Your kind words help other businesses find us — and mean the world to our team. Takes 30 seconds!</p></div><a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="cal-action" style="white-space:nowrap;text-decoration:none">Leave a Review ⭐</a></div>
       <div class="cal-page-grid cal-grid-4">
         <div class="cal-kpi" style="--accent:var(--gold)"><span>NPS Score</span><strong>72</strong></div>
         <div class="cal-kpi" style="--accent:var(--green)"><span>Promoters</span><strong>75%</strong></div>
@@ -10401,7 +10474,7 @@ function healthBadge(score){
 
   /* ---- Layout & Navigation prefs (req 4) ---- */
   var LAYOUT_ITEMS={
-    agency:[['campaigns','Campaigns'],['reviews','Reviews & NFC'],['leads','Leads'],['seo','SEO'],['goals','Goals'],['roi','ROI Tracker'],['analytics','Analytics'],['social','Social Media'],['nps','Satisfaction'],['referrals','Referrals'],['pos','POS Builder'],['invoicing','Invoicing'],['proposals','Proposals'],['revenue','Revenue'],['whitelabel','White Label'],['booking','Book a Call'],['leaderboard','Review Leaderboard']],
+    agency:[['analytics','Analytics'],['campaigns','Campaigns'],['reviews','Reviews & NFC'],['leads','Leads'],['inbox','Inbox'],['schedule','Schedule'],['files','Files'],['billing','Billing'],['reports','Reports'],['onboarding','Onboarding']],
     admin:[['campaigns','Campaigns'],['reviews','Reviews & NFC'],['leads','Leads'],['reports','Reports'],['schedule','Schedule'],['todos','To-Dos'],['nps','Satisfaction'],['referrals','Referrals']]
   };
   LAYOUT_ITEMS.test=LAYOUT_ITEMS.agency;
@@ -10650,6 +10723,295 @@ function healthBadge(score){
     _hmLayer=L.heatLayer(pts,cfg).addTo(_hmMap);
   };
 })();
+
+// ============ SETTINGS TABS ============
+function renderSettingsTabs(){
+  var row=document.getElementById('settings-tabs-row');
+  if(!row) return;
+  var role=window.currentRole||'admin';
+  var tabSets={
+    agency:['general','team','agency-admin','permissions','whitelabel','help'],
+    admin:['general','profile','notifications','team','permissions','help'],
+    test:['general','team','permissions','help'],
+    user:['general','profile','notifications','help']
+  };
+  var labels={
+    general:'General','team':'Team & Access','agency-admin':'Agency Admin',
+    permissions:'Permissions',whitelabel:'White Label',help:'Help & Support',
+    profile:'Profile',notifications:'Notifications'
+  };
+  var tabs=tabSets[role]||tabSets['admin'];
+  row.innerHTML=tabs.map(function(t,i){
+    return '<button class="tab-btn'+(i===0?' active':'')+'" onclick="switchSettingsTab(\''+t+'\',this)">'+labels[t]+'</button>';
+  }).join('');
+  row.style.display='flex';
+  var firstPane=document.getElementById('stab-'+tabs[0]);
+  if(firstPane) firstPane.style.display='';
+  document.querySelectorAll('[id^="stab-"]').forEach(function(p){
+    if(p.id!=='stab-'+tabs[0]) p.style.display='none';
+  });
+  renderSettingsTabContent(tabs[0],firstPane);
+}
+function switchSettingsTab(tab,btn){
+  document.querySelectorAll('#settings-tabs-row .tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  document.querySelectorAll('[id^="stab-"]').forEach(function(p){ p.style.display='none'; });
+  var pane=document.getElementById('stab-'+tab);
+  if(pane){ pane.style.display=''; renderSettingsTabContent(tab,pane); }
+}
+function renderSettingsTabContent(tab,pane){
+  if(!pane||pane.dataset.loaded) return;
+  pane.dataset.loaded='1';
+  var role=window.currentRole||'admin';
+  if(tab==='team'){
+    pane.innerHTML='<div class="sec-head" style="padding:0 0 12px 0"><h2 style="font-size:16px">Team & Access</h2><button class="btn-gold" onclick="openModal(\'team-invite-modal\')">+ Invite</button></div>'
+      +'<div class="card"><p style="font-size:13px;color:var(--muted);padding:12px 0">Team member list is managed on the <button class="link-btn" onclick="nav(\'team\')">Team screen</button>.</p></div>';
+  } else if(tab==='agency-admin'){
+    pane.innerHTML='<div class="card"><p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Agency Admin Panel</p>'
+      +'<p style="font-size:12px;color:var(--muted);line-height:1.7">Manage agency-level settings, white-label domains, billing, and account overrides.</p>'
+      +'<button class="btn-ghost" style="margin-top:16px" onclick="nav(\'agency-admin\')">Open Agency Admin</button></div>';
+  } else if(tab==='permissions'){
+    pane.innerHTML='<div class="card"><p style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:10px">Permissions</p>'
+      +'<p style="font-size:12px;color:var(--muted);line-height:1.7">Role-based access and account assignments are managed on the Permissions screen.</p>'
+      +'<button class="btn-ghost" style="margin-top:16px" onclick="nav(\'permissions\')">Open Permissions</button></div>';
+  } else if(tab==='whitelabel'){
+    pane.innerHTML='<div class="card" style="display:flex;flex-direction:column;gap:14px">'
+      +'<p style="font-size:13px;font-weight:800">White Label</p>'
+      +'<div class="form-field"><label class="form-label">Portal Domain</label><input class="input-std" placeholder="portal.youragency.com" value=""></div>'
+      +'<div class="form-field"><label class="form-label">Agency Name</label><input class="input-std" placeholder="Your Agency Name" value="CAL Marketing"></div>'
+      +'<div class="form-field"><label class="form-label">Primary Color</label><input class="input-std" type="color" value="#e5a100" style="height:40px"></div>'
+      +'<button class="btn-gold" style="align-self:flex-start" onclick="this.textContent=\'Saved!\'">Save Changes</button></div>';
+  } else if(tab==='help'){
+    pane.innerHTML='<div class="card" style="display:flex;flex-direction:column;gap:14px">'
+      +'<p style="font-size:13px;font-weight:800">Help & Support</p>'
+      +'<a class="btn-ghost" style="text-align:center" href="mailto:support@cal.marketing">Email Support</a>'
+      +'<a class="btn-ghost" style="text-align:center" href="https://cal.marketing" target="_blank">Visit Help Center</a></div>';
+  } else if(tab==='profile'){
+    pane.innerHTML='<div class="card" style="display:flex;flex-direction:column;gap:14px">'
+      +'<p style="font-size:13px;font-weight:800">Your Profile</p>'
+      +'<div class="form-field"><label class="form-label">Full Name</label><input class="input-std" id="stab-pf-name" placeholder="Your Name"></div>'
+      +'<div class="form-field"><label class="form-label">Email</label><input class="input-std" id="stab-pf-email" type="email" placeholder="you@company.com"></div>'
+      +'<div class="form-field"><label class="form-label">Phone</label><input class="input-std" id="stab-pf-phone" type="tel" placeholder="+1 (555) 000-0000"></div>'
+      +'<button class="btn-gold" style="align-self:flex-start" onclick="this.textContent=\'Saved!\'">Save Profile</button></div>';
+  } else if(tab==='notifications'){
+    pane.innerHTML='<div class="card" style="display:flex;flex-direction:column;gap:12px">'
+      +'<p style="font-size:13px;font-weight:800">Notifications</p>'
+      +['New lead received','New review posted','Invoice paid','Campaign report ready','Weekly summary email'].map(function(label){
+        return '<label style="display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;cursor:pointer">'
+          +'<input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)">'+label+'</label>';
+      }).join('')+'</div>';
+  }
+}
+
+// ============ ONBOARDING BOARD ============
+var OB_STEPS=[
+  {id:'portal',label:'Send Client Portal Link'},
+  {id:'intake',label:'Complete Intake Form'},
+  {id:'assets',label:'Collect Brand Assets'},
+  {id:'ads',label:'Connect Google Ads'},
+  {id:'meta',label:'Connect Meta Ads'},
+  {id:'gbp',label:'Connect Google Business'},
+  {id:'calendar',label:'Set Up Scheduling'},
+  {id:'stripe',label:'Connect Stripe'},
+  {id:'campaign',label:'Launch First Campaign'},
+  {id:'review',label:'Request First Review'}
+];
+function renderOnboarding(){
+  var host=document.getElementById('s-onboarding');
+  if(!host) return;
+  var secHead=host.querySelector('.sec-head');
+  var board=host.querySelector('#ob-board');
+  if(!board){
+    board=document.createElement('div');
+    board.id='ob-board';
+    host.appendChild(board);
+  }
+  var weeks=_getObWeeks();
+  var allRows='';
+  weeks.forEach(function(wk){
+    var acctData=wk.accounts;
+    var cols=acctData.map(function(a){
+      var data=_getJSON('cal-onboarding-'+a.key,{steps:{}});
+      var steps=data.steps||{};
+      var done=OB_STEPS.filter(function(s){ return steps[s.id]; }).length;
+      var pct=Math.round(done/OB_STEPS.length*100);
+      var stepsHtml=OB_STEPS.map(function(s){
+        var checked=!!steps[s.id];
+        return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:'+(checked?'var(--muted)':'var(--text)')+';cursor:pointer;padding:3px 0;text-decoration:'+(checked?'line-through':'none')+'">'
+          +'<input type="checkbox" '+(checked?'checked':'')+' onchange="toggleObStep(\''+a.key+'\',\''+s.id+'\')" style="accent-color:var(--gold);width:14px;height:14px;flex-shrink:0">'+s.label+'</label>';
+      }).join('');
+      return '<div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px;cursor:default">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px">'
+        +'<p style="font-size:13px;font-weight:800;margin:0">'+a.name+'</p>'
+        +'<span class="pill pill-'+(pct===100?'green':pct>0?'gold':'muted')+'">'+pct+'%</span>'
+        +'</div>'
+        +'<div style="background:var(--border);border-radius:4px;height:4px"><div style="background:var(--gold);height:4px;border-radius:4px;width:'+pct+'%;transition:width .3s"></div></div>'
+        +'<p style="font-size:11px;color:var(--muted);margin:0">'+a.plan+' · Added '+a.added+'</p>'
+        +'<div style="display:flex;flex-direction:column;gap:0">'+stepsHtml+'</div>'
+        +'<button class="btn-ghost" style="font-size:11px;margin-top:4px" onclick="openClientPortal(\''+a.key+'\')">Open Portal →</button>'
+        +'</div>';
+    }).join('');
+    allRows+='<div style="margin-bottom:24px">'
+      +'<p style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:12px">'+wk.label+'</p>'
+      +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px">'+cols+'</div>'
+      +'</div>';
+  });
+  if(!allRows){
+    allRows='<div class="empty-state"><p>No clients in onboarding yet.</p><button class="btn-gold" onclick="openModal(\'add-client-modal\')">+ Add Client</button></div>';
+  }
+  board.innerHTML=allRows;
+}
+function _getObWeeks(){
+  var now=new Date();
+  var result=[];
+  try{
+    var meta=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
+    var accts=Object.keys(meta).map(function(k){ return Object.assign({key:k},meta[k]); });
+    if(!accts.length){
+      accts=[
+        {key:'a1',name:'Apex Legal Group',plan:'Premium',added:'2026-06-16'},
+        {key:'a2',name:'Green Collar Roofing',plan:'Standard',added:'2026-06-20'},
+        {key:'a3',name:'Willy Diamond Tree Care',plan:'Deluxe',added:'2026-06-23'},
+        {key:'a4',name:'Houses Auto Body',plan:'Standard',added:'2026-06-25'}
+      ];
+    }
+    for(var i=0;i<5;i++){
+      var wkStart=new Date(now);
+      wkStart.setDate(now.getDate()-now.getDay()+i*7);
+      var wkEnd=new Date(wkStart); wkEnd.setDate(wkStart.getDate()+6);
+      var label=_fmtObWeek(wkStart,wkEnd);
+      var wkAccts=accts.filter(function(a){
+        if(!a.added) return i===0;
+        var d=new Date(a.added);
+        return d>=wkStart&&d<=wkEnd;
+      });
+      if(wkAccts.length>0) result.push({label:label,accounts:wkAccts});
+    }
+  }catch(e){}
+  return result;
+}
+function _fmtObWeek(s,e){
+  var ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if(s.getMonth()===e.getMonth()) return ms[s.getMonth()]+' '+s.getDate()+' – '+e.getDate()+', '+s.getFullYear();
+  return ms[s.getMonth()]+' '+s.getDate()+' – '+ms[e.getMonth()]+' '+e.getDate()+', '+s.getFullYear();
+}
+function toggleObStep(acctKey,stepId){
+  try{
+    var data=JSON.parse(localStorage.getItem('cal-onboarding-'+acctKey)||'{"steps":{}}');
+    if(!data.steps) data.steps={};
+    data.steps[stepId]=!data.steps[stepId];
+    localStorage.setItem('cal-onboarding-'+acctKey,JSON.stringify(data));
+    renderOnboarding();
+  }catch(e){}
+}
+function openClientPortal(key){
+  if(!key) return;
+  try{
+    var meta=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
+    if(meta[key]){
+      if(typeof setCurrentAcct==='function') setCurrentAcct(key);
+    }
+  }catch(e){}
+  nav('home');
+}
+function submitAddClient(){
+  var nameEl=document.getElementById('add-client-name');
+  var planEl=document.getElementById('add-client-plan');
+  if(!nameEl||!nameEl.value.trim()) return;
+  var key='acct-'+Date.now();
+  try{
+    var all=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
+    var today=new Date().toISOString().slice(0,10);
+    all[key]={name:nameEl.value.trim(),bizName:nameEl.value.trim(),plan:planEl?planEl.value:'Standard',added:today,color:'#e5a100'};
+    localStorage.setItem('cal-account-meta',JSON.stringify(all));
+  }catch(e){}
+  closeModal('add-client-modal');
+  nameEl.value='';
+  renderOnboarding();
+}
+
+// ============ PERMISSIONS SCREEN ============
+function renderPermAccounts(){
+  var sel=document.getElementById('perm-acct-select');
+  if(sel){
+    sel.innerHTML='<option value="">All Accounts</option>';
+    try{
+      var all=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
+      var keys=Object.keys(all);
+      if(!keys.length){
+        [['a1','Apex Legal Group'],['a2','Green Collar Roofing'],['a3','Willy Diamond Tree Care'],['a4','Houses Auto Body']].forEach(function(a){
+          var o=document.createElement('option'); o.value=a[0]; o.textContent=a[1]; sel.appendChild(o);
+        });
+      } else {
+        keys.forEach(function(k){ var m=all[k]; var o=document.createElement('option'); o.value=k; o.textContent=m.bizName||m.name||k; sel.appendChild(o); });
+      }
+    }catch(e){}
+  }
+  renderPermForAccount('');
+}
+function renderPermForAccount(acctKey){
+  var host=document.getElementById('perm-acct-users');
+  if(!host) return;
+  var staticUsers=[
+    {name:'Alex Torres',email:'alex@apexlegal.com',acct:'a1',acctLabel:'Apex Legal Group',role:'Admin',status:'Active'},
+    {name:'Maria Santos',email:'maria@apexlegal.com',acct:'a1',acctLabel:'Apex Legal Group',role:'Staff',status:'Active'},
+    {name:'David Kim',email:'dkim@gcroofing.com',acct:'a2',acctLabel:'Green Collar Roofing',role:'Staff',status:'Invited'},
+    {name:'Priya Patel',email:'priya@wilddiamondtree.com',acct:'a3',acctLabel:'Willy Diamond Tree Care',role:'Admin',status:'Active'}
+  ];
+  var filtered=acctKey?staticUsers.filter(function(u){ return u.acct===acctKey; }):staticUsers;
+  if(!filtered.length){
+    host.innerHTML='<div class="empty-state"><p style="font-size:13px;color:var(--muted)">No members for this account yet.</p></div>';
+    return;
+  }
+  host.innerHTML='<div class="card" style="overflow:auto"><table class="tbl" style="min-width:500px"><thead><tr><th>Member</th><th>Email</th><th>Account</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>'
+    +filtered.map(function(u){
+      return '<tr><td><strong>'+u.name+'</strong></td><td style="color:var(--muted);font-size:12px">'+u.email+'</td><td style="font-size:12px">'+u.acctLabel+'</td>'
+        +'<td><span class="pill pill-'+(u.role==='Admin'?'blue':'muted')+'">'+u.role+'</span></td>'
+        +'<td><span class="pill pill-'+(u.status==='Active'?'green':'gold')+'">'+u.status+'</span></td>'
+        +'<td><button class="btn-view" style="font-size:11px" onclick="openPermEditModal(\''+u.email+'\')">Edit</button></td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+function openPermEditModal(email){
+  openModal('perm-invite-modal');
+  var el=document.getElementById('pi-email'); if(el) el.value=email;
+}
+function updatePermInviteNote(role){
+  var note=document.getElementById('pi-role-note');
+  if(!note) return;
+  if(role==='admin') note.textContent='Admins get full dashboard access for their assigned account including analytics, content, and billing.';
+  else note.textContent='Staff can access To-Dos, Inbox, and Files. Admins get full dashboard access for their assigned account.';
+}
+function submitPermInvite(){
+  var emailEl=document.getElementById('pi-email');
+  if(!emailEl||!emailEl.value.trim()) return;
+  closeModal('perm-invite-modal');
+  emailEl.value='';
+  renderPermForAccount(document.getElementById('perm-acct-select')?document.getElementById('perm-acct-select').value:'');
+}
+
+// ============ ONBOARDING SIDEBAR ============
+function fillObSidebar(){
+  var sub=document.getElementById('sb-ob-sub');
+  if(!sub||sub.dataset.filled) return;
+  sub.dataset.filled='1';
+  var integrations=[
+    {label:'Google Ads',icon:'🔵',color:'#4285F4'},
+    {label:'Meta Ads',icon:'🟦',color:'#1877F2'},
+    {label:'Google Business',icon:'🟢',color:'#34A853'},
+    {label:'Calendar',icon:'📅',color:'#EA4335'},
+    {label:'Stripe',icon:'💳',color:'#635BFF'}
+  ];
+  sub.innerHTML=integrations.map(function(ig){
+    return '<button class="nav-btn" onclick="openOAuthFor(\''+ig.label+'\')" style="padding-left:28px;font-size:12px">'
+      +'<span style="margin-right:6px">'+ig.icon+'</span>'+ig.label+'</button>';
+  }).join('');
+}
+function openOAuthFor(platform){
+  var modal=document.getElementById('oauth-modal');
+  if(!modal){ nav('onboarding'); return; }
+  var title=modal.querySelector('h2,#oauth-title'); if(title) title.textContent='Connect '+platform;
+  openModal('oauth-modal');
+}
 </script>
 
 </body>
