@@ -5392,14 +5392,18 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 .admin-section-label{font-size:13px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:22px 0 10px}
 </style>
 
-<!-- GOOGLE OAUTH COMING SOON MODAL -->
+<!-- GOOGLE SIGN-IN MODAL -->
 <div class="modal-overlay hidden" id="google-modal">
   <div class="modal" style="max-width:420px;text-align:center;padding:36px 32px">
     <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a381eca1c5d711b35cfdfbb.png" style="height:36px;object-fit:contain;margin:0 auto 16px;display:block" alt="CAL">
-    <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--ink);margin-bottom:8px">Google Sign-In Coming Soon</h2>
-    <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.7;margin-bottom:24px">Google OAuth requires our backend team to configure the Supabase auth provider and Google Cloud credentials. This will be available in the next update.</p>
-    <!-- Backend note: In Supabase dashboard enable Google provider under Authentication → Providers. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET env vars. In Google Cloud Console create OAuth 2.0 credentials with authorized redirect URI set to your Supabase project URL + /auth/v1/callback. On frontend call supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: APP_URL } }). Supabase handles token exchange automatically. -->
-    <button class="btn-primary" style="width:100%" onclick="closeModal('google-modal')">Continue with Email</button>
+    <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--ink);margin-bottom:8px">Sign in with Google</h2>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.7;margin-bottom:20px">Use your Google account to access CAL OS. You must have a registered CAL account.</p>
+    <div id="google-signin-error" style="display:none;padding:10px 14px;border-radius:9px;border:1px solid rgba(217,45,32,.2);background:rgba(217,45,32,.05);color:#b42318;font-size:13px;font-weight:700;margin-bottom:16px;text-align:left"></div>
+    <button class="btn-primary" style="width:100%;display:flex;align-items:center;justify-content:center;gap:10px" onclick="startGoogleSignIn()">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.1 33.4 29.6 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6.3-6.3C34.4 5.9 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.2 19.2 13 24 13c3 0 5.7 1.1 7.8 2.9l6.3-6.3C34.4 5.9 29.5 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.1-1.8 13.8-4.8l-6.4-5.2C29.4 35.6 26.9 36 24 36c-4.6 0-8.6-2.6-10.7-6.4l-7 5.4C9.9 40.1 16.4 44 24 44z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.7c-.8 2.3-2.4 4.2-4.4 5.5l6.4 5.2C41.4 35.6 44.5 30.2 44.5 24c0-1.3-.1-2.7-.2-4z"/></svg>
+      Continue with Google
+    </button>
+    <button class="btn-ghost" style="width:100%;margin-top:10px" onclick="closeModal('google-modal')">Cancel</button>
   </div>
 </div>
 
@@ -5450,6 +5454,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 var USERS = {
   'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner'},
   'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner'},
+  'aivrya@cal.marketing':{pw:'',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',googleOnly:true},
   'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner'},
   'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester'},
   'client@apexlegal.com':{pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director'},
@@ -5651,7 +5656,38 @@ function doLogout(){
   document.getElementById('login-pw').value='';
   closeProfileDd();
 }
-function openGoogleModal(){ openModal('google-modal'); }
+function openGoogleModal(){
+  var errEl=document.getElementById('google-signin-error');
+  if(errEl) errEl.style.display='none';
+  openModal('google-modal');
+}
+function startGoogleSignIn(){
+  var w=window.open(
+    '/api/auth/google/start',
+    'google-signin',
+    'width=480,height=600,left='+Math.round(screen.width/2-240)+',top='+Math.round(screen.height/2-300)
+  );
+  if(!w){ alert('Please allow pop-ups for this site, then try again.'); }
+}
+window.addEventListener('message',function(e){
+  if(!e.data||e.data.type!=='google-signin') return;
+  var errEl=document.getElementById('google-signin-error');
+  if(!e.data.success){
+    if(errEl){ errEl.textContent=e.data.error||'Google sign-in failed.'; errEl.style.display=''; }
+    return;
+  }
+  closeModal('google-modal');
+  var email=(e.data.email||'').toLowerCase();
+  var u=USERS[email];
+  if(!u){
+    if(errEl){ errEl.textContent='No CAL OS account found for '+email+'. Contact your administrator.'; errEl.style.display=''; }
+    openModal('google-modal');
+    return;
+  }
+  currentUser=Object.assign({},u,{email:email,googleName:e.data.name,googlePicture:e.data.picture});
+  currentRole=u.role;
+  launchApp();
+});
 
 // ============ ONBOARDING ============
 var obStep=0;
@@ -7851,9 +7887,6 @@ function submitCreateAccount(){
     localStorage.setItem('cal-account-meta',JSON.stringify(caMeta));
   }catch(e){}
   startOnboarding();
-}
-function openGoogleModal(){
-  openModal('google-modal');
 }
 function toggleNotifPref(btn, key){
   btn.classList.toggle('off');
