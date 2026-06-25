@@ -758,6 +758,82 @@ async function handleGBPReviews(res, qs) {
   } catch (e) { jsonResponse(res, 200, { error: e.message, reviews: [] }); }
 }
 
+async function handleGBPInsights(res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const locationName = qs && qs.location;
+  res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+  try {
+    const auth = await getGoogleAuthedClient(companyId);
+    if (!auth) { res.end(JSON.stringify({ error: 'not_connected' })); return; }
+    if (!locationName) { res.end(JSON.stringify({ error: 'no_location' })); return; }
+    const accessToken = auth.credentials.access_token;
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 30);
+    const body = JSON.stringify({
+      dailyRange: {
+        startDate: { year: startDate.getFullYear(), month: startDate.getMonth() + 1, day: startDate.getDate() },
+        endDate:   { year: endDate.getFullYear(),   month: endDate.getMonth() + 1,   day: endDate.getDate() }
+      },
+      multiDailyMetricTimeSeries: [
+        { dailyMetric: 'CALL_CLICKS' },
+        { dailyMetric: 'WEBSITE_CLICKS' },
+        { dailyMetric: 'DIRECTION_REQUESTS' },
+        { dailyMetric: 'BUSINESS_IMPRESSIONS_MOBILE_SEARCH' },
+        { dailyMetric: 'BUSINESS_IMPRESSIONS_DESKTOP_SEARCH' },
+        { dailyMetric: 'BUSINESS_IMPRESSIONS_MOBILE_MAPS' },
+        { dailyMetric: 'BUSINESS_IMPRESSIONS_DESKTOP_MAPS' }
+      ]
+    });
+    const https = require('https');
+    const urlMod = require('url');
+    const apiUrl = 'https://businessprofileperformance.googleapis.com/v1/' + locationName + ':fetchMultiDailyMetricTimeSeries';
+    const parsed = urlMod.parse(apiUrl);
+    const data = await new Promise((resolve, reject) => {
+      const req = https.request({
+        hostname: parsed.hostname,
+        path: parsed.path,
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + accessToken,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body)
+        }
+      }, (resp) => {
+        let raw = '';
+        resp.on('data', chunk => raw += chunk);
+        resp.on('end', () => { try { resolve(JSON.parse(raw)); } catch(e) { resolve({ raw }); } });
+      });
+      req.on('error', reject);
+      req.write(body);
+      req.end();
+    });
+    const totals = {};
+    if (data.multiDailyMetricTimeSeries) {
+      data.multiDailyMetricTimeSeries.forEach(item => {
+        let total = 0;
+        if (item.timeSeries && item.timeSeries.datedValues) {
+          item.timeSeries.datedValues.forEach(dv => { total += parseInt(dv.value || 0); });
+        }
+        totals[item.dailyMetric] = total;
+      });
+    }
+    const totalImpressions = (totals['BUSINESS_IMPRESSIONS_MOBILE_SEARCH'] || 0)
+      + (totals['BUSINESS_IMPRESSIONS_DESKTOP_SEARCH'] || 0)
+      + (totals['BUSINESS_IMPRESSIONS_MOBILE_MAPS'] || 0)
+      + (totals['BUSINESS_IMPRESSIONS_DESKTOP_MAPS'] || 0);
+    res.end(JSON.stringify({
+      calls: totals['CALL_CLICKS'] || 0,
+      websiteClicks: totals['WEBSITE_CLICKS'] || 0,
+      directionRequests: totals['DIRECTION_REQUESTS'] || 0,
+      impressions: totalImpressions,
+      raw: data
+    }));
+  } catch(e) {
+    res.end(JSON.stringify({ error: e.message }));
+  }
+}
+
 async function handleGBPReply(req, res, qs) {
   const companyId = (qs && qs.company) || 'default';
   const oauth2 = await getGoogleAuthedClient(companyId);
@@ -1190,6 +1266,7 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/gbp/accounts' && req.method === 'GET') { await handleGBPAccounts(res, qs); return; }
   if (urlPath === '/api/gbp/locations' && req.method === 'GET') { await handleGBPLocations(res, qs); return; }
   if (urlPath === '/api/gbp/reviews' && req.method === 'GET') { await handleGBPReviews(res, qs); return; }
+  if (urlPath === '/api/gbp/insights' && req.method === 'GET') { await handleGBPInsights(res, qs); return; }
   if (urlPath === '/api/gbp/reply' && req.method === 'POST') { await handleGBPReply(req, res, qs); return; }
   if (urlPath === '/api/gsc/sites' && req.method === 'GET') { await handleGSCSites(res, qs); return; }
   if (urlPath === '/api/gsc/analytics') { await handleGSCAnalytics(req, res, qs); return; }
