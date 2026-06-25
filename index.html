@@ -5667,7 +5667,26 @@ function startGoogleSignIn(){
     'google-signin',
     'width=480,height=600,left='+Math.round(screen.width/2-240)+',top='+Math.round(screen.height/2-300)
   );
-  if(!w){ alert('Please allow pop-ups for this site, then try again.'); }
+  if(!w||w.closed||typeof w.closed==='undefined'){
+    var errEl=document.getElementById('google-signin-error');
+    if(errEl){
+      errEl.innerHTML='Pop-ups are blocked. <a href="/api/auth/google/start" target="_blank" style="color:#4285f4;text-decoration:underline" onclick="this.parentElement.innerHTML=\'Opening Google sign-in \u2014 complete it in the new tab, then return here and refresh.\'">Click here to open Google sign-in</a> in a new tab.';
+      errEl.style.display='';
+    }
+    return;
+  }
+  var poll=setInterval(function(){
+    try{
+      if(w.closed){
+        clearInterval(poll);
+        var result=sessionStorage.getItem('google-signin-result');
+        if(result){
+          sessionStorage.removeItem('google-signin-result');
+          try{ var data=JSON.parse(result); window.postMessage(data,'*'); }catch(e){}
+        }
+      }
+    }catch(e){ clearInterval(poll); }
+  },500);
 }
 window.addEventListener('message',function(e){
   if(!e.data||e.data.type!=='google-signin') return;
