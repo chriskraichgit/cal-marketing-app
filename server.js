@@ -538,6 +538,71 @@ async function handleGoogleDisconnect(res) {
   jsonResponse(res, 200, { disconnected: true });
 }
 
+// ============ GOOGLE SIGN-IN (User Authentication) ============
+// NOTE: Add this redirect URI to Google Cloud Console OAuth credentials:
+// https://df44dd17-cdb7-4b8f-9e82-c52589af1601-00-1up1j4dm8544a.picard.replit.dev/api/auth/google/callback
+function getSignInRedirectUri() {
+  const domain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS || `localhost:${PORT}`;
+  const host = domain.split(',')[0].trim();
+  return `https://${host}/api/auth/google/callback`;
+}
+
+async function handleAuthGoogleStart(res) {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`<!DOCTYPE html><html><body><script>
+      window.opener && window.opener.postMessage({ type: 'google-signin', success: false, error: 'Google credentials not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Replit Secrets.' }, '*');
+      window.close();
+    </script><p style="font-family:sans-serif;padding:20px">Google credentials not configured.</p></body></html>`);
+    return;
+  }
+  const oauth2 = new google.auth.OAuth2(clientId, clientSecret, getSignInRedirectUri());
+  const authUrl = oauth2.generateAuthUrl({
+    access_type: 'online',
+    prompt: 'select_account',
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ],
+  });
+  res.writeHead(302, { Location: authUrl });
+  res.end();
+}
+
+async function handleAuthGoogleCallback(res, qs) {
+  const fail = (msg) => {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`<!DOCTYPE html><html><body><script>
+      window.opener && window.opener.postMessage(${JSON.stringify({ type: 'google-signin', success: false, error: msg })}, '*');
+      window.close();
+    </script><p style="font-family:sans-serif;padding:20px">Sign-in failed: ${msg}</p></body></html>`);
+  };
+  if (qs.error) { fail(qs.error); return; }
+  if (!qs.code) { fail('No authorization code received from Google.'); return; }
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) { fail('Google credentials not configured.'); return; }
+  try {
+    const oauth2 = new google.auth.OAuth2(clientId, clientSecret, getSignInRedirectUri());
+    const { tokens } = await oauth2.getToken(qs.code);
+    oauth2.setCredentials(tokens);
+    const api = google.oauth2({ version: 'v2', auth: oauth2 });
+    const info = await api.userinfo.get();
+    const email = (info.data.email || '').toLowerCase();
+    const name = info.data.name || '';
+    const picture = info.data.picture || '';
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(`<!DOCTYPE html><html><body><script>
+      window.opener && window.opener.postMessage(${JSON.stringify({ type: 'google-signin', success: true, email, name, picture })}, '*');
+      window.close();
+    </script><p style="font-family:sans-serif;padding:20px">Signed in! You can close this window.</p></body></html>`);
+  } catch (e) {
+    fail(e.message);
+  }
+}
+
 // Helper: authenticated HTTPS request using OAuth2 access token
 async function googleApiGet(oauth2, url) {
   const tokenInfo = await oauth2.getAccessToken();
@@ -845,6 +910,8 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (urlPath === '/api/auth/google/start' && req.method === 'GET') { await handleAuthGoogleStart(res); return; }
+  if (urlPath === '/api/auth/google/callback' && req.method === 'GET') { await handleAuthGoogleCallback(res, qs); return; }
   if (urlPath === '/api/google/connect' && req.method === 'GET') { await handleGoogleConnect(res); return; }
   if (urlPath === '/api/google/callback' && req.method === 'GET') { await handleGoogleCallback(res, qs); return; }
   if (urlPath === '/api/google/status' && req.method === 'GET') { await handleGoogleStatus(res); return; }
