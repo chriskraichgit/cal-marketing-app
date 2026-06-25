@@ -495,6 +495,8 @@ async function handleGoogleConnect(res) {
       'https://www.googleapis.com/auth/webmasters.readonly',
       'https://www.googleapis.com/auth/calendar.readonly',
       'https://www.googleapis.com/auth/analytics.readonly',
+      'https://www.googleapis.com/auth/gmail.readonly',
+      'https://www.googleapis.com/auth/spreadsheets.readonly',
     ],
   });
   jsonResponse(res, 200, { authUrl });
@@ -798,6 +800,107 @@ async function handleGA4Report(req, res, qs) {
   } catch (e) { jsonResponse(res, 200, { error: e.message, rows: [] }); }
 }
 
+// ---- Gmail ----
+async function handleGmailMessages(res, qs) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', messages: [] }); return; }
+  try {
+    const gmail = google.gmail({ version: 'v1', auth: oauth2 });
+    const listRes = await gmail.users.messages.list({
+      userId: 'me',
+      q: qs.q || '',
+      maxResults: parseInt(qs.maxResults) || 20,
+      pageToken: qs.pageToken || undefined,
+    });
+    const messageIds = (listRes.data.messages || []);
+    const messages = await Promise.all(
+      messageIds.map(async (m) => {
+        const msg = await gmail.users.messages.get({ userId: 'me', id: m.id, format: 'metadata', metadataHeaders: ['From', 'To', 'Subject', 'Date'] });
+        const headers = {};
+        (msg.data.payload.headers || []).forEach(h => { headers[h.name.toLowerCase()] = h.value; });
+        return {
+          id: m.id,
+          threadId: m.threadId,
+          snippet: msg.data.snippet,
+          subject: headers['subject'] || '(no subject)',
+          from: headers['from'] || '',
+          to: headers['to'] || '',
+          date: headers['date'] || '',
+          labelIds: msg.data.labelIds || [],
+        };
+      })
+    );
+    jsonResponse(res, 200, { messages, nextPageToken: listRes.data.nextPageToken || null, resultSizeEstimate: listRes.data.resultSizeEstimate || 0 });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, messages: [] }); }
+}
+
+// ---- Google Sheets ----
+async function handleSheetsRead(res, qs) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', values: [] }); return; }
+  const spreadsheetId = qs.spreadsheetId;
+  if (!spreadsheetId) { jsonResponse(res, 400, { error: 'MISSING_SPREADSHEET_ID' }); return; }
+  try {
+    const sheets = google.sheets({ version: 'v4', auth: oauth2 });
+    const range = qs.range || 'Sheet1';
+    const r = await sheets.spreadsheets.values.get({ spreadsheetId, range });
+    jsonResponse(res, 200, { values: r.data.values || [], range: r.data.range, majorDimension: r.data.majorDimension });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, values: [] }); }
+}
+
+async function handleSheetsMetadata(res, qs) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
+  const spreadsheetId = qs.spreadsheetId;
+  if (!spreadsheetId) { jsonResponse(res, 400, { error: 'MISSING_SPREADSHEET_ID' }); return; }
+  try {
+    const sheets = google.sheets({ version: 'v4', auth: oauth2 });
+    const r = await sheets.spreadsheets.get({ spreadsheetId, includeGridData: false });
+    jsonResponse(res, 200, {
+      title: r.data.properties.title,
+      sheets: (r.data.sheets || []).map(s => ({ title: s.properties.title, sheetId: s.properties.sheetId, rowCount: s.properties.gridProperties.rowCount, columnCount: s.properties.gridProperties.columnCount })),
+    });
+  } catch (e) { jsonResponse(res, 200, { error: e.message }); }
+}
+
+// ---- PageSpeed Insights ----
+async function handlePageSpeed(res, qs) {
+  const url = qs.url;
+  if (!url) { jsonResponse(res, 400, { error: 'MISSING_URL' }); return; }
+  const strategy = qs.strategy || 'mobile';
+  const apiKey = process.env.GOOGLE_API_KEY || process.env.PAGESPEED_API_KEY || '';
+  try {
+    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo${apiKey ? '&key=' + apiKey : ''}`;
+    const r = await fetch(apiUrl);
+    const data = await r.json();
+    if (data.error) { jsonResponse(res, 200, { error: data.error.message }); return; }
+    const cats = data.lighthouseResult.categories;
+    const audits = data.lighthouseResult.audits;
+    jsonResponse(res, 200, {
+      url,
+      strategy,
+      scores: {
+        performance: Math.round((cats.performance?.score || 0) * 100),
+        accessibility: Math.round((cats.accessibility?.score || 0) * 100),
+        bestPractices: Math.round((cats['best-practices']?.score || 0) * 100),
+        seo: Math.round((cats.seo?.score || 0) * 100),
+      },
+      metrics: {
+        fcp: audits['first-contentful-paint']?.displayValue,
+        lcp: audits['largest-contentful-paint']?.displayValue,
+        tbt: audits['total-blocking-time']?.displayValue,
+        cls: audits['cumulative-layout-shift']?.displayValue,
+        si: audits['speed-index']?.displayValue,
+        tti: audits['interactive']?.displayValue,
+      },
+      opportunities: Object.values(audits)
+        .filter(a => a.details?.type === 'opportunity' && a.score !== null && a.score < 0.9)
+        .map(a => ({ id: a.id, title: a.title, description: a.description, score: a.score, displayValue: a.displayValue }))
+        .slice(0, 10),
+    });
+  } catch (e) { jsonResponse(res, 200, { error: e.message }); }
+}
+
 // ============ STRIPE ============
 async function stripeApiRequest(method, path, body) {
   const key = (process.env.STRIPE_SECRET_KEY || '').replace(/[^\x20-\x7E]/g, '').trim();
@@ -980,6 +1083,10 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/gsc/analytics') { await handleGSCAnalytics(req, res, qs); return; }
   if (urlPath === '/api/ga4/properties' && req.method === 'GET') { await handleGA4Properties(res); return; }
   if (urlPath === '/api/ga4/report') { await handleGA4Report(req, res, qs); return; }
+  if (urlPath === '/api/gmail/messages' && req.method === 'GET') { await handleGmailMessages(res, qs); return; }
+  if (urlPath === '/api/sheets/read' && req.method === 'GET') { await handleSheetsRead(res, qs); return; }
+  if (urlPath === '/api/sheets/metadata' && req.method === 'GET') { await handleSheetsMetadata(res, qs); return; }
+  if (urlPath === '/api/pagespeed' && req.method === 'GET') { await handlePageSpeed(res, qs); return; }
   if (urlPath === '/api/calendar/events' && req.method === 'GET') { await handleCalendarEvents(res, qs); return; }
   if (urlPath === '/api/stripe/connect' && req.method === 'POST') { await handleStripeConnect(req, res); return; }
   if (urlPath === '/api/stripe/status' && req.method === 'GET') { await handleStripeStatus(res); return; }
