@@ -5696,9 +5696,15 @@ function connectGoogleForCompany(){
       }
     });
 }
+function isBusinessOwner(){
+  return window.currentRole==='admin'||window.currentRole==='agency';
+}
+function isStaffUser(){
+  return window.currentRole==='user';
+}
 function checkAndPromptGoogleConnect(){
   var role=window.currentRole||'';
-  if(role==='agency'||role==='test') return;
+  if(role!=='admin') return; // Only business owners (admin) connect Google
   var company=window.currentCompanyId||'default';
   var dismissed=localStorage.getItem('cal-google-prompt-dismissed-'+company);
   if(dismissed) return;
@@ -5709,6 +5715,11 @@ function checkAndPromptGoogleConnect(){
     }).catch(function(){});
 }
 function renderIntegrationsGrid(){
+  if(window.currentRole!=='admin'&&window.currentRole!=='agency') {
+    var _g=document.getElementById('settings-integrations-grid');
+    if(_g){ var _c=_g.closest('.card'); if(_c) _c.style.display='none'; }
+    return;
+  }
   var grid=document.getElementById('settings-integrations-grid');
   if(!grid) return;
   var company=window.currentCompanyId||'default';
@@ -5741,6 +5752,7 @@ function renderIntegrationsGrid(){
     });
 }
 function loadGBPLocations(company){
+  if(window.currentRole!=='admin'&&window.currentRole!=='agency') return;
   var grid=document.getElementById('settings-integrations-grid');
   if(!grid) return;
   var gbpCard=document.getElementById('int-gbp-card')||(function(){
@@ -5803,6 +5815,11 @@ function loadGBPLocations(company){
     });
 }
 function loadGBPReviewsWidget(containerId){
+  if(window.currentRole!=='admin'&&window.currentRole!=='agency'){
+    var _el=document.getElementById(containerId);
+    if(_el) _el.innerHTML='';
+    return;
+  }
   var container=document.getElementById(containerId);
   if(!container) return;
   var company=window.currentCompanyId||'default';
