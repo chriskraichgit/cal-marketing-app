@@ -9829,7 +9829,7 @@ function healthBadge(score){
     var el=document.getElementById('s-onboarding'); if(!el) return;
     var st=onbSyncCompletion();
     var canEdit=onbCanEdit();
-    var canModify=(window.currentRole==='admin');
+    var canModify=(window.currentRole==='admin'||window.currentRole==='agency'||window.currentRole==='test');
     var deletedSteps=st.deletedSteps||[];
     var customSteps=st.customSteps||[];
 
@@ -9908,6 +9908,7 @@ function healthBadge(score){
 
     el.innerHTML=header+prog+chips+body+customSection;
   }
+  window.renderOnboardingScreen=renderOnboardingScreen;
 
   /* ---- Milestone banners (req 4) ---- */
   var MILESTONES=[
@@ -10937,8 +10938,8 @@ var OB_STEPS=[
   {id:'review',label:'Request First Review'}
 ];
 function renderOnboarding(){
-  if(window.currentRole==='admin'){
-    if(typeof renderOnboardingScreen==='function') try{ renderOnboardingScreen(); }catch(e){}
+  if(typeof window.renderOnboardingScreen==='function'){
+    try{ window.renderOnboardingScreen(); }catch(e){}
     return;
   }
   var host=document.getElementById('s-onboarding');
