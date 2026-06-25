@@ -9,6 +9,7 @@ const PORT = 5000;
 const HOST = '0.0.0.0';
 
 const TOKEN_FILE = path.join(__dirname, '.gdrive-tokens.json');
+const GOOGLE_TOKEN_FILE = path.join(__dirname, '.google-tokens.json');
 const META_STORE_FILE = path.join(__dirname, '.cal-meta-store.json');
 // Known users for server-side meta token issuance.
 // Passwords are stored as SHA-256 hashes only — never plaintext.
@@ -451,6 +452,322 @@ async function handleUpload(req, res) {
   }
 }
 
+// ============ GOOGLE OAUTH (GBP / GSC / CALENDAR) ============
+function getGoogleRedirectUri() {
+  const domain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS || `localhost:${PORT}`;
+  const host = domain.split(',')[0].trim();
+  return `https://${host}/api/google/callback`;
+}
+
+function createGoogleOAuth2Client() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) return null;
+  return new google.auth.OAuth2(clientId, clientSecret, getGoogleRedirectUri());
+}
+
+function loadGoogleTokens() {
+  try { if (fs.existsSync(GOOGLE_TOKEN_FILE)) return JSON.parse(fs.readFileSync(GOOGLE_TOKEN_FILE, 'utf8')); } catch (e) {}
+  return null;
+}
+function saveGoogleTokens(tokens) { fs.writeFileSync(GOOGLE_TOKEN_FILE, JSON.stringify(tokens, null, 2)); }
+function deleteGoogleTokens() { try { if (fs.existsSync(GOOGLE_TOKEN_FILE)) fs.unlinkSync(GOOGLE_TOKEN_FILE); } catch (e) {} }
+
+function getGoogleAuthedClient() {
+  const oauth2 = createGoogleOAuth2Client();
+  if (!oauth2) return null;
+  const tokens = loadGoogleTokens();
+  if (!tokens) return null;
+  oauth2.setCredentials(tokens);
+  oauth2.on('tokens', (t) => { const cur = loadGoogleTokens() || {}; saveGoogleTokens(Object.assign({}, cur, t)); });
+  return oauth2;
+}
+
+async function handleGoogleConnect(res) {
+  const oauth2 = createGoogleOAuth2Client();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'GOOGLE_CREDENTIALS_NOT_CONFIGURED', authUrl: null }); return; }
+  const authUrl = oauth2.generateAuthUrl({
+    access_type: 'offline',
+    prompt: 'consent',
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/business.manage',
+      'https://www.googleapis.com/auth/webmasters.readonly',
+      'https://www.googleapis.com/auth/calendar.readonly',
+    ],
+  });
+  jsonResponse(res, 200, { authUrl });
+}
+
+async function handleGoogleCallback(res, qs) {
+  const html = (msg, isError) => `<!DOCTYPE html><html><head><title>Google</title></head><body><script>
+    window.opener && window.opener.postMessage(${JSON.stringify({ type: 'google-oauth', success: !isError, error: msg || null })}, '*');
+    if(!window.opener){ window.location.href = '/#settings'; }
+    window.close();
+  </script><p style="font-family:sans-serif;padding:20px">${isError ? 'Connection failed: ' + msg : 'Connected! You can close this window.'}</p></body></html>`;
+
+  if (qs.error) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html(qs.error, true)); return; }
+  if (!qs.code) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html('No code received', true)); return; }
+  const oauth2 = createGoogleOAuth2Client();
+  if (!oauth2) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html('Google credentials not configured', true)); return; }
+  try {
+    const { tokens } = await oauth2.getToken(qs.code);
+    saveGoogleTokens(tokens);
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(html(null, false));
+  } catch (e) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html(e.message, true)); }
+}
+
+async function handleGoogleStatus(res) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) {
+    jsonResponse(res, 200, { connected: false, configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) });
+    return;
+  }
+  try {
+    const api = google.oauth2({ version: 'v2', auth: oauth2 });
+    const info = await api.userinfo.get();
+    jsonResponse(res, 200, { connected: true, configured: true, user: info.data });
+  } catch (e) { deleteGoogleTokens(); jsonResponse(res, 200, { connected: false, configured: true, error: e.message }); }
+}
+
+async function handleGoogleDisconnect(res) {
+  const oauth2 = getGoogleAuthedClient();
+  if (oauth2) { try { const t = loadGoogleTokens(); const tok = t && (t.access_token || t.refresh_token); if (tok) await oauth2.revokeToken(tok); } catch (e) {} }
+  deleteGoogleTokens();
+  jsonResponse(res, 200, { disconnected: true });
+}
+
+// Helper: authenticated HTTPS request using OAuth2 access token
+async function googleApiGet(oauth2, url) {
+  const tokenInfo = await oauth2.getAccessToken();
+  const accessToken = tokenInfo.token || tokenInfo.res?.data?.access_token;
+  return new Promise((resolve, reject) => {
+    const parsed = new URL(url);
+    const opts = {
+      hostname: parsed.hostname,
+      path: parsed.pathname + parsed.search,
+      headers: { 'Authorization': 'Bearer ' + accessToken, 'Accept': 'application/json' },
+    };
+    require('https').get(opts, r => {
+      let d = ''; r.on('data', c => d += c);
+      r.on('end', () => { try { resolve({ status: r.statusCode, body: JSON.parse(d) }); } catch(e) { resolve({ status: r.statusCode, body: {} }); } });
+    }).on('error', reject);
+  });
+}
+
+// ---- GBP ----
+async function handleGBPAccounts(res) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', accounts: [] }); return; }
+  try {
+    const r = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+    jsonResponse(res, 200, { accounts: r.body.accounts || [] });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, accounts: [] }); }
+}
+
+async function handleGBPLocations(res, qs) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', locations: [] }); return; }
+  const account = qs.account;
+  if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
+  try {
+    const r = await googleApiGet(oauth2, `https://mybusinessbusinessinformation.googleapis.com/v1/${account}/locations?readMask=name,title,storefrontAddress,websiteUri`);
+    jsonResponse(res, 200, { locations: r.body.locations || [] });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, locations: [] }); }
+}
+
+async function handleGBPReviews(res, qs) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', reviews: [] }); return; }
+  const location = qs.location;
+  if (!location) { jsonResponse(res, 400, { error: 'MISSING_LOCATION' }); return; }
+  try {
+    const r = await googleApiGet(oauth2, `https://mybusiness.googleapis.com/v4/${location}/reviews`);
+    jsonResponse(res, 200, { reviews: r.body.reviews || [], averageRating: r.body.averageRating || null });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, reviews: [] }); }
+}
+
+async function handleGBPReply(req, res) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
+  let body;
+  try { const raw = await readRequestBody(req, 32 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+  const { location, reviewId, comment } = body || {};
+  if (!location || !reviewId || !comment) { jsonResponse(res, 400, { error: 'MISSING_FIELDS' }); return; }
+  try {
+    const tokenInfo = await oauth2.getAccessToken();
+    const accessToken = tokenInfo.token;
+    const data = JSON.stringify({ comment });
+    await new Promise((resolve, reject) => {
+      const opts = {
+        hostname: 'mybusiness.googleapis.com',
+        path: `/v4/${location}/reviews/${reviewId}/reply`,
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) },
+      };
+      const r = require('https').request(opts, res2 => { let d = ''; res2.on('data', c => d += c); res2.on('end', () => resolve({ status: res2.statusCode })); });
+      r.on('error', reject); r.write(data); r.end();
+    });
+    jsonResponse(res, 200, { ok: true });
+  } catch (e) { jsonResponse(res, 200, { error: e.message }); }
+}
+
+// ---- GSC ----
+async function handleGSCSites(res) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', sites: [] }); return; }
+  try {
+    const sc = google.searchconsole({ version: 'v1', auth: oauth2 });
+    const r = await sc.sites.list();
+    jsonResponse(res, 200, { sites: r.data.siteEntry || [] });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, sites: [] }); }
+}
+
+async function handleGSCAnalytics(req, res, qs) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', rows: [] }); return; }
+  const siteUrl = qs.siteUrl;
+  if (!siteUrl) { jsonResponse(res, 400, { error: 'MISSING_SITE_URL' }); return; }
+  let body = {};
+  if (req.method === 'POST') {
+    try { const raw = await readRequestBody(req, 32 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) {}
+  }
+  const requestBody = Object.assign({
+    startDate: body.startDate || new Date(Date.now() - 28 * 86400000).toISOString().slice(0, 10),
+    endDate: body.endDate || new Date().toISOString().slice(0, 10),
+    dimensions: body.dimensions || ['query'],
+    rowLimit: body.rowLimit || 25,
+  }, body);
+  try {
+    const sc = google.searchconsole({ version: 'v1', auth: oauth2 });
+    const r = await sc.searchanalytics.query({ siteUrl, requestBody });
+    jsonResponse(res, 200, { rows: r.data.rows || [], responseAggregationType: r.data.responseAggregationType });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, rows: [] }); }
+}
+
+// ---- Calendar ----
+async function handleCalendarEvents(res, qs) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', events: [] }); return; }
+  try {
+    const cal = google.calendar({ version: 'v3', auth: oauth2 });
+    const now = new Date();
+    const params = {
+      calendarId: qs.calendarId || 'primary',
+      timeMin: qs.timeMin || now.toISOString(),
+      timeMax: qs.timeMax || new Date(now.getTime() + 30 * 86400000).toISOString(),
+      singleEvents: true,
+      orderBy: 'startTime',
+      maxResults: parseInt(qs.maxResults) || 50,
+    };
+    const r = await cal.events.list(params);
+    const events = (r.data.items || []).map(e => ({
+      id: e.id,
+      summary: e.summary,
+      description: e.description,
+      start: e.start,
+      end: e.end,
+      location: e.location,
+      htmlLink: e.htmlLink,
+      attendees: e.attendees,
+      status: e.status,
+    }));
+    jsonResponse(res, 200, { events });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, events: [] }); }
+}
+
+// ============ STRIPE ============
+async function stripeApiRequest(method, path, body) {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) throw new Error('STRIPE_SECRET_KEY not set');
+  return new Promise((resolve, reject) => {
+    const data = body ? new URLSearchParams(body).toString() : null;
+    const opts = {
+      hostname: 'api.stripe.com',
+      path,
+      method,
+      headers: {
+        'Authorization': 'Basic ' + Buffer.from(key + ':').toString('base64'),
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Stripe-Version': '2023-10-16',
+      },
+    };
+    if (data) opts.headers['Content-Length'] = Buffer.byteLength(data);
+    const r = require('https').request(opts, res2 => {
+      let d = ''; res2.on('data', c => d += c);
+      res2.on('end', () => { try { resolve({ status: res2.statusCode, body: JSON.parse(d) }); } catch(e) { resolve({ status: res2.statusCode, body: {} }); } });
+    });
+    r.on('error', reject);
+    if (data) r.write(data);
+    r.end();
+  });
+}
+
+const STRIPE_TOKEN_FILE = path.join(__dirname, '.stripe-connect.json');
+function loadStripeConnect() { try { if (fs.existsSync(STRIPE_TOKEN_FILE)) return JSON.parse(fs.readFileSync(STRIPE_TOKEN_FILE, 'utf8')); } catch (e) {} return null; }
+function saveStripeConnect(data) { fs.writeFileSync(STRIPE_TOKEN_FILE, JSON.stringify(data, null, 2)); }
+function deleteStripeConnect() { try { if (fs.existsSync(STRIPE_TOKEN_FILE)) fs.unlinkSync(STRIPE_TOKEN_FILE); } catch (e) {} }
+
+async function handleStripeConnect(req, res) {
+  // For now: validate the secret key works and store a connected flag
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) { jsonResponse(res, 200, { ok: false, error: 'STRIPE_SECRET_KEY not set' }); return; }
+  try {
+    const r = await stripeApiRequest('GET', '/v1/account', null);
+    if (r.status === 200 && r.body.id) {
+      saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
+      jsonResponse(res, 200, { ok: true, accountId: r.body.id, email: r.body.email });
+    } else {
+      jsonResponse(res, 200, { ok: false, error: r.body.error?.message || 'Stripe connection failed' });
+    }
+  } catch (e) { jsonResponse(res, 200, { ok: false, error: e.message }); }
+}
+
+async function handleStripeStatus(res) {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) { jsonResponse(res, 200, { connected: false, configured: false }); return; }
+  const saved = loadStripeConnect();
+  if (!saved) { jsonResponse(res, 200, { connected: false, configured: true }); return; }
+  try {
+    const r = await stripeApiRequest('GET', '/v1/account', null);
+    if (r.status === 200) {
+      jsonResponse(res, 200, { connected: true, configured: true, accountId: r.body.id, email: r.body.email, country: r.body.country });
+    } else {
+      jsonResponse(res, 200, { connected: false, configured: true });
+    }
+  } catch (e) { jsonResponse(res, 200, { connected: false, configured: true, error: e.message }); }
+}
+
+async function handleStripeRevenue(res, qs) {
+  const key = process.env.STRIPE_SECRET_KEY;
+  if (!key) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', charges: [], total: 0 }); return; }
+  try {
+    const limit = Math.min(parseInt(qs.limit) || 20, 100);
+    const params = new URLSearchParams({ limit: limit.toString() });
+    if (qs.created_gte) params.set('created[gte]', qs.created_gte);
+    if (qs.created_lte) params.set('created[lte]', qs.created_lte);
+    const r = await stripeApiRequest('GET', '/v1/charges?' + params.toString(), null);
+    const charges = (r.body.data || []).map(c => ({
+      id: c.id,
+      amount: c.amount,
+      currency: c.currency,
+      status: c.status,
+      description: c.description,
+      customer: c.customer,
+      created: c.created,
+      receipt_url: c.receipt_url,
+    }));
+    const total = charges.filter(c => c.status === 'succeeded').reduce((s, c) => s + c.amount, 0);
+    jsonResponse(res, 200, { charges, total, currency: charges[0]?.currency || 'usd' });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, charges: [], total: 0 }); }
+}
+
+async function handleStripeDisconnect(res) {
+  deleteStripeConnect();
+  jsonResponse(res, 200, { disconnected: true });
+}
+
 const server = http.createServer(async (req, res) => {
   const urlPath = req.url.split('?')[0];
   const qs = parseQueryString(req.url);
@@ -512,6 +829,22 @@ const server = http.createServer(async (req, res) => {
     await handleGithubStatus(req, res);
     return;
   }
+
+  if (urlPath === '/api/google/connect' && req.method === 'GET') { await handleGoogleConnect(res); return; }
+  if (urlPath === '/api/google/callback' && req.method === 'GET') { await handleGoogleCallback(res, qs); return; }
+  if (urlPath === '/api/google/status' && req.method === 'GET') { await handleGoogleStatus(res); return; }
+  if (urlPath === '/api/google/disconnect' && req.method === 'POST') { await handleGoogleDisconnect(res); return; }
+  if (urlPath === '/api/gbp/accounts' && req.method === 'GET') { await handleGBPAccounts(res); return; }
+  if (urlPath === '/api/gbp/locations' && req.method === 'GET') { await handleGBPLocations(res, qs); return; }
+  if (urlPath === '/api/gbp/reviews' && req.method === 'GET') { await handleGBPReviews(res, qs); return; }
+  if (urlPath === '/api/gbp/reply' && req.method === 'POST') { await handleGBPReply(req, res); return; }
+  if (urlPath === '/api/gsc/sites' && req.method === 'GET') { await handleGSCSites(res); return; }
+  if (urlPath === '/api/gsc/analytics') { await handleGSCAnalytics(req, res, qs); return; }
+  if (urlPath === '/api/calendar/events' && req.method === 'GET') { await handleCalendarEvents(res, qs); return; }
+  if (urlPath === '/api/stripe/connect' && req.method === 'POST') { await handleStripeConnect(req, res); return; }
+  if (urlPath === '/api/stripe/status' && req.method === 'GET') { await handleStripeStatus(res); return; }
+  if (urlPath === '/api/stripe/revenue' && req.method === 'GET') { await handleStripeRevenue(res, qs); return; }
+  if (urlPath === '/api/stripe/disconnect' && req.method === 'POST') { await handleStripeDisconnect(res); return; }
 
   const filePath = path.join(__dirname, 'index.html');
   fs.readFile(filePath, (err, data) => {
