@@ -4,6 +4,13 @@ const path = require('path');
 const crypto = require('crypto');
 const { google } = require('googleapis');
 const { URL } = require('url');
+const { createClient } = require('@supabase/supabase-js');
+const ws = require('ws');
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY,
+  { realtime: { transport: ws } }
+);
 
 const PORT = 5000;
 const HOST = '0.0.0.0';
@@ -466,26 +473,74 @@ function createGoogleOAuth2Client() {
   return new google.auth.OAuth2(clientId, clientSecret, getGoogleRedirectUri());
 }
 
-function getGoogleTokenFile(companyId) {
-  const safe = (companyId || 'default').replace(/[^a-zA-Z0-9_-]/g, '');
-  return `./google-tokens-${safe}.json`;
+// ── Supabase-backed Google token storage ──────────────────────────────────
+async function loadGoogleTokens(companyId) {
+  try {
+    const { data, error } = await supabase
+      .from('google_tokens')
+      .select('tokens')
+      .eq('company_id', companyId)
+      .single();
+    if (error || !data) return null;
+    return data.tokens;
+  } catch (e) {
+    console.error('loadGoogleTokens error:', e.message);
+    return null;
+  }
 }
-function loadGoogleTokens(companyId) {
-  try { const f = getGoogleTokenFile(companyId); if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) {}
-  return null;
-}
-function saveGoogleTokens(companyId, tokens) { fs.writeFileSync(getGoogleTokenFile(companyId), JSON.stringify(tokens, null, 2)); }
-function deleteGoogleTokens(companyId) { try { const f = getGoogleTokenFile(companyId); if (fs.existsSync(f)) fs.unlinkSync(f); } catch (e) {} }
 
-function getGoogleAuthedClient(companyId) {
-  const oauth2 = createGoogleOAuth2Client();
-  if (!oauth2) return null;
-  const tokens = loadGoogleTokens(companyId);
-  if (!tokens) return null;
-  oauth2.setCredentials(tokens);
-  oauth2.on('tokens', (t) => { const cur = loadGoogleTokens(companyId) || {}; saveGoogleTokens(companyId, Object.assign({}, cur, t)); });
-  return oauth2;
+async function saveGoogleTokens(companyId, tokens, userInfo) {
+  try {
+    const row = {
+      company_id: companyId,
+      tokens: tokens,
+      updated_at: new Date().toISOString()
+    };
+    if (userInfo && userInfo.email) row.user_email = userInfo.email;
+    if (userInfo && userInfo.name)  row.user_name  = userInfo.name;
+    const { error } = await supabase
+      .from('google_tokens')
+      .upsert(row, { onConflict: 'company_id' });
+    if (error) console.error('saveGoogleTokens error:', error.message);
+  } catch (e) {
+    console.error('saveGoogleTokens error:', e.message);
+  }
 }
+
+async function deleteGoogleTokens(companyId) {
+  try {
+    const { error } = await supabase
+      .from('google_tokens')
+      .delete()
+      .eq('company_id', companyId);
+    if (error) console.error('deleteGoogleTokens error:', error.message);
+  } catch (e) {
+    console.error('deleteGoogleTokens error:', e.message);
+  }
+}
+
+async function getGoogleAuthedClient(companyId) {
+  const tokens = await loadGoogleTokens(companyId);
+  if (!tokens) return null;
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
+  oauth2Client.setCredentials(tokens);
+  // Auto-refresh if expired
+  if (tokens.expiry_date && tokens.expiry_date < Date.now() + 60000) {
+    try {
+      const { credentials } = await oauth2Client.refreshAccessToken();
+      await saveGoogleTokens(companyId, credentials);
+      oauth2Client.setCredentials(credentials);
+    } catch (e) {
+      console.error('Token refresh error for', companyId, e.message);
+    }
+  }
+  return oauth2Client;
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 async function handleGoogleConnect(res, qs) {
   const companyId = (qs && qs.company) || 'default';
@@ -522,7 +577,14 @@ async function handleGoogleCallback(res, qs) {
   try {
     const companyId = qs.state || 'default';
     const { tokens } = await oauth2.getToken(qs.code);
-    saveGoogleTokens(companyId, tokens);
+    let userInfo = {};
+    try {
+      oauth2.setCredentials(tokens);
+      const oauth2api = google.oauth2({ version: 'v2', auth: oauth2 });
+      const { data } = await oauth2api.userinfo.get();
+      userInfo = { email: data.email, name: data.name };
+    } catch(e) {}
+    await saveGoogleTokens(companyId, tokens, userInfo);
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html(null, false));
   } catch (e) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html(e.message, true)); }
@@ -530,23 +592,28 @@ async function handleGoogleCallback(res, qs) {
 
 async function handleGoogleStatus(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
-  if (!oauth2) {
+  const tokens = await loadGoogleTokens(companyId);
+  if (!tokens) {
     jsonResponse(res, 200, { connected: false, configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) });
     return;
   }
-  try {
-    const api = google.oauth2({ version: 'v2', auth: oauth2 });
-    const info = await api.userinfo.get();
-    jsonResponse(res, 200, { connected: true, configured: true, user: info.data });
-  } catch (e) { deleteGoogleTokens(companyId); jsonResponse(res, 200, { connected: false, configured: true, error: e.message }); }
+  const { data } = await supabase
+    .from('google_tokens')
+    .select('user_email, user_name')
+    .eq('company_id', companyId)
+    .single();
+  jsonResponse(res, 200, {
+    connected: true,
+    configured: true,
+    user: { email: data && data.user_email, name: data && data.user_name }
+  });
 }
 
 async function handleGoogleDisconnect(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
-  if (oauth2) { try { const t = loadGoogleTokens(companyId); const tok = t && (t.access_token || t.refresh_token); if (tok) await oauth2.revokeToken(tok); } catch (e) {} }
-  deleteGoogleTokens(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
+  if (oauth2) { try { const t = await loadGoogleTokens(companyId); const tok = t && (t.access_token || t.refresh_token); if (tok) await oauth2.revokeToken(tok); } catch (e) {} }
+  await deleteGoogleTokens(companyId);
   jsonResponse(res, 200, { disconnected: true });
 }
 
@@ -554,11 +621,11 @@ async function handleCompaniesStatus(res) {
   const companies = ['cal', 'apexlegal', 'unitedsewer', 'greencollar', 'willydiamond', 'housesautobody'];
   const statuses = {};
   for (const c of companies) {
-    const tokens = loadGoogleTokens(c);
+    const tokens = await loadGoogleTokens(c);
     statuses[c] = { connected: !!tokens };
     if (tokens) {
       try {
-        const oauth2 = getGoogleAuthedClient(c);
+        const oauth2 = await getGoogleAuthedClient(c);
         const api = google.oauth2({ version: 'v2', auth: oauth2 });
         const info = await api.userinfo.get();
         statuses[c].user = info.data.email;
@@ -659,7 +726,7 @@ async function googleApiGet(oauth2, url) {
 // ---- GBP ----
 async function handleGBPAccounts(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', accounts: [] }); return; }
   try {
     const r = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
@@ -669,7 +736,7 @@ async function handleGBPAccounts(res, qs) {
 
 async function handleGBPLocations(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', locations: [] }); return; }
   const account = qs.account;
   if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
@@ -681,7 +748,7 @@ async function handleGBPLocations(res, qs) {
 
 async function handleGBPReviews(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', reviews: [] }); return; }
   const location = qs.location;
   if (!location) { jsonResponse(res, 400, { error: 'MISSING_LOCATION' }); return; }
@@ -693,7 +760,7 @@ async function handleGBPReviews(res, qs) {
 
 async function handleGBPReply(req, res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
   let body;
   try { const raw = await readRequestBody(req, 32 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
@@ -720,7 +787,7 @@ async function handleGBPReply(req, res, qs) {
 // ---- GSC ----
 async function handleGSCSites(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', sites: [] }); return; }
   try {
     const sc = google.searchconsole({ version: 'v1', auth: oauth2 });
@@ -731,7 +798,7 @@ async function handleGSCSites(res, qs) {
 
 async function handleGSCAnalytics(req, res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', rows: [] }); return; }
   const siteUrl = qs.siteUrl;
   if (!siteUrl) { jsonResponse(res, 400, { error: 'MISSING_SITE_URL' }); return; }
@@ -755,7 +822,7 @@ async function handleGSCAnalytics(req, res, qs) {
 // ---- Calendar ----
 async function handleCalendarEvents(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', events: [] }); return; }
   try {
     const cal = google.calendar({ version: 'v3', auth: oauth2 });
@@ -787,7 +854,7 @@ async function handleCalendarEvents(res, qs) {
 // ---- GA4 ----
 async function handleGA4Properties(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', properties: [] }); return; }
   try {
     const admin = google.analyticsadmin({ version: 'v1beta', auth: oauth2 });
@@ -804,7 +871,7 @@ async function handleGA4Properties(res, qs) {
 
 async function handleGA4Report(req, res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', rows: [] }); return; }
   const propertyId = qs.propertyId;
   if (!propertyId) { jsonResponse(res, 400, { error: 'MISSING_PROPERTY_ID' }); return; }
@@ -844,7 +911,7 @@ async function handleGA4Report(req, res, qs) {
 // ---- Gmail ----
 async function handleGmailMessages(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', messages: [] }); return; }
   try {
     const gmail = google.gmail({ version: 'v1', auth: oauth2 });
@@ -879,7 +946,7 @@ async function handleGmailMessages(res, qs) {
 // ---- Google Sheets ----
 async function handleSheetsRead(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', values: [] }); return; }
   const spreadsheetId = qs.spreadsheetId;
   if (!spreadsheetId) { jsonResponse(res, 400, { error: 'MISSING_SPREADSHEET_ID' }); return; }
@@ -893,7 +960,7 @@ async function handleSheetsRead(res, qs) {
 
 async function handleSheetsMetadata(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const oauth2 = getGoogleAuthedClient(companyId);
+  const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
   const spreadsheetId = qs.spreadsheetId;
   if (!spreadsheetId) { jsonResponse(res, 400, { error: 'MISSING_SPREADSHEET_ID' }); return; }
