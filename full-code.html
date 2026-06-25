@@ -5947,7 +5947,7 @@ function setupRoleUI(){
     if(sbAgency) sbAgency.style.display='';
     buildAcctDd(); setCurrentAcct('a1');
     buildSidebarAccounts();
-    setTimeout(fillObSidebar,200);
+    setTimeout(function(){ if(typeof renderObSidebar==='function') renderObSidebar(); },200);
   } else if(currentRole==='test'){
     if(accWrap) accWrap.style.display='block';
     document.body.classList.add('has-acct-switch');
