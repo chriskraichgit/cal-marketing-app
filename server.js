@@ -466,29 +466,35 @@ function createGoogleOAuth2Client() {
   return new google.auth.OAuth2(clientId, clientSecret, getGoogleRedirectUri());
 }
 
-function loadGoogleTokens() {
-  try { if (fs.existsSync(GOOGLE_TOKEN_FILE)) return JSON.parse(fs.readFileSync(GOOGLE_TOKEN_FILE, 'utf8')); } catch (e) {}
+function getGoogleTokenFile(companyId) {
+  const safe = (companyId || 'default').replace(/[^a-zA-Z0-9_-]/g, '');
+  return `./google-tokens-${safe}.json`;
+}
+function loadGoogleTokens(companyId) {
+  try { const f = getGoogleTokenFile(companyId); if (fs.existsSync(f)) return JSON.parse(fs.readFileSync(f, 'utf8')); } catch (e) {}
   return null;
 }
-function saveGoogleTokens(tokens) { fs.writeFileSync(GOOGLE_TOKEN_FILE, JSON.stringify(tokens, null, 2)); }
-function deleteGoogleTokens() { try { if (fs.existsSync(GOOGLE_TOKEN_FILE)) fs.unlinkSync(GOOGLE_TOKEN_FILE); } catch (e) {} }
+function saveGoogleTokens(companyId, tokens) { fs.writeFileSync(getGoogleTokenFile(companyId), JSON.stringify(tokens, null, 2)); }
+function deleteGoogleTokens(companyId) { try { const f = getGoogleTokenFile(companyId); if (fs.existsSync(f)) fs.unlinkSync(f); } catch (e) {} }
 
-function getGoogleAuthedClient() {
+function getGoogleAuthedClient(companyId) {
   const oauth2 = createGoogleOAuth2Client();
   if (!oauth2) return null;
-  const tokens = loadGoogleTokens();
+  const tokens = loadGoogleTokens(companyId);
   if (!tokens) return null;
   oauth2.setCredentials(tokens);
-  oauth2.on('tokens', (t) => { const cur = loadGoogleTokens() || {}; saveGoogleTokens(Object.assign({}, cur, t)); });
+  oauth2.on('tokens', (t) => { const cur = loadGoogleTokens(companyId) || {}; saveGoogleTokens(companyId, Object.assign({}, cur, t)); });
   return oauth2;
 }
 
-async function handleGoogleConnect(res) {
+async function handleGoogleConnect(res, qs) {
+  const companyId = (qs && qs.company) || 'default';
   const oauth2 = createGoogleOAuth2Client();
   if (!oauth2) { jsonResponse(res, 200, { error: 'GOOGLE_CREDENTIALS_NOT_CONFIGURED', authUrl: null }); return; }
   const authUrl = oauth2.generateAuthUrl({
     access_type: 'offline',
     prompt: 'consent',
+    state: companyId,
     scope: [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/business.manage',
@@ -514,15 +520,17 @@ async function handleGoogleCallback(res, qs) {
   const oauth2 = createGoogleOAuth2Client();
   if (!oauth2) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html('Google credentials not configured', true)); return; }
   try {
+    const companyId = qs.state || 'default';
     const { tokens } = await oauth2.getToken(qs.code);
-    saveGoogleTokens(tokens);
+    saveGoogleTokens(companyId, tokens);
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html(null, false));
   } catch (e) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html(e.message, true)); }
 }
 
-async function handleGoogleStatus(res) {
-  const oauth2 = getGoogleAuthedClient();
+async function handleGoogleStatus(res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) {
     jsonResponse(res, 200, { connected: false, configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) });
     return;
@@ -531,14 +539,36 @@ async function handleGoogleStatus(res) {
     const api = google.oauth2({ version: 'v2', auth: oauth2 });
     const info = await api.userinfo.get();
     jsonResponse(res, 200, { connected: true, configured: true, user: info.data });
-  } catch (e) { deleteGoogleTokens(); jsonResponse(res, 200, { connected: false, configured: true, error: e.message }); }
+  } catch (e) { deleteGoogleTokens(companyId); jsonResponse(res, 200, { connected: false, configured: true, error: e.message }); }
 }
 
-async function handleGoogleDisconnect(res) {
-  const oauth2 = getGoogleAuthedClient();
-  if (oauth2) { try { const t = loadGoogleTokens(); const tok = t && (t.access_token || t.refresh_token); if (tok) await oauth2.revokeToken(tok); } catch (e) {} }
-  deleteGoogleTokens();
+async function handleGoogleDisconnect(res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
+  if (oauth2) { try { const t = loadGoogleTokens(companyId); const tok = t && (t.access_token || t.refresh_token); if (tok) await oauth2.revokeToken(tok); } catch (e) {} }
+  deleteGoogleTokens(companyId);
   jsonResponse(res, 200, { disconnected: true });
+}
+
+async function handleCompaniesStatus(res) {
+  const companies = ['cal', 'apexlegal', 'unitedsewer', 'greencollar', 'willydiamond', 'housesautobody'];
+  const statuses = {};
+  for (const c of companies) {
+    const tokens = loadGoogleTokens(c);
+    statuses[c] = { connected: !!tokens };
+    if (tokens) {
+      try {
+        const oauth2 = getGoogleAuthedClient(c);
+        const api = google.oauth2({ version: 'v2', auth: oauth2 });
+        const info = await api.userinfo.get();
+        statuses[c].user = info.data.email;
+      } catch (e) {
+        statuses[c].connected = false;
+        statuses[c].error = e.message;
+      }
+    }
+  }
+  jsonResponse(res, 200, { companies: statuses });
 }
 
 // ============ GOOGLE SIGN-IN (User Authentication) ============
@@ -627,8 +657,9 @@ async function googleApiGet(oauth2, url) {
 }
 
 // ---- GBP ----
-async function handleGBPAccounts(res) {
-  const oauth2 = getGoogleAuthedClient();
+async function handleGBPAccounts(res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', accounts: [] }); return; }
   try {
     const r = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
@@ -637,7 +668,8 @@ async function handleGBPAccounts(res) {
 }
 
 async function handleGBPLocations(res, qs) {
-  const oauth2 = getGoogleAuthedClient();
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', locations: [] }); return; }
   const account = qs.account;
   if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
@@ -648,7 +680,8 @@ async function handleGBPLocations(res, qs) {
 }
 
 async function handleGBPReviews(res, qs) {
-  const oauth2 = getGoogleAuthedClient();
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', reviews: [] }); return; }
   const location = qs.location;
   if (!location) { jsonResponse(res, 400, { error: 'MISSING_LOCATION' }); return; }
@@ -658,8 +691,9 @@ async function handleGBPReviews(res, qs) {
   } catch (e) { jsonResponse(res, 200, { error: e.message, reviews: [] }); }
 }
 
-async function handleGBPReply(req, res) {
-  const oauth2 = getGoogleAuthedClient();
+async function handleGBPReply(req, res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
   let body;
   try { const raw = await readRequestBody(req, 32 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
@@ -684,8 +718,9 @@ async function handleGBPReply(req, res) {
 }
 
 // ---- GSC ----
-async function handleGSCSites(res) {
-  const oauth2 = getGoogleAuthedClient();
+async function handleGSCSites(res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', sites: [] }); return; }
   try {
     const sc = google.searchconsole({ version: 'v1', auth: oauth2 });
@@ -695,7 +730,8 @@ async function handleGSCSites(res) {
 }
 
 async function handleGSCAnalytics(req, res, qs) {
-  const oauth2 = getGoogleAuthedClient();
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', rows: [] }); return; }
   const siteUrl = qs.siteUrl;
   if (!siteUrl) { jsonResponse(res, 400, { error: 'MISSING_SITE_URL' }); return; }
@@ -718,7 +754,8 @@ async function handleGSCAnalytics(req, res, qs) {
 
 // ---- Calendar ----
 async function handleCalendarEvents(res, qs) {
-  const oauth2 = getGoogleAuthedClient();
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', events: [] }); return; }
   try {
     const cal = google.calendar({ version: 'v3', auth: oauth2 });
@@ -748,8 +785,9 @@ async function handleCalendarEvents(res, qs) {
 }
 
 // ---- GA4 ----
-async function handleGA4Properties(res) {
-  const oauth2 = getGoogleAuthedClient();
+async function handleGA4Properties(res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', properties: [] }); return; }
   try {
     const admin = google.analyticsadmin({ version: 'v1beta', auth: oauth2 });
@@ -765,7 +803,8 @@ async function handleGA4Properties(res) {
 }
 
 async function handleGA4Report(req, res, qs) {
-  const oauth2 = getGoogleAuthedClient();
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', rows: [] }); return; }
   const propertyId = qs.propertyId;
   if (!propertyId) { jsonResponse(res, 400, { error: 'MISSING_PROPERTY_ID' }); return; }
@@ -804,7 +843,8 @@ async function handleGA4Report(req, res, qs) {
 
 // ---- Gmail ----
 async function handleGmailMessages(res, qs) {
-  const oauth2 = getGoogleAuthedClient();
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', messages: [] }); return; }
   try {
     const gmail = google.gmail({ version: 'v1', auth: oauth2 });
@@ -838,7 +878,8 @@ async function handleGmailMessages(res, qs) {
 
 // ---- Google Sheets ----
 async function handleSheetsRead(res, qs) {
-  const oauth2 = getGoogleAuthedClient();
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', values: [] }); return; }
   const spreadsheetId = qs.spreadsheetId;
   if (!spreadsheetId) { jsonResponse(res, 400, { error: 'MISSING_SPREADSHEET_ID' }); return; }
@@ -851,7 +892,8 @@ async function handleSheetsRead(res, qs) {
 }
 
 async function handleSheetsMetadata(res, qs) {
-  const oauth2 = getGoogleAuthedClient();
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
   const spreadsheetId = qs.spreadsheetId;
   if (!spreadsheetId) { jsonResponse(res, 400, { error: 'MISSING_SPREADSHEET_ID' }); return; }
@@ -1073,17 +1115,18 @@ const server = http.createServer(async (req, res) => {
 
   if (urlPath === '/api/auth/google/start' && req.method === 'GET') { await handleAuthGoogleStart(res); return; }
   if (urlPath === '/api/auth/google/callback' && req.method === 'GET') { await handleAuthGoogleCallback(res, qs); return; }
-  if (urlPath === '/api/google/connect' && req.method === 'GET') { await handleGoogleConnect(res); return; }
+  if (urlPath === '/api/google/connect' && req.method === 'GET') { await handleGoogleConnect(res, qs); return; }
   if (urlPath === '/api/google/callback' && req.method === 'GET') { await handleGoogleCallback(res, qs); return; }
-  if (urlPath === '/api/google/status' && req.method === 'GET') { await handleGoogleStatus(res); return; }
-  if (urlPath === '/api/google/disconnect' && req.method === 'POST') { await handleGoogleDisconnect(res); return; }
-  if (urlPath === '/api/gbp/accounts' && req.method === 'GET') { await handleGBPAccounts(res); return; }
+  if (urlPath === '/api/google/status' && req.method === 'GET') { await handleGoogleStatus(res, qs); return; }
+  if (urlPath === '/api/google/disconnect' && req.method === 'POST') { await handleGoogleDisconnect(res, qs); return; }
+  if (urlPath === '/api/companies/status' && req.method === 'GET') { await handleCompaniesStatus(res); return; }
+  if (urlPath === '/api/gbp/accounts' && req.method === 'GET') { await handleGBPAccounts(res, qs); return; }
   if (urlPath === '/api/gbp/locations' && req.method === 'GET') { await handleGBPLocations(res, qs); return; }
   if (urlPath === '/api/gbp/reviews' && req.method === 'GET') { await handleGBPReviews(res, qs); return; }
-  if (urlPath === '/api/gbp/reply' && req.method === 'POST') { await handleGBPReply(req, res); return; }
-  if (urlPath === '/api/gsc/sites' && req.method === 'GET') { await handleGSCSites(res); return; }
+  if (urlPath === '/api/gbp/reply' && req.method === 'POST') { await handleGBPReply(req, res, qs); return; }
+  if (urlPath === '/api/gsc/sites' && req.method === 'GET') { await handleGSCSites(res, qs); return; }
   if (urlPath === '/api/gsc/analytics') { await handleGSCAnalytics(req, res, qs); return; }
-  if (urlPath === '/api/ga4/properties' && req.method === 'GET') { await handleGA4Properties(res); return; }
+  if (urlPath === '/api/ga4/properties' && req.method === 'GET') { await handleGA4Properties(res, qs); return; }
   if (urlPath === '/api/ga4/report') { await handleGA4Report(req, res, qs); return; }
   if (urlPath === '/api/gmail/messages' && req.method === 'GET') { await handleGmailMessages(res, qs); return; }
   if (urlPath === '/api/sheets/read' && req.method === 'GET') { await handleSheetsRead(res, qs); return; }
