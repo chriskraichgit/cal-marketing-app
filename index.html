@@ -999,7 +999,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="nav-btn" onclick="nav('home')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
       </button>
-      <button class="nav-btn" onclick="nav('analytics')">
+      <button id="nav-analytics-btn" class="nav-btn" onclick="nav('analytics')">
         <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics
       </button>
       <button class="nav-btn" onclick="nav('campaigns')">
@@ -4814,7 +4814,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div class="more-overlay" id="more-overlay" onclick="closeMoreSheet()"></div>
   <div class="more-sheet" id="more-sheet">
     <div class="more-sheet-handle"></div>
-    <button class="more-item" onclick="closeMoreSheet();nav('analytics')"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics</button>
+    <button id="more-analytics-btn" class="more-item" onclick="closeMoreSheet();nav('analytics')"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics</button>
     <button class="more-item" onclick="closeMoreSheet();nav('goals')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals</button>
     <button class="more-item" onclick="closeMoreSheet();nav('reviews')"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC</button>
     <button class="more-item" onclick="closeMoreSheet();nav('campaigns')"><svg viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7 12,2"/></svg>Campaigns</button>
@@ -8874,6 +8874,10 @@ function healthBadge(score){
       if(proposalBtn) proposalBtn.style.display='none';
       if(jobBtn) jobBtn.style.display='none';
       if(leaderBtn) leaderBtn.style.display='none';
+      var navAnalyticsBtn=document.getElementById('nav-analytics-btn');
+      var moreAnalyticsBtn=document.getElementById('more-analytics-btn');
+      if(navAnalyticsBtn) navAnalyticsBtn.style.display='none';
+      if(moreAnalyticsBtn) moreAnalyticsBtn.style.display='none';
     }
     if(role==='agency'){
       if(jobBtn) jobBtn.style.display='none';
@@ -10630,6 +10634,7 @@ function healthBadge(score){
   };
   var _nav=window.nav;
   window.nav=function(s){
+    if(s==='analytics' && window.currentRole==='admin') return;
     var r=_nav?_nav(s):undefined;
     try{ applyCalLayout(); }catch(e){}
     if(window.currentScreen==='settings'){ try{ renderLayoutPrefs(); }catch(e){} }
