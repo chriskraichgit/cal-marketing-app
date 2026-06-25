@@ -3236,7 +3236,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
     <div class="card card-pad">
       <div class="card-head"><span class="card-title">Integrations</span></div>
-      <div class="grid" style="gap:10px">
+      <div class="grid" style="gap:10px" id="settings-integrations-grid">
         <div class="int-card" id="settings-int-google-ads"><div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Ads_logo.svg" style="width:30px"></div><span class="int-card-name">Google Ads</span><span class="int-card-sub" id="settings-gads-sub">Not connected</span><button class="btn-connect" onclick="openDashboardUrlModal('google-ads')" id="settings-gads-btn">Connect</button></div>
         <div class="int-card" id="settings-int-meta-ads"><div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png" style="width:30px"></div><span class="int-card-name">Meta Ads</span><span class="int-card-sub" id="settings-meta-sub">Not connected</span><button class="btn-connect" onclick="openDashboardUrlModal('meta-ads')" id="settings-meta-btn">Connect</button></div>
         <div class="int-card"><div class="int-card-icon"><img src="https://images.seeklogo.com/logo-png/33/1/google-business-logo-png_seeklogo-334128.png" style="width:34px;border-radius:6px"></div><span class="int-card-name">Google Business Profile</span><span class="int-card-sub">Not connected</span><button class="btn-connect" onclick="openOAuthModal('gbp')">Connect</button></div>
@@ -5407,6 +5407,18 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="google-connect-prompt-modal">
+  <div class="modal" style="max-width:440px;text-align:center;padding:40px 32px">
+    <div style="width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4285f4,#34a853);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+      <svg width="28" height="28" viewBox="0 0 48 48"><path fill="#fff" d="M44.5 20H24v8.5h11.7C34.1 33.4 29.6 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6.3-6.3C34.4 5.9 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/></svg>
+    </div>
+    <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--ink);margin-bottom:8px">Connect Your Google Account</h2>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.7;margin-bottom:24px">Connect Google to unlock your dashboard — reviews, analytics, search performance, and more pull in automatically.</p>
+    <button class="btn-primary" style="width:100%;margin-bottom:10px" onclick="connectGoogleForCompany()">Connect Google Now</button>
+    <button class="btn-ghost" style="width:100%" onclick="closeModal('google-connect-prompt-modal');localStorage.setItem('cal-google-prompt-dismissed-'+(window.currentCompanyId||'default'),'1')">Skip for now</button>
+  </div>
+</div>
+
 <!-- ============================================================ -->
 <!-- INVOICING SCREEN -->
 <!-- ============================================================ -->
@@ -5452,15 +5464,20 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 // ============ DATA ============
 var USERS = {
-  'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner'},
-  'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner'},
-  'aivrya@cal.marketing':{pw:'',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',googleOnly:true},
-  'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner'},
-  'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester'},
-  'client@apexlegal.com':{pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director'},
-  'staff@apexlegal.com':{pw:'StaffUser2025!',role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member'},
-  'info@unitedsewerservice.com':{pw:'United2026!',role:'admin',name:'United Owner',initials:'US',username:'unitedsewer',company:'United Sewer and Septic',phone:'(845) 555-0200',title:'Owner'}
+  'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner',companyId:'cal'},
+  'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',companyId:'cal'},
+  'aivrya@cal.marketing':{pw:'',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',googleOnly:true,companyId:'cal'},
+  'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
+  'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester',companyId:'cal'},
+  'client@apexlegal.com':{pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director',companyId:'apexlegal'},
+  'staff@apexlegal.com':{pw:'StaffUser2025!',role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member',companyId:'apexlegal'},
+  'info@unitedsewerservice.com':{pw:'United2026!',role:'admin',name:'United Owner',initials:'US',username:'unitedsewer',company:'United Sewer and Septic',phone:'(845) 555-0200',title:'Owner',companyId:'unitedsewer'}
 };
+var currentCompanyId = 'default';
+function companyParam(extra) {
+  var p = 'company=' + encodeURIComponent(currentCompanyId);
+  return extra ? p + '&' + extra : p;
+}
 var TITLES = {
   home:'Home',analytics:'Analytics',roi:'ROI Tracker',campaigns:'Campaigns',leads:'Leads',
   content:'Content AI',projects:'Projects',schedule:'Schedule',inbox:'Inbox',files:'Files',
@@ -5616,6 +5633,7 @@ function doLogin(){
   if(err) err.classList.remove('show');
   currentUser=Object.assign({},u,{email:matchedEmail});
   currentRole=u.role;
+  currentCompanyId=u.companyId||'default';
   // Sign In never runs onboarding — business details are only collected under Create Account.
   launchApp();
 }
@@ -5661,6 +5679,105 @@ function openGoogleModal(){
   if(errEl) errEl.style.display='none';
   openModal('google-modal');
 }
+function connectGoogleForCompany(){
+  closeModal('google-connect-prompt-modal');
+  var company=window.currentCompanyId||'default';
+  fetch('/api/google/connect?company='+encodeURIComponent(company))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(d.authUrl){
+        var w=window.open(d.authUrl,'google-connect','width=520,height=640,left='+Math.round(screen.width/2-260)+',top='+Math.round(screen.height/2-320));
+        if(!w){ window.location.href=d.authUrl; return; }
+        var poll=setInterval(function(){
+          try{ if(w.closed){ clearInterval(poll); showToast('Google connected! Your data will load shortly.','#22c55e'); setTimeout(function(){ window.location.reload(); },1500); } }catch(e){ clearInterval(poll); }
+        },800);
+      }
+    });
+}
+function checkAndPromptGoogleConnect(){
+  var role=window.currentRole||'';
+  if(role==='agency'||role==='test') return;
+  var company=window.currentCompanyId||'default';
+  var dismissed=localStorage.getItem('cal-google-prompt-dismissed-'+company);
+  if(dismissed) return;
+  fetch('/api/google/status?company='+encodeURIComponent(company))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if(!d.connected){ setTimeout(function(){ openModal('google-connect-prompt-modal'); },1200); }
+    }).catch(function(){});
+}
+function renderIntegrationsGrid(){
+  var grid=document.getElementById('settings-integrations-grid');
+  if(!grid) return;
+  var company=window.currentCompanyId||'default';
+  var googleCard=grid.querySelector('#int-google-suite')||(function(){
+    var d=document.createElement('div');
+    d.id='int-google-suite';
+    d.className='int-card';
+    d.style.cssText='flex-direction:row;justify-content:space-between;text-align:left;gap:12px';
+    grid.insertBefore(d,grid.firstChild);
+    return d;
+  })();
+  googleCard.innerHTML='<div class="int-card-icon"><svg width="32" height="32" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.1 33.4 29.6 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6.3-6.3C34.4 5.9 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/></svg></div><div class="int-card-info" style="flex:1"><p class="int-card-name">Google Suite</p><p class="int-card-sub" id="int-google-suite-status">Checking...</p></div><button class="btn-connect" id="int-google-suite-btn" disabled>...</button>';
+  fetch('/api/google/status?company='+encodeURIComponent(company))
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var statusEl=document.getElementById('int-google-suite-status');
+      var btnEl=document.getElementById('int-google-suite-btn');
+      if(d.connected){
+        if(statusEl) statusEl.textContent='Connected'+(d.user&&d.user.email?' \u00b7 '+d.user.email:'');
+        if(btnEl){ btnEl.textContent='Disconnect'; btnEl.disabled=false; btnEl.onclick=function(){ disconnectGoogleForCompany(); }; }
+      } else {
+        if(statusEl) statusEl.textContent='Not connected';
+        if(btnEl){ btnEl.textContent='Connect'; btnEl.disabled=false; btnEl.onclick=function(){ connectGoogleForCompany(); }; }
+      }
+    }).catch(function(){
+      var statusEl=document.getElementById('int-google-suite-status');
+      if(statusEl) statusEl.textContent='Unable to check';
+    });
+}
+function disconnectGoogleForCompany(){
+  var company=window.currentCompanyId||'default';
+  if(!confirm('Disconnect Google from this account?')) return;
+  fetch('/api/google/disconnect?company='+encodeURIComponent(company),{method:'POST'})
+    .then(function(){ showToast('Google disconnected.',''); renderIntegrationsGrid(); });
+}
+function renderCompanyConnections(){
+  var list=document.getElementById('company-connections-list');
+  if(!list) return;
+  var companies=[
+    {id:'cal',name:'CAL Marketing (Agency)'},
+    {id:'apexlegal',name:'Apex Legal Group'},
+    {id:'unitedsewer',name:'United Sewer and Septic'},
+    {id:'greencollar',name:'Green Collar Roofing'},
+    {id:'willydiamond',name:'Willy Diamond Tree Care'},
+    {id:'housesautobody',name:'Houses Auto Body'}
+  ];
+  list.innerHTML=companies.map(function(c){
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)" id="co-row-'+c.id+'">'
+      +'<div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">'+c.name+'</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:2px 0 0" id="co-status-'+c.id+'">Checking...</p></div>'
+      +'<span id="co-badge-'+c.id+'" style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--border);color:var(--muted)">\u2014</span>'
+    +'</div>';
+  }).join('');
+  companies.forEach(function(c){
+    fetch('/api/google/status?company='+encodeURIComponent(c.id))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var statusEl=document.getElementById('co-status-'+c.id);
+        var badgeEl=document.getElementById('co-badge-'+c.id);
+        if(d.connected){
+          if(statusEl) statusEl.textContent=d.user&&d.user.email?d.user.email:'Connected';
+          if(badgeEl){ badgeEl.textContent='Connected'; badgeEl.style.background='rgba(34,197,94,.12)'; badgeEl.style.color='#16a34a'; }
+        } else {
+          if(statusEl) statusEl.textContent='Not connected';
+          if(badgeEl){ badgeEl.textContent='Not connected'; badgeEl.style.background='rgba(239,68,68,.08)'; badgeEl.style.color='#dc2626'; }
+        }
+      }).catch(function(){
+        var statusEl=document.getElementById('co-status-'+c.id);
+        if(statusEl) statusEl.textContent='Error checking';
+      });
+  });
+}
 function startGoogleSignIn(){
   var w=window.open(
     '/api/auth/google/start',
@@ -5705,6 +5822,7 @@ window.addEventListener('message',function(e){
   }
   currentUser=Object.assign({},u,{email:email,googleName:e.data.name,googlePicture:e.data.picture});
   currentRole=u.role;
+  currentCompanyId=u.companyId||'default';
   launchApp();
 });
 
@@ -5875,7 +5993,7 @@ function finishUserOnboarding(){
 // ============ LAUNCH APP ============
 function launchApp(){
   if(window.currentUser && window.currentUser.email){
-    try{ localStorage.setItem('cal-session',JSON.stringify({email:window.currentUser.email})); }catch(e){}
+    try{ localStorage.setItem('cal-session',JSON.stringify({email:window.currentUser.email,companyId:window.currentCompanyId||'default'})); }catch(e){}
   }
   document.getElementById('app').style.display='block';
   ['login-view','onboarding','user-onboarding','ob-loading'].forEach(function(id){
@@ -5883,6 +6001,7 @@ function launchApp(){
   });
   accounts=JSON.parse(localStorage.getItem('cal-accounts')||'null')||DEFAULT_ACCOUNTS.slice();
   setupRoleUI();
+  setTimeout(checkAndPromptGoogleConnect, 1500);
   // Restore persisted profile
   var savedName=loadState('profileName','');
   var savedPhone=loadState('profilePhone','');
@@ -6070,7 +6189,7 @@ function nav(screen){
   if(screen==='job-logging') renderJobLogs();
   if(screen==='social'){ if(!currentAcctId) currentAcctId='local'; loadSocialConnections(); }
   if(screen==='files') initGDriveCard();
-  if(screen==='settings') renderSettingsTabs();
+  if(screen==='settings'){ renderSettingsTabs(); setTimeout(renderIntegrationsGrid,300); }
   if(screen==='onboarding') renderOnboarding();
 }
 function initHomeScreen(){
@@ -10562,6 +10681,7 @@ function healthBadge(score){
       var su=window.USERS[sess.email];
       window.currentUser=Object.assign({},su,{email:sess.email});
       window.currentRole=su.role;
+      window.currentCompanyId=su.companyId||sess.companyId||'default';
       window.launchApp();
       return;
     }
@@ -10948,7 +11068,13 @@ function renderSettingsTabContent(tab,pane){
         +'<button class="btn-ghost" style="text-align:left;justify-content:flex-start" onclick="nav(\'team\')">👥  Team Management</button>'
         +'<button class="btn-ghost" style="text-align:left;justify-content:flex-start" onclick="switchSettingsTab(\'whitelabel\',document.querySelector(\'[onclick*=whitelabel]\'))">🎨  White Label Settings</button>'
       +'</div>'
+      +'<div class="card card-pad" id="company-connections-card">'
+        +'<div class="card-head"><span class="card-title">Client Google Connections</span></div>'
+        +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:14px">Track which client accounts have connected their Google account (GBP, Analytics, Search Console).</p>'
+        +'<div id="company-connections-list"><div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Loading...</div></div>'
+      +'</div>'
       +'</div>';
+    setTimeout(renderCompanyConnections,200);
   } else if(tab==='permissions'){
     pane.innerHTML='<div '+W+'>'
       +'<div class="card card-pad" style="display:flex;align-items:center;gap:16px">'
