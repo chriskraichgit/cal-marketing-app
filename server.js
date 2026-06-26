@@ -6,11 +6,13 @@ const { google } = require('googleapis');
 const { URL } = require('url');
 const { createClient } = require('@supabase/supabase-js');
 const ws = require('ws');
+const { Pool } = require('pg');
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY,
   { realtime: { transport: ws } }
 );
+const pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const PORT = 5000;
 const HOST = '0.0.0.0';
@@ -163,13 +165,18 @@ async function handleMetaPut(req, res, qs) {
     if (k.indexOf('layoutPrefs_') === 0) {
       const exPrefs = existing[k] || {};
       const inPrefs = body[k] || {};
-      const mergedPrefs = Object.assign({}, exPrefs);
+      const mergedPrefs = {};
+      Object.keys(exPrefs).forEach(function(navKey) {
+        const ev = exPrefs[navKey];
+        mergedPrefs[navKey] = (ev !== null && typeof ev === 'object') ? ev : { v: !!ev, t: 0 };
+      });
       Object.keys(inPrefs).forEach(function(navKey) {
         const iv = inPrefs[navKey];
-        const ev = exPrefs[navKey];
-        const it = (iv && typeof iv === 'object' && iv.t) ? iv.t : 0;
-        const et = (ev && typeof ev === 'object' && ev.t) ? ev.t : 0;
-        if (it >= et) mergedPrefs[navKey] = iv;
+        const normIv = (iv !== null && typeof iv === 'object') ? iv : { v: !!iv, t: 0 };
+        const normEv = mergedPrefs[navKey] || { v: false, t: 0 };
+        const it = normIv.t || 0;
+        const et = normEv.t || 0;
+        if (it >= et) mergedPrefs[navKey] = normIv;
       });
       merged[k] = mergedPrefs;
     } else {
@@ -1188,32 +1195,105 @@ async function stripeApiRequest(method, path, body) {
 }
 
 const STRIPE_TOKEN_FILE = path.join(__dirname, '.stripe-connect.json');
-function loadStripeConnect() { try { if (fs.existsSync(STRIPE_TOKEN_FILE)) return JSON.parse(fs.readFileSync(STRIPE_TOKEN_FILE, 'utf8')); } catch (e) {} return null; }
-function saveStripeConnect(data) { fs.writeFileSync(STRIPE_TOKEN_FILE, JSON.stringify(data, null, 2)); }
-function deleteStripeConnect() { try { if (fs.existsSync(STRIPE_TOKEN_FILE)) fs.unlinkSync(STRIPE_TOKEN_FILE); } catch (e) {} }
 
-// Auto-seed Stripe config on startup if key is set but file is missing
-if (process.env.STRIPE_SECRET_KEY && !fs.existsSync(STRIPE_TOKEN_FILE)) {
-  stripeApiRequest('GET', '/v1/account', null).then(function(r) {
-    if (r.status === 200 && r.body && r.body.id) {
-      saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
-      console.log('[Stripe] Auto-seeded config for account', r.body.id);
-    } else {
-      console.warn('[Stripe] Auto-seed: unexpected response status', r.status);
+// Read from local file cache (synchronous, fast)
+function loadStripeConnectFile() {
+  try { if (fs.existsSync(STRIPE_TOKEN_FILE)) return JSON.parse(fs.readFileSync(STRIPE_TOKEN_FILE, 'utf8')); } catch (e) {}
+  return null;
+}
+
+// Read from Replit PostgreSQL (durable, survives filesystem wipes)
+async function loadStripeConnectDb() {
+  try {
+    const res = await pgPool.query('SELECT account_id, email, country, connected_at FROM stripe_connection WHERE id = 1');
+    if (res.rows.length > 0) {
+      const row = res.rows[0];
+      return { accountId: row.account_id, email: row.email, country: row.country, connectedAt: row.connected_at };
     }
-  }).catch(function(e) {
-    console.error('[Stripe] Auto-seed failed:', e.message);
-  });
+  } catch (e) {}
+  return null;
+}
+
+// Write to both file cache and Replit PostgreSQL
+async function saveStripeConnect(data) {
+  try { fs.writeFileSync(STRIPE_TOKEN_FILE, JSON.stringify(data, null, 2)); } catch (e) {}
+  try {
+    await pgPool.query(
+      `INSERT INTO stripe_connection (id, account_id, email, country, connected_at)
+       VALUES (1, $1, $2, $3, $4)
+       ON CONFLICT (id) DO UPDATE SET account_id=$1, email=$2, country=$3, connected_at=$4`,
+      [data.accountId, data.email || null, data.country || null, data.connectedAt || Date.now()]
+    );
+  } catch (e) { console.error('[Stripe] Failed to persist to database:', e.message); }
+}
+
+// Remove from both file cache and Replit PostgreSQL
+async function deleteStripeConnect() {
+  try { if (fs.existsSync(STRIPE_TOKEN_FILE)) fs.unlinkSync(STRIPE_TOKEN_FILE); } catch (e) {}
+  try { await pgPool.query('DELETE FROM stripe_connection WHERE id = 1'); } catch (e) {}
+}
+
+// Auto-seed Stripe config on startup: file cache → PostgreSQL → Stripe API
+if (process.env.STRIPE_SECRET_KEY) {
+  (async () => {
+    // Ensure the table exists (idempotent)
+    try {
+      await pgPool.query(`CREATE TABLE IF NOT EXISTS stripe_connection (
+        id INTEGER PRIMARY KEY DEFAULT 1,
+        account_id TEXT NOT NULL,
+        email TEXT,
+        country TEXT,
+        connected_at BIGINT,
+        CONSTRAINT single_row CHECK (id = 1)
+      )`);
+    } catch (e) { console.error('[Stripe] Failed to ensure table:', e.message); }
+
+    const fileData = loadStripeConnectFile();
+    if (fileData) {
+      // File cache hit — sync to DB in background if missing there
+      const dbData = await loadStripeConnectDb();
+      if (!dbData) {
+        try {
+          await pgPool.query(
+            `INSERT INTO stripe_connection (id, account_id, email, country, connected_at)
+             VALUES (1, $1, $2, $3, $4)
+             ON CONFLICT (id) DO UPDATE SET account_id=$1, email=$2, country=$3, connected_at=$4`,
+            [fileData.accountId, fileData.email || null, fileData.country || null, fileData.connectedAt || Date.now()]
+          );
+          console.log('[Stripe] Synced existing config to database for account', fileData.accountId);
+        } catch (e) { console.error('[Stripe] Failed to sync to database:', e.message); }
+      }
+      return;
+    }
+    const fromDb = await loadStripeConnectDb();
+    if (fromDb) {
+      // Restore the local file cache from DB — no Stripe API call needed
+      try { fs.writeFileSync(STRIPE_TOKEN_FILE, JSON.stringify(fromDb, null, 2)); } catch (e) {}
+      console.log('[Stripe] Restored config from database for account', fromDb.accountId);
+      return;
+    }
+    // Neither file nor DB — hit the Stripe API as a last resort
+    try {
+      const r = await stripeApiRequest('GET', '/v1/account', null);
+      if (r.status === 200 && r.body && r.body.id) {
+        await saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
+        console.log('[Stripe] Auto-seeded config for account', r.body.id);
+      } else {
+        console.warn('[Stripe] Auto-seed: unexpected response status', r.status);
+      }
+    } catch (e) {
+      console.error('[Stripe] Auto-seed failed:', e.message);
+    }
+  })();
 }
 
 async function handleStripeConnect(req, res) {
-  // For now: validate the secret key works and store a connected flag
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) { jsonResponse(res, 200, { ok: false, error: 'STRIPE_SECRET_KEY not set' }); return; }
   try {
     const r = await stripeApiRequest('GET', '/v1/account', null);
     if (r.status === 200 && r.body.id) {
-      saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
+      await saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
       jsonResponse(res, 200, { ok: true, accountId: r.body.id, email: r.body.email });
     } else {
       jsonResponse(res, 200, { ok: false, error: r.body.error?.message || 'Stripe connection failed' });
@@ -1227,9 +1307,10 @@ async function handleStripeStatus(res) {
   try {
     const r = await stripeApiRequest('GET', '/v1/account', null);
     if (r.status === 200 && r.body.id) {
-      // Auto-save on first successful status check so future calls stay fast
-      const saved = loadStripeConnect();
-      if (!saved) saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
+      // Auto-save so future startups find data in Supabase and skip the API call
+      if (!loadStripeConnectFile()) {
+        await saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
+      }
       jsonResponse(res, 200, { connected: true, configured: true, accountId: r.body.id, email: r.body.email, country: r.body.country });
     } else {
       jsonResponse(res, 200, { connected: false, configured: true, error: r.body.error?.message });
@@ -1262,7 +1343,7 @@ async function handleStripeRevenue(res, qs) {
 }
 
 async function handleStripeDisconnect(res) {
-  deleteStripeConnect();
+  await deleteStripeConnect();
   jsonResponse(res, 200, { disconnected: true });
 }
 
