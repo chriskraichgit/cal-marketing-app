@@ -559,6 +559,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 .ob-upload-box{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:2px dashed var(--border);border-radius:14px;padding:32px 20px;cursor:pointer;transition:border-color .15s;text-align:center;min-height:150px;position:relative;overflow:hidden}
 .ob-upload-box:hover{border-color:var(--gold)}
 .ob-upload-box.drag-over{border-color:var(--gold);background:rgba(var(--gold-rgb,200,160,60),.08)}
+.ob-upload-box.drag-over-invalid{border-color:#e03e3e;background:rgba(224,62,62,.07)}
 .ob-upload-box svg{width:32px;height:32px;fill:none;stroke:var(--muted2);stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 #ob-logo-preview{width:100%;height:100%;object-fit:contain;position:absolute;inset:0;display:none;padding:12px;background:var(--surface)}
 .ob-industry-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -6476,6 +6477,10 @@ function setupRoleUI(){
     document.body.classList.remove('has-acct-switch');
     if(accWrap) accWrap.style.display='none';
     if(sbAgency) sbAgency.style.display='none';
+    if(currentRole==='admin'){
+      var _adminAcctId=localStorage.getItem('cal-user-account-'+((currentUser&&currentUser.email)||''));
+      if(_adminAcctId){ window.currentAcctId=_adminAcctId; }
+    }
   }
   // ── Admin onboarding label: switches to "Maintenance" when onboarding complete ──
   if(currentRole==='admin'){
@@ -8179,26 +8184,48 @@ function onUploadFilePicked(input) {
     if (!zone || !input || zone._dropInited) return;
     zone._dropInited = true;
     var dragCounter = 0;
+    function isVideoItem(dataTransfer) {
+      if (dataTransfer && dataTransfer.items && dataTransfer.items.length) {
+        var mime = dataTransfer.items[0].type;
+        return mime.indexOf('video/') === 0;
+      }
+      return true; // can't inspect — allow and validate on drop
+    }
     zone.addEventListener('dragenter', function(e) {
       e.preventDefault(); e.stopPropagation();
       dragCounter++;
-      zone.classList.add('drag-over');
+      if (isVideoItem(e.dataTransfer)) {
+        zone.classList.remove('drag-over-invalid');
+        zone.classList.add('drag-over');
+      } else {
+        zone.classList.remove('drag-over');
+        zone.classList.add('drag-over-invalid');
+      }
     });
     zone.addEventListener('dragover', function(e) {
       e.preventDefault(); e.stopPropagation();
-      e.dataTransfer.dropEffect = 'copy';
+      e.dataTransfer.dropEffect = isVideoItem(e.dataTransfer) ? 'copy' : 'none';
     });
     zone.addEventListener('dragleave', function(e) {
       e.preventDefault(); e.stopPropagation();
       dragCounter--;
-      if (dragCounter <= 0) { dragCounter = 0; zone.classList.remove('drag-over'); }
+      if (dragCounter <= 0) {
+        dragCounter = 0;
+        zone.classList.remove('drag-over');
+        zone.classList.remove('drag-over-invalid');
+      }
     });
     zone.addEventListener('drop', function(e) {
       e.preventDefault(); e.stopPropagation();
       dragCounter = 0;
       zone.classList.remove('drag-over');
+      zone.classList.remove('drag-over-invalid');
       var files = e.dataTransfer && e.dataTransfer.files;
       if (!files || !files.length) return;
+      if (!files[0].type || files[0].type.indexOf('video/') !== 0) {
+        showToast('Please drop a video file (MP4 or MOV)', 'gold');
+        return;
+      }
       try {
         var dt = new DataTransfer();
         dt.items.add(files[0]);
@@ -11814,7 +11841,7 @@ function renderSettingsTabContent(tab,pane){
 }
 
 // ============ ONBOARDING BOARD ============
-var OB_STEPS=[
+var OB_BOARD_STEPS=[
   {id:'portal',label:'Send Client Portal Link'},
   {id:'intake',label:'Complete Intake Form'},
   {id:'assets',label:'Collect Brand Assets'},
@@ -11865,7 +11892,7 @@ function renderOnboarding(){
     var _deleted=_obData.deletedSteps||[];
     var _custom=_obData.customSteps||[];
     // Effective step list: template minus deleted + custom
-    var _effTemplate=OB_STEPS.filter(function(s){ return _deleted.indexOf(s.id)===-1; });
+    var _effTemplate=OB_BOARD_STEPS.filter(function(s){ return _deleted.indexOf(s.id)===-1; });
     var _effAll=_effTemplate.concat(_custom.map(function(s){ return {id:s.id,label:s.label,_custom:true}; }));
     var _obDone=_effAll.filter(function(s){ return _obChecks[s.id]; }).length;
     var _obPct=_effAll.length?Math.round(_obDone/_effAll.length*100):0;
@@ -11925,7 +11952,7 @@ function renderOnboarding(){
       var steps=data.steps||{};
       var _bDeleted=data.deletedSteps||[];
       var _bCustom=data.customSteps||[];
-      var _bEff=OB_STEPS.filter(function(s){ return _bDeleted.indexOf(s.id)===-1; }).concat(_bCustom.map(function(s){ return {id:s.id,label:s.label}; }));
+      var _bEff=OB_BOARD_STEPS.filter(function(s){ return _bDeleted.indexOf(s.id)===-1; }).concat(_bCustom.map(function(s){ return {id:s.id,label:s.label}; }));
       var done=_bEff.filter(function(s){ return steps[s.id]; }).length;
       var pct=_bEff.length?Math.round(done/_bEff.length*100):0;
       var stepsHtml=_bEff.map(function(s){
@@ -12084,7 +12111,7 @@ function openObAccount(key){
       if(!already){
         var obRaw=JSON.parse(localStorage.getItem('cal-onboarding-'+key)||'{"steps":{}}');
         var obSteps=obRaw.steps||{};
-        var newTasks=typeof OB_STEPS!=='undefined'?OB_STEPS.map(function(s){
+        var newTasks=typeof OB_BOARD_STEPS!=='undefined'?OB_BOARD_STEPS.map(function(s){
           return {id:s.id,text:s.label,done:!!obSteps[s.id],assignee:''};
         }):[{id:'k1',text:'Kickoff call scheduled',done:false,assignee:''},{id:'k2',text:'Collect brand assets & logins',done:false,assignee:''},{id:'k3',text:'Audit current marketing',done:false,assignee:''},{id:'k4',text:'Build campaigns',done:false,assignee:''},{id:'k5',text:'Launch campaigns',done:false,assignee:''}];
         cpData.clients.unshift({
@@ -12121,7 +12148,7 @@ function submitAddClient(){
     if(cpData&&cpData.clients){
       var alreadyCp=cpData.clients.find(function(c){ return (c.name||'').toLowerCase()===bizName.toLowerCase(); });
       if(!alreadyCp){
-        var tasks=typeof OB_STEPS!=='undefined'?OB_STEPS.map(function(s){ return {id:s.id,text:s.label,done:false,assignee:''}; }):[{id:'k1',text:'Kickoff call scheduled',done:false,assignee:''},{id:'k2',text:'Collect brand assets & logins',done:false,assignee:''},{id:'k3',text:'Audit current marketing',done:false,assignee:''},{id:'k4',text:'Build campaigns',done:false,assignee:''}];
+        var tasks=typeof OB_BOARD_STEPS!=='undefined'?OB_BOARD_STEPS.map(function(s){ return {id:s.id,text:s.label,done:false,assignee:''}; }):[{id:'k1',text:'Kickoff call scheduled',done:false,assignee:''},{id:'k2',text:'Collect brand assets & logins',done:false,assignee:''},{id:'k3',text:'Audit current marketing',done:false,assignee:''},{id:'k4',text:'Build campaigns',done:false,assignee:''}];
         cpData.clients.unshift({id:key,name:bizName,started:today,expanded:false,tasks:tasks});
         localStorage.setItem('cal-client-projects-v2',JSON.stringify(cpData));
       }
