@@ -7365,7 +7365,10 @@ var INBOX_DEFAULTS=[
     {text:'Thanks! Looking great. See you on the call Thursday.',me:false,time:'Yesterday'}
   ]}
 ];
-function inboxKey(){ return 'cal-inbox-threads-'+(window.currentAcctId||'a1'); }
+function inboxKey(){
+  if(window.currentRole==='agency'||window.currentRole==='test') return 'cal-inbox-threads-agency';
+  return 'cal-inbox-threads-'+(window.currentAcctId||'a1');
+}
 function inboxLoad(){
   try{
     var raw=localStorage.getItem(inboxKey());
