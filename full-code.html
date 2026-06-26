@@ -1681,7 +1681,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div class="int-card" id="analytics-int-google-ads"><div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Ads_logo.svg" style="width:30px"></div><span class="int-card-name">Google Ads</span><span class="int-card-sub" id="analytics-gads-sub">Not connected</span><button class="btn-connect" onclick="openDashboardUrlModal('google-ads')" id="analytics-gads-btn">Connect</button></div>
       <div class="int-card" id="analytics-int-meta-ads"><div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png" style="width:30px"></div><span class="int-card-name">Meta Ads</span><span class="int-card-sub" id="analytics-meta-sub">Not connected</span><button class="btn-connect" onclick="openDashboardUrlModal('meta-ads')" id="analytics-meta-btn">Connect</button></div>
       <div class="int-card"><div class="int-card-icon"><img src="https://images.seeklogo.com/logo-png/33/1/google-business-logo-png_seeklogo-334128.png" style="width:34px;border-radius:6px"></div><span class="int-card-name">GBP</span><span class="int-card-sub">Not connected</span><button class="btn-connect" onclick="openOAuthModal('gbp')">Connect</button></div>
-      <div class="int-card"><div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" style="width:30px"></div><span class="int-card-name">Google Maps</span><span class="int-card-sub">Not connected</span><button class="btn-connect" onclick="openOAuthModal('google-maps')">Connect</button></div>
     </div>
   </div>
   <div class="card card-pad" id="analytics-embed-panel" style="display:none;margin-top:14px">
@@ -3332,7 +3331,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <div class="int-card"><div class="int-card-icon" style="width:40px;height:40px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center"><img src="https://play-lh.googleusercontent.com/c-ohjy3Tk-jw9x1VsKC3BLCzQd5S3UOYiUfODbHD3IB03qmgi2hdsyCvM7kHGbeHPg7P9J3HXPLiaZ7XY-mMx38=w480-h960-rw" style="width:40px;height:40px;object-fit:cover"></div><span class="int-card-name">GoHighLevel</span><span class="int-card-sub">Webhook · Receiving leads</span><span class="pill pill-green">ACTIVE</span></div>
         <div class="int-card"><div class="int-card-icon"><img src="https://www.citypng.com/public/uploads/preview/hd-stripe-official-logo-png-701751694777755j0aa3puxte.png" style="width:60px"></div><span class="int-card-name">Stripe</span><span class="int-card-sub">Connected · Processing payments</span><span class="pill pill-green">ACTIVE</span></div>
         <div class="int-card"><div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/WhatsApp_icon.png" style="width:34px"></div><span class="int-card-name">WhatsApp Business</span><span class="int-card-sub">Not connected</span><button class="btn-connect" onclick="openOAuthModal('whatsapp')">Connect</button></div>
-        <div class="int-card"><div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/a/aa/Google_Maps_icon_%282020%29.svg" style="width:30px"></div><span class="int-card-name">Google Maps</span><span class="int-card-sub">Not connected</span><button class="btn-connect" onclick="openOAuthModal('google-maps')">Connect</button></div>
       </div>
     </div>
     <div class="card card-pad" style="grid-column:1/-1">
@@ -6013,42 +6011,49 @@ function disconnectGoogleForCompany(){
   fetch('/api/google/disconnect?company='+encodeURIComponent(company),{method:'POST'})
     .then(function(){ showToast('Google disconnected.',''); if(typeof renderIntegrationsGrid==='function')renderIntegrationsGrid(); if(typeof renderIntegrationStatusBar==='function')renderIntegrationStatusBar(); ['gbp-insights-widget','gbp-reviews-widget','ga4-widget','gsc-widget','gmail-widget','pagespeed-widget'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='';}); });
 }
+var PLATFORM_CONN_SERVICES=[
+  {id:'google-analytics',name:'Google Analytics',img:null,icon:'GA',bg:'#e8710a'},
+  {id:'google-business',name:'Google Business',img:'https://images.seeklogo.com/logo-png/33/1/google-business-logo-png_seeklogo-334128.png'},
+  {id:'google-ads',name:'Google Ads',img:'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Ads_logo.svg'},
+  {id:'google-calendar',name:'Google Calendar',img:'https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png'},
+  {id:'meta-ads',name:'Meta Ads',img:'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png'},
+  {id:'stripe',name:'Stripe',img:'https://www.citypng.com/public/uploads/preview/hd-stripe-official-logo-png-701751694777755j0aa3puxte.png'},
+  {id:'highlevel',name:'HighLevel',img:'https://play-lh.googleusercontent.com/c-ohjy3Tk-jw9x1VsKC3BLCzQd5S3UOYiUfODbHD3IB03qmgi2hdsyCvM7kHGbeHPg7P9J3HXPLiaZ7XY-mMx38=w480-h960-rw'},
+  {id:'whatsapp',name:'WhatsApp',img:'https://upload.wikimedia.org/wikipedia/commons/5/5e/WhatsApp_icon.png'}
+];
 function renderCompanyConnections(){
   var list=document.getElementById('company-connections-list');
   if(!list) return;
-  var companies=[
-    {id:'cal',name:'CAL Marketing (Agency)'},
-    {id:'apexlegal',name:'Apex Legal Group'},
-    {id:'unitedsewer',name:'United Sewer and Septic'},
-    {id:'greencollar',name:'Green Collar Roofing'},
-    {id:'willydiamond',name:'Willy Diamond Tree Care'},
-    {id:'housesautobody',name:'Houses Auto Body'}
-  ];
-  list.innerHTML=companies.map(function(c){
-    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)" id="co-row-'+c.id+'">'
-      +'<div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">'+c.name+'</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:2px 0 0" id="co-status-'+c.id+'">Checking...</p></div>'
-      +'<span id="co-badge-'+c.id+'" style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;background:var(--border);color:var(--muted)">\u2014</span>'
-    +'</div>';
-  }).join('');
-  companies.forEach(function(c){
-    fetch('/api/google/status?company='+encodeURIComponent(c.id))
-      .then(function(r){ return r.json(); })
-      .then(function(d){
-        var statusEl=document.getElementById('co-status-'+c.id);
-        var badgeEl=document.getElementById('co-badge-'+c.id);
-        if(d.connected){
-          if(statusEl) statusEl.textContent=d.user&&d.user.email?d.user.email:'Connected';
-          if(badgeEl){ badgeEl.textContent='Connected'; badgeEl.style.background='rgba(34,197,94,.12)'; badgeEl.style.color='#16a34a'; }
-        } else {
-          if(statusEl) statusEl.textContent='Not connected';
-          if(badgeEl){ badgeEl.textContent='Not connected'; badgeEl.style.background='rgba(239,68,68,.08)'; badgeEl.style.color='#dc2626'; }
-        }
-      }).catch(function(){
-        var statusEl=document.getElementById('co-status-'+c.id);
-        if(statusEl) statusEl.textContent='Error checking';
-      });
-  });
+  var key='cal-platform-conn-'+acctKey();
+  var state=safeJSON(key,{});
+  var accts=window.accounts||DEFAULT_ACCOUNTS||[];
+  var aid=window.currentCompanyId||'';
+  var thisAcct=accts.find(function(a){return a.id===aid;})||null;
+  var acctName=thisAcct?thisAcct.name:'Current Account';
+  list.innerHTML='<p style="font-size:11px;font-weight:800;color:var(--blue,#1b3a6b);text-transform:uppercase;letter-spacing:.06em;margin:0 0 14px">'+esc(acctName)+'</p>'
+    +PLATFORM_CONN_SERVICES.map(function(svc,i){
+      var connected=!!state[svc.id];
+      var isLast=i===PLATFORM_CONN_SERVICES.length-1;
+      var iconHtml=svc.img
+        ?'<img src="'+svc.img+'" style="width:24px;height:24px;object-fit:contain" onerror="this.style.display=\'none\'">'
+        :'<span style="font-size:9px;font-weight:900;color:#fff">'+svc.icon+'</span>';
+      var iconWrap='<div style="width:36px;height:36px;border-radius:9px;background:'+(svc.img?'var(--page)':svc.bg)+';border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0">'+iconHtml+'</div>';
+      var badge=connected
+        ?'<span style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;background:rgba(34,197,94,.12);color:#16a34a;flex-shrink:0">Connected</span>'
+        :'<span style="font-size:11px;font-weight:800;padding:4px 10px;border-radius:999px;background:rgba(239,68,68,.08);color:#dc2626;flex-shrink:0">Not connected</span>';
+      var btn=connected
+        ?'<button onclick="togglePlatformConn(\''+svc.id+'\')" style="height:28px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;flex-shrink:0">Disconnect</button>'
+        :'<button onclick="togglePlatformConn(\''+svc.id+'\')" style="height:28px;padding:0 12px;border:none;border-radius:8px;background:var(--gold,#e5a100);color:#000;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;flex-shrink:0">Connect</button>';
+      return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;'+(isLast?'':'border-bottom:1px solid var(--border)')+'">'+iconWrap+'<span style="flex:1;font-size:13px;font-weight:800;color:var(--ink)">'+esc(svc.name)+'</span>'+badge+btn+'</div>';
+    }).join('');
 }
+window.togglePlatformConn=function(svcId){
+  var key='cal-platform-conn-'+acctKey();
+  var state=safeJSON(key,{});
+  state[svcId]=!state[svcId];
+  saveJSON(key,state);
+  renderCompanyConnections();
+};
 function startGoogleSignIn(){
   var w=window.open(
     '/api/auth/google/start',
@@ -11424,8 +11429,8 @@ function renderSettingsTabContent(tab,pane){
         +'<button class="btn-ghost" style="text-align:left;justify-content:flex-start" onclick="switchSettingsTab(\'whitelabel\',document.querySelector(\'[onclick*=whitelabel]\'))">🎨  White Label Settings</button>'
       +'</div>'
       +'<div class="card card-pad" id="company-connections-card">'
-        +'<div class="card-head"><span class="card-title">Client Google Connections</span></div>'
-        +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:14px">Track which client accounts have connected their Google account (GBP, Analytics, Search Console).</p>'
+        +'<div class="card-head"><span class="card-title">Platform Connections</span></div>'
+        +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:14px">Track which platforms are connected for this account. Connections are scoped per client.</p>'
         +'<div id="company-connections-list"><div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Loading...</div></div>'
       +'</div>'
       +'</div>';
