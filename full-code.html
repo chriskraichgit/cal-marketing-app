@@ -5720,10 +5720,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 // ============ DATA ============
 var USERS = {
-  'chris@cal.marketing':{pw:'CalMarketing26',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner',companyId:'cal'},
-  'james@cal.marketing':{pw:'CalMarketing26',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',companyId:'cal'},
+  'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner',companyId:'cal'},
+  'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',companyId:'cal'},
   'aivrya@cal.marketing':{pw:'',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',googleOnly:true,companyId:'cal'},
-  'matt@cal.marketing':{pw:'CalMarketing26',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
+  'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
   'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester',companyId:'cal'},
   'client@apexlegal.com':{pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director',companyId:'apexlegal'},
   'staff@apexlegal.com':{pw:'StaffUser2025!',role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member',companyId:'apexlegal'},
@@ -8985,7 +8985,7 @@ function togglePermission(email, screen, btn){
   else { current.push(screen); btn.classList.remove('off'); }
   saved[email]=current;
   localStorage.setItem(store,JSON.stringify(saved));
-  if(store==='cal-agency-perms'){ agencyPermissions=saved; if(typeof renderMyAccess==='function') renderMyAccess(); }
+  if(store==='cal-agency-perms'){ agencyPermissions=saved; if(typeof renderMyAccess==='function') renderMyAccess(); if(window.currentRole==='admin' && typeof setupRoleUI==='function') setupRoleUI(); }
   else adminPermissions=saved;
   showToast('Permission updated for '+screen.replace(/-/g,' '),'green');
 }
@@ -9781,7 +9781,7 @@ function healthBadge(score){
    agency users.
 ============================================================ */
 (function(){
-  var AGENCY_PASSWORD='CalMarketing26';
+  var AGENCY_PASSWORD='CAL_D1gital$2026!';
   var AGENCY_USERS={
     'chris@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency'},
     'james@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner'},
@@ -11082,6 +11082,7 @@ function healthBadge(score){
     if(e.key==='cal-agency-perms'){
       try{ agencyPermissions=JSON.parse(e.newValue||'{}'); }catch(err){}
       if(typeof renderMyAccess==='function') renderMyAccess();
+      if(window.currentRole==='admin' && typeof setupRoleUI==='function') setupRoleUI();
     }
   });
 
