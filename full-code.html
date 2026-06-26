@@ -3019,38 +3019,115 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============ SCREEN: SCHEDULE ============ -->
 <div class="screen" id="s-schedule">
   <div class="sec-head"><div><h2>Schedule</h2><p>Calendar events and meetings</p></div></div>
-  <div class="grid g2">
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Google Calendar</span></div>
-      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:18px 6px">
-        <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:56px;height:56px;object-fit:contain" alt="Google Calendar">
-        <div>
-          <p style="font-size:15px;font-weight:900;color:var(--ink)">Connect Google Calendar</p>
-          <p style="font-size:12px;font-weight:700;color:var(--muted);margin-top:4px;max-width:280px">Sync your meetings and events directly into your CAL OS schedule.</p>
+
+  <!-- Google Calendar connect banner -->
+  <div class="card" style="margin-bottom:16px;overflow:hidden">
+    <div style="display:flex;align-items:center;gap:0">
+      <div style="flex:1;padding:22px 24px">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:10px">
+          <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:48px;height:48px;object-fit:contain;flex-shrink:0;border-radius:10px;background:#fff;padding:4px;box-shadow:0 1px 6px rgba(0,0,0,.10)" alt="Google Calendar">
+          <div>
+            <p style="font-size:16px;font-weight:900;color:var(--ink);margin:0;line-height:1.2">Google Calendar</p>
+            <p style="font-size:12px;font-weight:700;color:var(--muted);margin:2px 0 0">Sync meetings &amp; events in real time</p>
+          </div>
         </div>
-        <button class="btn-primary" style="width:auto;height:42px;padding:0 26px" onclick="openOAuthModal('google-calendar')">Connect Google Calendar</button>
+        <p style="font-size:13px;font-weight:600;color:var(--muted);margin:0 0 16px;max-width:420px;line-height:1.5">Connect your Google Calendar to automatically sync all your meetings, events, and reminders directly into CAL OS.</p>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button class="btn-gold" style="height:40px;padding:0 22px;font-size:13px" onclick="openOAuthModal('google-calendar')">Connect Google Calendar</button>
+          <span id="gcal-status-pill" style="display:none;font-size:12px;font-weight:800;padding:5px 12px;border-radius:999px;background:rgba(34,197,94,.12);color:#16a34a">Connected</span>
+        </div>
+      </div>
+      <div style="width:160px;min-height:140px;background:linear-gradient(135deg,rgba(66,133,244,.08) 0%,rgba(52,168,83,.08) 50%,rgba(251,188,5,.08) 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:stretch">
+        <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:80px;height:80px;object-fit:contain;opacity:.25" alt="">
       </div>
     </div>
+  </div>
+
+  <!-- Meetings + Upcoming events -->
+  <div class="grid g2" style="margin-bottom:16px">
     <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Meetings</span><button class="btn-view" onclick="openModal('add-event-modal')">+ Add Event</button></div>
-      <div class="feed-row"><div class="feed-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><strong>Monthly Strategy Call</strong><span>Jun 25 · 10:00 AM · Zoom</span></div><span class="pill pill-gold">UPCOMING</span></div>
-      <div class="feed-row"><div class="feed-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><strong>Ad Creative Review</strong><span>Jun 27 · 2:00 PM · Zoom</span></div><span class="pill pill-muted">SCHEDULED</span></div>
+      <div class="card-head"><span class="card-title">Upcoming Meetings</span><button class="btn-view" onclick="openModal('add-event-modal')">+ Add Event</button></div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--page);border:1px solid var(--border)">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(229,161,0,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-size:9px;font-weight:900;color:var(--gold);text-transform:uppercase;line-height:1">Jun</span>
+            <span style="font-size:16px;font-weight:900;color:var(--gold);line-height:1.1">25</span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Monthly Strategy Call</p>
+            <p style="font-size:11px;font-weight:700;color:var(--muted);margin:2px 0 0">10:00 AM &middot; Zoom</p>
+          </div>
+          <span class="pill pill-gold">UPCOMING</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--page);border:1px solid var(--border)">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(27,58,107,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-size:9px;font-weight:900;color:var(--blue);text-transform:uppercase;line-height:1">Jun</span>
+            <span style="font-size:16px;font-weight:900;color:var(--blue);line-height:1.1">27</span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Ad Creative Review</p>
+            <p style="font-size:11px;font-weight:700;color:var(--muted);margin:2px 0 0">2:00 PM &middot; Zoom</p>
+          </div>
+          <span class="pill pill-muted">SCHEDULED</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--page);border:1px solid var(--border)">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(34,197,94,.10);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+            <span style="font-size:9px;font-weight:900;color:#16a34a;text-transform:uppercase;line-height:1">Jul</span>
+            <span style="font-size:16px;font-weight:900;color:#16a34a;line-height:1.1">02</span>
+          </div>
+          <div style="flex:1;min-width:0">
+            <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Quarterly Performance Review</p>
+            <p style="font-size:11px;font-weight:700;color:var(--muted);margin:2px 0 0">11:00 AM &middot; Google Meet</p>
+          </div>
+          <span class="pill pill-green">CONFIRMED</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-pad">
+      <div class="card-head"><span class="card-title">This Week</span></div>
+      <div style="display:flex;flex-direction:column;gap:0;margin-top:4px">
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:11px;font-weight:900;color:var(--muted);width:28px;text-align:center">MON</span>
+          <span style="font-size:12px;font-weight:800;color:var(--ink)">Strategy Call · 10 AM</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:11px;font-weight:900;color:var(--muted);width:28px;text-align:center">WED</span>
+          <span style="font-size:12px;font-weight:800;color:var(--ink)">Ad Creative Review · 2 PM</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:11px;font-weight:900;color:var(--muted);width:28px;text-align:center">THU</span>
+          <span style="font-size:12px;font-weight:800;color:var(--muted);font-style:italic">No events</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+          <span style="font-size:11px;font-weight:900;color:var(--muted);width:28px;text-align:center">FRI</span>
+          <span style="font-size:12px;font-weight:800;color:var(--ink)">Team Standup · 9 AM</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;padding:9px 0">
+          <span style="font-size:11px;font-weight:900;color:var(--muted);width:28px;text-align:center">SAT</span>
+          <span style="font-size:12px;font-weight:800;color:var(--muted);font-style:italic">No events</span>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="card card-pad" style="margin-top:16px" id="gcal-live-card">
+
+  <!-- Live Calendar embed area -->
+  <div class="card card-pad" id="gcal-live-card">
     <div class="card-head">
       <div style="display:flex;align-items:center;gap:10px">
-        <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:22px;height:22px;object-fit:contain" alt="">
+        <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:26px;height:26px;object-fit:contain;border-radius:6px;background:#fff;padding:2px;box-shadow:0 1px 4px rgba(0,0,0,.10)" alt="Google Calendar">
         <span class="card-title">Live Google Calendar</span>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:48px 20px;border:2px dashed var(--border);border-radius:14px;background:var(--page)">
-      <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:48px;height:48px;opacity:.35" alt="">
-      <div style="text-align:center">
-        <p style="font-size:15px;font-weight:900;color:var(--ink);margin:0">Not integrated</p>
-        <p style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0 0;max-width:320px">Connect Google Calendar to see your live calendar here. Events and meetings will sync automatically.</p>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:52px 20px;border:2px dashed var(--border);border-radius:14px;background:var(--page)">
+      <div style="width:72px;height:72px;border-radius:18px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.10);display:flex;align-items:center;justify-content:center">
+        <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:48px;height:48px;object-fit:contain" alt="Google Calendar">
       </div>
-      <button class="btn-gold" style="height:38px;padding:0 20px" onclick="openOAuthModal('google-calendar')">Connect Google Calendar</button>
+      <div style="text-align:center">
+        <p style="font-size:16px;font-weight:900;color:var(--ink);margin:0">Not connected</p>
+        <p style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0 0;max-width:340px;line-height:1.5">Connect Google Calendar above to see your live calendar here. All events and meetings will sync automatically.</p>
+      </div>
+      <button class="btn-gold" style="height:40px;padding:0 24px;font-size:13px" onclick="openOAuthModal('google-calendar')">Connect Google Calendar</button>
     </div>
   </div>
 </div>
@@ -11303,13 +11380,31 @@ function healthBadge(score){
   }
   window._pushLogoToServer=_pushLogoToServer;
   function _saveMeta(key,patch){ var all=_safeJSON('cal-account-meta',{}); all[key]=Object.assign({},_getMeta(key),patch||{}); _saveJSON('cal-account-meta',all); _pushMetaToServer(key,all[key]); }
+  function _mergeLayoutPrefs(local,server){
+    var merged=Object.assign({},local);
+    Object.keys(server).forEach(function(k){
+      var sv=server[k]; var lv=local[k];
+      var st=(sv&&typeof sv==='object'&&sv.t)?sv.t:0;
+      var lt=(lv&&typeof lv==='object'&&lv.t)?lv.t:0;
+      if(st>=lt) merged[k]=sv;
+    });
+    return merged;
+  }
   function syncMetaFromServer(key,cb){
     try{
       var t=_getMetaToken(); if(!t){ if(typeof cb==='function') cb(); return; }
       fetch('/api/meta?key='+encodeURIComponent(key),{headers:_metaAuthHeader()}).then(function(r){ return r.json(); }).then(function(data){
         if(data&&data.meta&&typeof data.meta==='object'){
           var all=_safeJSON('cal-account-meta',{});
-          all[key]=Object.assign({},all[key]||{},data.meta);
+          var local=all[key]||{}; var server=data.meta; var merged=Object.assign({},local);
+          Object.keys(server).forEach(function(k){
+            if(k.indexOf('layoutPrefs_')===0){
+              merged[k]=_mergeLayoutPrefs(local[k]||{},server[k]||{});
+            } else {
+              merged[k]=server[k];
+            }
+          });
+          all[key]=merged;
           _saveJSON('cal-account-meta',all);
         }
         if(typeof cb==='function') cb();
@@ -11325,11 +11420,21 @@ function healthBadge(score){
   };
   LAYOUT_ITEMS.test=LAYOUT_ITEMS.agency;
   function layoutKey(role){ return 'layoutPrefs_'+(role||window.currentRole); }
+  function _getRawLayoutPrefs(role){
+    try{ var m=_getMeta(_acctKey()); var lk=layoutKey(role); return (m&&m[lk]&&typeof m[lk]==='object')?m[lk]:{}; }catch(e){ return {}; }
+  }
   function loadLayoutPrefs(role){
     try{
       var lk=layoutKey(role);
       var m=_getMeta(_acctKey());
-      if(m && m[lk] && typeof m[lk]==='object') return m[lk];
+      if(m && m[lk] && typeof m[lk]==='object'){
+        var raw=m[lk]; var result={};
+        Object.keys(raw).forEach(function(k){
+          var e=raw[k];
+          result[k]=(e&&typeof e==='object'&&e.hasOwnProperty('v'))?e.v:e;
+        });
+        return result;
+      }
       /* one-time migration from old bare localStorage key */
       var oldKey='cal-layout-prefs-'+(role||window.currentRole);
       var old=JSON.parse(localStorage.getItem(oldKey)||'{}')||{};
@@ -11338,7 +11443,15 @@ function healthBadge(score){
     }catch(e){ return {}; }
   }
   function saveLayoutPrefs(role,p){
-    try{ var patch={}; patch[layoutKey(role)]=p; _saveMeta(_acctKey(),patch); }catch(e){}
+    try{
+      var now=Date.now(); var raw=_getRawLayoutPrefs(role); var stored={};
+      Object.keys(p).forEach(function(k){
+        var newVal=p[k]; var prev=raw[k];
+        var prevVal=(prev&&typeof prev==='object'&&prev.hasOwnProperty('v'))?prev.v:prev;
+        stored[k]=newVal!==prevVal?{v:newVal,t:now}:(prev&&typeof prev==='object'&&prev.t)?prev:{v:newVal,t:0};
+      });
+      var patch={}; patch[layoutKey(role)]=stored; _saveMeta(_acctKey(),patch);
+    }catch(e){}
   }
 
   function navBtnsFor(key){
