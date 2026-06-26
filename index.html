@@ -9084,9 +9084,11 @@ function healthBadge(score){
   }
 
   function replaceAllLogos(){
+    var GCAL_IMG='6a3ed3cbe2763b2eec19f753';
     qsa('img').forEach(function(img){
       var src=img.getAttribute('src')||'';
-      if(src.indexOf('CWA7ybFILove8e29NqFc')>=0 || /cal/i.test(img.alt||'') || img.className.indexOf('logo')>=0) img.src=CAL_LOGO;
+      if(src.indexOf(GCAL_IMG)>=0) return;
+      if(src.indexOf('6a381eca1c5d711b35cfdfbb')>=0 || /cal/i.test(img.alt||'') || img.className.indexOf('logo')>=0) img.src=CAL_LOGO;
     });
   }
 
