@@ -973,10 +973,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div id="sb-agency-section" style="display:none">
       <div class="sb-acct-sw" id="sb-acct-sw">
         <button class="sb-acct-sw-btn" id="sb-acct-sw-btn" onclick="toggleSbAcctDd()" aria-label="Switch account" aria-expanded="false">
-          <div class="sb-acct-sw-av" id="sb-acct-sw-av" style="background:#1b3a6b">AL</div>
+          <div class="sb-acct-sw-av" id="sb-acct-sw-av" style="background:#2a3f5f;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
           <div class="sb-acct-sw-info">
-            <div class="sb-acct-sw-name" id="sb-acct-sw-name">Apex Legal Group</div>
-            <div class="sb-acct-sw-sub" id="sb-acct-sw-sub">Deluxe Plan</div>
+            <div class="sb-acct-sw-name" id="sb-acct-sw-name">Sub Accounts</div>
+            <div class="sb-acct-sw-sub" id="sb-acct-sw-sub">Click to view</div>
           </div>
           <svg class="sb-acct-sw-chev" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>
         </button>
@@ -6441,13 +6441,7 @@ function buildSidebarAccounts(){
 }
 function updateSbCurrentAcct(acct){
   if(!acct) return;
-  var av=document.getElementById('sb-acct-sw-av');
-  var nm=document.getElementById('sb-acct-sw-name');
-  var pl=document.getElementById('sb-acct-sw-sub');
-  if(av){ av.textContent=acct.initials; av.style.background=acct.color; }
-  if(nm) nm.textContent=acct.name;
-  if(pl) pl.textContent=(acct.plan?acct.plan+' Plan':'');
-  // Refresh active state in accounts sub-group
+  // Refresh active state in accounts sub-group only (button label stays "Sub Accounts")
   var sub=document.getElementById('sb-accts-sub');
   if(sub) sub.querySelectorAll('.nav-btn').forEach(function(b){
     var av2=b.querySelector('.sb-acct-av'); if(!av2) return;
