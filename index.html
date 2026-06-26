@@ -11458,13 +11458,32 @@ function renderSettingsTabContent(tab,pane){
         +'<button class="btn-ghost" style="text-align:left;justify-content:flex-start" onclick="nav(\'team\')">👥  Team Management</button>'
         +'<button class="btn-ghost" style="text-align:left;justify-content:flex-start" onclick="switchSettingsTab(\'whitelabel\',document.querySelector(\'[onclick*=whitelabel]\'))">🎨  White Label Settings</button>'
       +'</div>'
-      +'<div class="card card-pad" id="company-connections-card">'
-        +'<div class="card-head"><span class="card-title">Platform Connections</span></div>'
-        +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:14px">Track which platforms are connected for this account. Connections are scoped per client.</p>'
-        +'<div id="company-connections-list"><div style="text-align:center;padding:20px;color:var(--muted);font-size:13px">Loading...</div></div>'
+      +'<div class="card card-pad">'
+        +'<div class="card-head"><span class="card-title">Client Accounts</span><button class="btn-view" onclick="nav(\'agency-admin\')">Manage all →</button></div>'
+        +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:14px">Quick overview of all active client accounts.</p>'
+        +(function(){
+          var accts=window.accounts||DEFAULT_ACCOUNTS||[];
+          var planColors={'Deluxe':'var(--gold)','Premium':'var(--blue)','Standard':'var(--muted)'};
+          return accts.map(function(a,i){
+            var isLast=i===accts.length-1;
+            var plan=a.plan||'Standard';
+            var pColor=planColors[plan]||'var(--muted)';
+            var status=a.onboarding?'Onboarding':'Active';
+            var sBg=a.onboarding?'rgba(201,168,76,.12)':'rgba(34,197,94,.12)';
+            var sColor=a.onboarding?'var(--gold,#e5a100)':'#16a34a';
+            var avatarS='display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;font-size:11px;font-weight:900;color:#fff;flex-shrink:0;background:'+a.color+';';
+            return '<div style="display:flex;align-items:center;gap:12px;padding:10px 0;'+(isLast?'':'border-bottom:1px solid var(--border)')+';">'
+              +'<div style="'+avatarS+'">'+a.initials+'</div>'
+              +'<div style="flex:1;min-width:0">'
+                +'<p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+esc(a.name)+'</p>'
+                +'<p style="font-size:11px;font-weight:700;color:'+pColor+';margin:1px 0 0">'+plan+'</p>'
+              +'</div>'
+              +'<span style="font-size:11px;font-weight:800;padding:3px 9px;border-radius:999px;background:'+sBg+';color:'+sColor+';flex-shrink:0">'+status+'</span>'
+            +'</div>';
+          }).join('');
+        })()
       +'</div>'
       +'</div>';
-    setTimeout(renderCompanyConnections,200);
   } else if(tab==='permissions'){
     pane.innerHTML='<div '+W+'>'
       +'<div class="card card-pad" style="display:flex;align-items:center;gap:16px">'
@@ -11475,13 +11494,24 @@ function renderSettingsTabContent(tab,pane){
       +'<div class="card card-pad"><p style="font-size:13px;font-weight:600;color:var(--muted);line-height:1.7">Assign team members to client accounts, set Admin or Staff roles, and send portal invitations — all managed on the <button class="link-btn" onclick="nav(\'permissions\')" style="font-weight:800;color:var(--blue)">Permissions screen</button>.</p></div>'
       +'</div>';
   } else if(tab==='whitelabel'){
+    var savedWLColor=localStorage.getItem('cal-wl-color')||'#e5a100';
+    var savedWLName=localStorage.getItem('cal-wl-name')||'CAL Marketing';
+    var savedWLLogo=localStorage.getItem('cal-wl-logo')||'https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a381eca1c5d711b35cfdfbb.png';
     pane.innerHTML='<div '+W+'>'
-      +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:14px">'
+      +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:18px">'
         +'<div><p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">White Label</p><p style="font-size:12px;color:var(--muted);font-weight:600;margin:4px 0 0">Customize the portal for your brand</p></div>'
-        +'<div class="form-field"><label class="form-label">Portal Domain</label><input class="input-std" placeholder="portal.youragency.com"></div>'
-        +'<div class="form-field"><label class="form-label">Agency Name</label><input class="input-std" placeholder="Your Agency Name" value="CAL Marketing"></div>'
-        +'<div class="form-field"><label class="form-label">Primary Color</label><div style="display:flex;align-items:center;gap:10px"><input type="color" value="#e5a100" style="width:44px;height:44px;border:1px solid var(--border);border-radius:8px;padding:3px;cursor:pointer"><span style="font-size:13px;font-weight:700;color:var(--muted)">#e5a100</span></div></div>'
-        +'<button class="btn-gold" style="align-self:flex-start" onclick="this.textContent=\'Saved! \u2713\'">Save Changes</button>'
+        +'<div class="form-field">'
+          +'<label class="form-label">Business Logo</label>'
+          +'<div style="display:flex;align-items:center;gap:14px;margin-top:8px">'
+            +'<div style="width:72px;height:72px;border-radius:14px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;box-sizing:border-box">'
+              +'<img id="wl-stab-logo-preview" src="'+savedWLLogo+'" style="width:100%;height:100%;object-fit:contain">'
+            +'</div>'
+            +'<label class="btn-gold" style="cursor:pointer;height:36px;padding:0 16px;display:inline-flex;align-items:center;font-size:13px;font-weight:800">Upload Logo<input type="file" accept="image/*" style="display:none" onchange="(function(inp){var r=new FileReader();r.onload=function(e){var p=document.getElementById(\'wl-stab-logo-preview\');if(p)p.src=e.target.result;localStorage.setItem(\'cal-wl-logo\',e.target.result);}; r.readAsDataURL(inp.files[0]);})(this)"></label>'
+          +'</div>'
+        +'</div>'
+        +'<div class="form-field"><label class="form-label">Agency Name</label><input class="input-std" id="wl-stab-name" placeholder="Your Agency Name" value="'+savedWLName.replace(/"/g,\'&quot;\')+'"></div>'
+        +'<div class="form-field"><label class="form-label">Primary Color</label><div style="display:flex;align-items:center;gap:10px"><input type="color" id="wl-stab-color" value="'+savedWLColor+'" style="width:44px;height:44px;border:1px solid var(--border);border-radius:8px;padding:3px;cursor:pointer" oninput="document.documentElement.style.setProperty(\'--gold\',this.value);document.getElementById(\'wl-stab-color-hex\').textContent=this.value"><span id="wl-stab-color-hex" style="font-size:13px;font-weight:700;color:var(--muted)">'+savedWLColor+'</span></div></div>'
+        +'<button class="btn-gold" style="align-self:flex-start" onclick="(function(b){localStorage.setItem(\'cal-wl-color\',document.getElementById(\'wl-stab-color\').value);localStorage.setItem(\'cal-wl-name\',document.getElementById(\'wl-stab-name\').value);b.textContent=\'Saved! \u2713\';setTimeout(function(){b.textContent=\'Save Changes\';},2000);})(this)">Save Changes</button>'
       +'</div>'
       +'</div>';
   } else if(tab==='help'){
