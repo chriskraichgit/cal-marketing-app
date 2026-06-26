@@ -18,6 +18,8 @@ const HOST = '0.0.0.0';
 const TOKEN_FILE = path.join(__dirname, '.gdrive-tokens.json');
 const GOOGLE_TOKEN_FILE = path.join(__dirname, '.google-tokens.json');
 const META_STORE_FILE = path.join(__dirname, '.cal-meta-store.json');
+const LOGO_DIR = path.join(__dirname, '.cal-logos');
+try { if (!fs.existsSync(LOGO_DIR)) fs.mkdirSync(LOGO_DIR); } catch (e) {}
 // Known users for server-side meta token issuance.
 // Passwords are stored as SHA-256 hashes only — never plaintext.
 // Agency/test roles may access any account key; admin/user roles may only access their own email key.
@@ -158,6 +160,57 @@ async function handleMetaPut(req, res, qs) {
   store[key] = Object.assign({}, store[key] || {}, body);
   saveMetaStore(store);
   jsonResponse(res, 200, { ok: true });
+}
+
+function safeLogoFilename(key) {
+  return crypto.createHash('sha256').update(key).digest('hex');
+}
+
+async function handleLogoGet(req, res, qs) {
+  const key = qs.key;
+  if (!key) { jsonResponse(res, 400, { error: 'MISSING_KEY' }); return; }
+  const base = safeLogoFilename(key);
+  const dataFile = path.join(LOGO_DIR, base + '.data');
+  const mimeFile = path.join(LOGO_DIR, base + '.mime');
+  try {
+    if (!fs.existsSync(dataFile)) { jsonResponse(res, 404, { error: 'NOT_FOUND' }); return; }
+    const imgData = fs.readFileSync(dataFile);
+    let mimeType = 'image/png';
+    try { mimeType = fs.readFileSync(mimeFile, 'utf8').trim(); } catch (e) {}
+    res.writeHead(200, { 'Content-Type': mimeType, 'Cache-Control': 'public, max-age=31536000' });
+    res.end(imgData);
+  } catch (e) { jsonResponse(res, 500, { error: 'READ_FAILED' }); }
+}
+
+async function handleLogoPut(req, res, qs) {
+  const rawToken = extractBearerToken(req);
+  const payload = rawToken ? verifyMetaToken(rawToken) : null;
+  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+  const key = qs.key;
+  if (!key) { jsonResponse(res, 400, { error: 'MISSING_KEY' }); return; }
+  if (!isKeyAllowed(key, payload)) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
+  let body;
+  try {
+    const raw = await readRequestBody(req, 5 * 1024 * 1024);
+    body = JSON.parse(raw.toString('utf8'));
+  } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+  const dataUrl = body && typeof body.logo === 'string' ? body.logo : '';
+  if (!dataUrl.startsWith('data:')) { jsonResponse(res, 400, { error: 'INVALID_LOGO' }); return; }
+  const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
+  if (!match) { jsonResponse(res, 400, { error: 'INVALID_DATA_URL' }); return; }
+  const mimeType = match[1];
+  let imgBuf;
+  try { imgBuf = Buffer.from(match[2], 'base64'); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BASE64' }); return; }
+  const base = safeLogoFilename(key);
+  try {
+    fs.writeFileSync(path.join(LOGO_DIR, base + '.data'), imgBuf);
+    fs.writeFileSync(path.join(LOGO_DIR, base + '.mime'), mimeType);
+  } catch (e) { jsonResponse(res, 500, { error: 'WRITE_FAILED' }); return; }
+  const logoUrl = '/api/logo?key=' + encodeURIComponent(key);
+  const store = loadMetaStore();
+  store[key] = Object.assign({}, store[key] || {}, { logo: logoUrl });
+  saveMetaStore(store);
+  jsonResponse(res, 200, { ok: true, url: logoUrl });
 }
 
 function getAuthedClient() {
@@ -1244,6 +1297,14 @@ const server = http.createServer(async (req, res) => {
   }
   if (urlPath === '/api/meta' && req.method === 'PUT') {
     await handleMetaPut(req, res, qs);
+    return;
+  }
+  if (urlPath === '/api/logo' && req.method === 'GET') {
+    await handleLogoGet(req, res, qs);
+    return;
+  }
+  if (urlPath === '/api/logo' && req.method === 'POST') {
+    await handleLogoPut(req, res, qs);
     return;
   }
 
