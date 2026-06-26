@@ -157,7 +157,26 @@ async function handleMetaPut(req, res, qs) {
   } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
   if (!body || typeof body !== 'object' || Array.isArray(body)) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
   const store = loadMetaStore();
-  store[key] = Object.assign({}, store[key] || {}, body);
+  const existing = store[key] || {};
+  const merged = Object.assign({}, existing);
+  Object.keys(body).forEach(function(k) {
+    if (k.indexOf('layoutPrefs_') === 0) {
+      const exPrefs = existing[k] || {};
+      const inPrefs = body[k] || {};
+      const mergedPrefs = Object.assign({}, exPrefs);
+      Object.keys(inPrefs).forEach(function(navKey) {
+        const iv = inPrefs[navKey];
+        const ev = exPrefs[navKey];
+        const it = (iv && typeof iv === 'object' && iv.t) ? iv.t : 0;
+        const et = (ev && typeof ev === 'object' && ev.t) ? ev.t : 0;
+        if (it >= et) mergedPrefs[navKey] = iv;
+      });
+      merged[k] = mergedPrefs;
+    } else {
+      merged[k] = body[k];
+    }
+  });
+  store[key] = merged;
   saveMetaStore(store);
   jsonResponse(res, 200, { ok: true });
 }
