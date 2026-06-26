@@ -7365,20 +7365,30 @@ var INBOX_DEFAULTS=[
     {text:'Thanks! Looking great. See you on the call Thursday.',me:false,time:'Yesterday'}
   ]}
 ];
+var _inboxCache=null;
+var _inboxCacheKey=null;
 function inboxKey(){
-  if(window.currentRole==='agency'||window.currentRole==='test') return 'cal-inbox-threads-agency';
+  var role=window.currentRole||'';
+  if(role==='agency'||role==='test') return 'cal-inbox-threads-agency';
   return 'cal-inbox-threads-'+(window.currentAcctId||'a1');
 }
 function inboxLoad(){
+  var key=inboxKey();
+  if(_inboxCache && _inboxCacheKey===key) return _inboxCache;
   try{
-    var raw=localStorage.getItem(inboxKey());
-    if(raw){ var d=JSON.parse(raw); if(Array.isArray(d)&&d.length) return d; }
+    var raw=localStorage.getItem(key);
+    if(raw){ var d=JSON.parse(raw); if(Array.isArray(d)&&d.length){ _inboxCache=d; _inboxCacheKey=key; return d; } }
   }catch(e){}
   var seed=JSON.parse(JSON.stringify(INBOX_DEFAULTS));
-  localStorage.setItem(inboxKey(),JSON.stringify(seed));
+  try{ localStorage.setItem(key,JSON.stringify(seed)); }catch(e){}
+  _inboxCache=seed; _inboxCacheKey=key;
   return seed;
 }
-function inboxSave(threads){ try{ localStorage.setItem(inboxKey(),JSON.stringify(threads)); }catch(e){} }
+function inboxSave(threads){
+  var key=inboxKey();
+  _inboxCache=threads; _inboxCacheKey=key;
+  try{ localStorage.setItem(key,JSON.stringify(threads)); }catch(e){}
+}
 window._inboxThreadIdx=-1;
 function openThread(idx){
   var threads=inboxLoad();
