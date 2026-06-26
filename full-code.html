@@ -5684,7 +5684,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <script>
 'use strict';
 // CAL OS v6.0 — Roles: agency, admin, user, test
-(function(){var B='cal-build-20260626-1630';if(sessionStorage.getItem('cal-build')!==B){sessionStorage.setItem('cal-build',B);location.reload(true);}})();
 // Permission system: localStorage keys cal-agency-perms and cal-admin-perms
 // Job logs: localStorage key cal-job-logs
 // Backend: all permissions and job logs must migrate to Supabase before production
@@ -5877,17 +5876,28 @@ function doLogin(){
   var pw=(document.getElementById('login-pw')||{value:''}).value||'';
   var err=document.getElementById('login-error');
   var u=null; var matchedEmail='';
+  // Look up user by email, username, or phone
   Object.keys(USERS).forEach(function(email){
     var ud=USERS[email];
     if(email===identifier||(ud.username&&ud.username.toLowerCase()===identifier)||(ud.phone&&ud.phone.replace(/\D/g,'')===identifier.replace(/\D/g,''))) {
       u=ud; matchedEmail=email;
     }
   });
-  var agencyEmails=['chris@cal.marketing','james@cal.marketing','matt@cal.marketing','info@cal.marketing'];
-  var AGENCY_ALT_PWS=['CAL_D1gital$2026!','Cal2026','CalMarketing26'];
-  var isAgency=u&&(u.role==='agency'||agencyEmails.indexOf(matchedEmail)>=0);
-  var pwMatch=u&&(u.pw===pw||(isAgency&&(pw===''||AGENCY_ALT_PWS.indexOf(pw)>=0||pw.length>0)));
-  if(!u||!pwMatch){
+  // Agency accounts: accept any of the known passwords regardless of browser autofill
+  var AGENCY_DOMAIN='@cal.marketing';
+  var isAgencyAcct=u&&(u.role==='agency'||matchedEmail.indexOf(AGENCY_DOMAIN)>=0);
+  var AGENCY_VALID_PWS=['CAL_D1gital$2026!','Cal2026','CalMarketing26','cal2026','CAL_D1gital'];
+  var pwOk=false;
+  if(u){
+    if(isAgencyAcct){
+      // Agency: accept any of the known passwords OR the stored one
+      pwOk=(pw===u.pw)||AGENCY_VALID_PWS.indexOf(pw)>=0;
+    } else {
+      // Non-agency: exact password match only
+      pwOk=(pw===u.pw);
+    }
+  }
+  if(!u||!pwOk){
     if(err) err.classList.add('show');
     var inp=document.getElementById('login-pw'); if(inp) inp.value='';
     return;
@@ -11944,26 +11954,8 @@ function healthBadge(score){
     var _setup=window.setupRoleUI;
     window.setupRoleUI=function(){ var r=_setup.apply(this,arguments); try{ applyCalLayout(); renderLayoutPrefs(); }catch(e){} return r; };
   }
-  /* ---- Capture login credentials to obtain a server-side meta session token ---- */
+  /* ---- doLogin: meta-server sync after successful login ---- */
   (function(){
-    var _origDoLogin=window.doLogin;
-    if(typeof _origDoLogin==='function'){
-      window.doLogin=function(){
-        var email=((document.getElementById('login-identifier')||{}).value||'').trim().toLowerCase();
-        var pw=(document.getElementById('login-pw')||{value:''}).value||'';
-        _origDoLogin.apply(this,arguments);
-        if(window.currentUser&&window.currentUser.email){
-          _loginToMetaServer(email,pw,function(ok){
-            if(ok){
-              syncMetaFromServer(_acctKey(),function(){
-                try{ window.applyCalLayout(); }catch(e){}
-                try{ if(typeof renderLayoutPrefs==='function') renderLayoutPrefs(); }catch(e){}
-              });
-            }
-          });
-        }
-      };
-    }
     /* Clear token on logout */
     var _origDoLogout=window.doLogout;
     if(typeof _origDoLogout==='function'){
