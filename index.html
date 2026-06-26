@@ -3057,7 +3057,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: INBOX ============ -->
 <div class="screen" id="s-inbox">
-  <div class="sec-head"><div><h2>Inbox</h2><p>Client messages and support</p></div></div>
+  <div class="sec-head"><div><h2>Inbox</h2><p>Client messages and support</p></div><button class="btn-primary" onclick="openComposeModal()">+ New Message</button></div>
   <div class="inbox-layout">
     <div class="card" style="overflow:hidden">
       <div style="padding:10px"><input class="input-std" style="height:36px" placeholder="Search messages..."></div>
@@ -3075,6 +3075,38 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div class="chat-input-row">
         <input placeholder="Type a message..." id="chat-input" onkeydown="if(event.key==='Enter')sendMsg()">
         <button class="btn-send" onclick="sendMsg()">Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ COMPOSE MESSAGE MODAL ============ -->
+<div class="modal-overlay hidden" id="compose-msg-modal" onclick="if(event.target===this)closeModal('compose-msg-modal')">
+  <div class="modal-box" style="max-width:480px;width:100%">
+    <div class="modal-head">
+      <strong>New Message</strong>
+      <button class="modal-close" onclick="closeModal('compose-msg-modal')">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;padding:20px">
+      <div class="form-field">
+        <label class="form-label">Business</label>
+        <select class="input-std" id="compose-acct-sel" onchange="updateComposeRecipients()">
+          <option value="">Select a business…</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Recipient</label>
+        <select class="input-std" id="compose-user-sel">
+          <option value="">Select business first…</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Message</label>
+        <textarea class="input-std" id="compose-msg-body" rows="4" placeholder="Type your message…" style="resize:vertical;min-height:100px;padding:10px;line-height:1.5"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn-ghost" onclick="closeModal('compose-msg-modal')">Cancel</button>
+        <button class="btn-primary" onclick="sendComposedMsg()">Send Message</button>
       </div>
     </div>
   </div>
@@ -7300,6 +7332,84 @@ function sendInboxReply(){
   if(msgArea){ msgArea.appendChild(bubble); msgArea.scrollTop=msgArea.scrollHeight; }
   input.value='';
   showToast('Reply sent!','green');
+}
+
+// ============ INBOX COMPOSE ============
+var INBOX_USERS=[
+  {name:'Alex Torres',  initials:'AT',color:'#e5a100',acct:'a1'},
+  {name:'Maria Santos', initials:'MS',color:'#1b3a6b',acct:'a1'},
+  {name:'David Kim',    initials:'DK',color:'#2e7d32',acct:'a2'},
+  {name:'Priya Patel',  initials:'PP',color:'#c9a84c',acct:'a3'},
+  {name:'Willy Diamond',initials:'WD',color:'#7c3aed',acct:'a3'},
+  {name:'Tony Houses',  initials:'TH',color:'#7c3aed',acct:'a4'},
+  {name:'Sam Sewer',    initials:'SS',color:'#0052cc',acct:'a5'}
+];
+function openComposeModal(){
+  var sel=document.getElementById('compose-acct-sel');
+  if(sel){
+    var accts=window.accounts||DEFAULT_ACCOUNTS||[];
+    sel.innerHTML='<option value="">Select a business\u2026</option>'+accts.map(function(a){
+      return '<option value="'+a.id+'">'+a.name+'</option>';
+    }).join('');
+  }
+  var usel=document.getElementById('compose-user-sel');
+  if(usel) usel.innerHTML='<option value="">Select business first\u2026</option>';
+  var body=document.getElementById('compose-msg-body');
+  if(body) body.value='';
+  openModal('compose-msg-modal');
+}
+function updateComposeRecipients(){
+  var acctId=document.getElementById('compose-acct-sel').value;
+  var usel=document.getElementById('compose-user-sel');
+  if(!usel) return;
+  if(!acctId){ usel.innerHTML='<option value="">Select business first\u2026</option>'; return; }
+  var users=INBOX_USERS.filter(function(u){ return u.acct===acctId; });
+  if(!users.length){ usel.innerHTML='<option value="">No users on this account yet</option>'; return; }
+  usel.innerHTML='<option value="">Select recipient\u2026</option>'+users.map(function(u){
+    return '<option value="'+u.name+'">'+u.name+'</option>';
+  }).join('');
+}
+function sendComposedMsg(){
+  var acctSel=document.getElementById('compose-acct-sel');
+  var usel=document.getElementById('compose-user-sel');
+  var body=document.getElementById('compose-msg-body');
+  if(!acctSel||!acctSel.value){ showToast('Please select a business','gold'); return; }
+  if(!usel||!usel.value){ showToast('Please select a recipient','gold'); return; }
+  if(!body||!body.value.trim()){ showToast('Please enter a message','gold'); return; }
+  var recipName=usel.value;
+  var inits=recipName.split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
+  var user=INBOX_USERS.find(function(u){ return u.name===recipName; })||{color:'var(--blue)',initials:inits};
+  var list=document.getElementById('inbox-thread-list');
+  if(list){
+    var row=document.createElement('div');
+    row.className='feed-row';
+    row.style.cssText='padding:10px 12px;cursor:pointer;border-left:3px solid var(--green)';
+    row.innerHTML='<div class="feed-ico"><div style="width:32px;height:32px;border-radius:50%;background:'+user.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+inits+'</div></div>'
+      +'<div><strong>'+recipName+'</strong><span>'+body.value.trim().slice(0,40)+(body.value.trim().length>40?'\u2026':'')+'</span></div>'
+      +'<span class="feed-time">Just now</span>';
+    var msgText=body.value.trim();
+    (function(el,name,clr,txt,ini){
+      el.onclick=function(){
+        document.querySelectorAll('#inbox-thread-list .feed-row').forEach(function(r){ r.style.background=''; });
+        el.style.background='rgba(27,58,107,.07)';
+        var pane=document.getElementById('inbox-msg-pane'); if(!pane) return;
+        var h='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)">';
+        h+='<div style="width:36px;height:36px;border-radius:50%;background:'+clr+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900">'+ini+'</div>';
+        h+='<strong style="font-size:14px">'+name+'</strong></div>';
+        h+='<div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">';
+        h+='<div style="display:flex;flex-direction:column;align-items:flex-end">';
+        h+='<div style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border)">'+txt+'</div>';
+        h+='<span style="font-size:10px;color:var(--muted);margin-top:3px">Just now \u2713</span></div></div>';
+        h+='<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px">';
+        h+='<input class="input-std" id="inbox-reply-input" style="flex:1;height:38px" placeholder="Type a reply\u2026">';
+        h+='<button class="btn-gold" style="height:38px;padding:0 16px" onclick="sendInboxReply()">Send</button></div>';
+        pane.innerHTML=h;
+      };
+    })(row,recipName,user.color,msgText,inits);
+    list.insertBefore(row,list.firstChild);
+  }
+  closeModal('compose-msg-modal');
+  showToast('Message sent to '+recipName+'!','green');
 }
 
 // ============ FILES ============
