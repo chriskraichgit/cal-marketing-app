@@ -7295,47 +7295,77 @@ function addComment(){ var inp=document.getElementById('proj-comment-input'); if
 
 // ============ INBOX ============
 function sendMsg(){ var inp=document.getElementById('chat-input')||document.getElementById('msg-input'); if(!inp||!inp.value.trim()) return; var msgs=document.getElementById('chat-msgs'); var bw=document.createElement('div'); bw.className='bubble-w me'; bw.innerHTML='<div class="bubble me">'+inp.value+'</div><div class="bubble-meta">Just now<span class="read-r"> · ✓</span></div>'; if(msgs){ msgs.appendChild(bw); msgs.scrollTop=msgs.scrollHeight; } inp.value=''; }
+var INBOX_DEFAULTS=[
+  {name:'Alex Torres',initials:'AT',color:'var(--gold)',colorText:'#000',msgs:[
+    {text:'Hey, can we increase the Google Ads budget for Q3?',me:false,time:'10:14 AM'},
+    {text:"Absolutely — let me pull the data and I'll have recommendations by end of day.",me:true,time:'10:22 AM'},
+    {text:'Perfect, thanks! Also, the last content piece performed really well.',me:false,time:'10:30 AM'}
+  ]},
+  {name:'Chris Kraich',initials:'CK',color:'var(--blue)',colorText:'#fff',msgs:[
+    {text:'Reports are ready for your review.',me:true,time:'Yesterday'},
+    {text:'Thanks! Looking great. See you on the call Thursday.',me:false,time:'Yesterday'}
+  ]}
+];
+function inboxKey(){ return 'cal-inbox-threads-'+(window.currentAcctId||'a1'); }
+function inboxLoad(){
+  try{
+    var raw=localStorage.getItem(inboxKey());
+    if(raw){ var d=JSON.parse(raw); if(Array.isArray(d)&&d.length) return d; }
+  }catch(e){}
+  var seed=JSON.parse(JSON.stringify(INBOX_DEFAULTS));
+  localStorage.setItem(inboxKey(),JSON.stringify(seed));
+  return seed;
+}
+function inboxSave(threads){ try{ localStorage.setItem(inboxKey(),JSON.stringify(threads)); }catch(e){} }
+window._inboxThreadIdx=-1;
 function openThread(idx){
-  var threads=[
-    {name:'Alex Torres',initials:'AT',color:'var(--gold)',colorText:'#000',msgs:[
-      {text:'Hey, can we increase the Google Ads budget for Q3?',me:false,time:'10:14 AM'},
-      {text:"Absolutely — let me pull the data and I'll have recommendations by end of day.",me:true,time:'10:22 AM'},
-      {text:'Perfect, thanks! Also, the last content piece performed really well.',me:false,time:'10:30 AM'}
-    ]},
-    {name:'Chris Kraich',initials:'CK',color:'var(--blue)',colorText:'#fff',msgs:[
-      {text:'Reports are ready for your review.',me:true,time:'Yesterday'},
-      {text:'Thanks! Looking great. See you on the call Thursday.',me:false,time:'Yesterday'}
-    ]}
-  ];
+  var threads=inboxLoad();
   var t=threads[idx]; if(!t) return;
+  window._inboxThreadIdx=idx;
   var pane=document.getElementById('inbox-msg-pane'); if(!pane) return;
-  var html='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)">';
-  html+='<div style="width:36px;height:36px;border-radius:50%;background:'+t.color+';color:'+t.colorText+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900">'+t.initials+'</div>';
-  html+='<strong style="font-size:14px">'+t.name+'</strong></div>';
-  html+='<div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">';
-  t.msgs.forEach(function(m){
-    html+='<div style="display:flex;flex-direction:column;align-items:'+(m.me?'flex-end':'flex-start')+'">';
-    html+='<div style="max-width:80%;padding:10px 13px;border-radius:'+(m.me?'14px 14px 4px 14px':'14px 14px 14px 4px')+';background:'+(m.me?'var(--blue)':'var(--surface)')+';color:'+(m.me?'#fff':'var(--ink)')+';font-size:13px;font-weight:600;border:1px solid var(--border)">'+m.text+'</div>';
-    html+='<span style="font-size:10px;color:var(--muted);margin-top:3px">'+m.time+'</span></div>';
-  });
-  html+='</div>';
-  html+='<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px">';
-  html+='<input class="input-std" id="inbox-reply-input" style="flex:1;height:38px" placeholder="Type a reply...">';
-  html+='<button class="btn-gold" style="height:38px;padding:0 16px" onclick="sendInboxReply()">Send</button></div>';
-  pane.innerHTML=html;
-  // Highlight active thread
+  function buildHtml(th){
+    var h='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)">';
+    h+='<div style="width:36px;height:36px;border-radius:50%;background:'+th.color+';color:'+(th.colorText||'#fff')+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900">'+th.initials+'</div>';
+    h+='<strong style="font-size:14px">'+th.name+'</strong></div>';
+    h+='<div id="inbox-msg-area" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">';
+    th.msgs.forEach(function(m){
+      h+='<div style="display:flex;flex-direction:column;align-items:'+(m.me?'flex-end':'flex-start')+'">';
+      h+='<div style="max-width:80%;padding:10px 13px;border-radius:'+(m.me?'14px 14px 4px 14px':'14px 14px 14px 4px')+';background:'+(m.me?'var(--blue)':'var(--surface)')+';color:'+(m.me?'#fff':'var(--ink)')+';font-size:13px;font-weight:600;border:1px solid var(--border)">'+m.text+'</div>';
+      h+='<span style="font-size:10px;color:var(--muted);margin-top:3px">'+m.time+'</span></div>';
+    });
+    h+='</div>';
+    h+='<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px">';
+    h+='<input class="input-std" id="inbox-reply-input" style="flex:1;height:38px" placeholder="Type a reply\u2026">';
+    h+='<button class="btn-gold" style="height:38px;padding:0 16px" onclick="sendInboxReply()">Send</button></div>';
+    return h;
+  }
+  pane.innerHTML=buildHtml(t);
+  var ma=document.getElementById('inbox-msg-area'); if(ma) ma.scrollTop=ma.scrollHeight;
+  var ri=document.getElementById('inbox-reply-input');
+  if(ri) ri.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendInboxReply(); } });
   document.querySelectorAll('#inbox-thread-list .feed-row').forEach(function(r,i){
     r.style.background=i===idx?'rgba(27,58,107,.07)':'';
   });
 }
 function sendInboxReply(){
   var input=document.getElementById('inbox-reply-input'); if(!input||!input.value.trim()) return;
-  var pane=document.getElementById('inbox-msg-pane');
-  var bubble=document.createElement('div');
-  bubble.style.cssText='display:flex;flex-direction:column;align-items:flex-end;padding:0 14px 10px';
-  bubble.innerHTML='<div style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600">'+input.value+'</div><span style="font-size:10px;color:var(--muted);margin-top:3px">Just now</span>';
-  var msgArea=pane.querySelector('div[style*="overflow-y:auto"]');
-  if(msgArea){ msgArea.appendChild(bubble); msgArea.scrollTop=msgArea.scrollHeight; }
+  var idx=window._inboxThreadIdx; if(idx<0) return;
+  var threads=inboxLoad();
+  var t=threads[idx]; if(!t) return;
+  var now=new Date(); var h=now.getHours(); var m=now.getMinutes();
+  var timeStr=(h%12||12)+':'+(m<10?'0':'')+m+' '+(h<12?'AM':'PM');
+  var msg={text:input.value.trim(),me:true,time:timeStr};
+  t.msgs.push(msg);
+  inboxSave(threads);
+  // Append bubble to DOM without full re-render
+  var area=document.getElementById('inbox-msg-area');
+  if(area){
+    var bubble=document.createElement('div');
+    bubble.style.cssText='display:flex;flex-direction:column;align-items:flex-end';
+    bubble.innerHTML='<div style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border)">'+msg.text+'</div><span style="font-size:10px;color:var(--muted);margin-top:3px">'+timeStr+'</span>';
+    area.appendChild(bubble);
+    area.scrollTop=area.scrollHeight;
+  }
   input.value='';
   showToast('Reply sent!','green');
 }
@@ -7385,38 +7415,34 @@ function sendComposedMsg(){
   var recipName=usel.value;
   var inits=recipName.split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
   var user=INBOX_USERS.find(function(u){ return u.name===recipName; })||{color:'var(--blue)',initials:inits};
+  var now=new Date(); var h=now.getHours(); var mn=now.getMinutes();
+  var timeStr=(h%12||12)+':'+(mn<10?'0':'')+mn+' '+(h<12?'AM':'PM');
+  var newThread={
+    name:recipName,initials:inits,
+    color:user.color||'var(--blue)',colorText:'#fff',
+    msgs:[{text:body.value.trim(),me:true,time:timeStr}]
+  };
+  var threads=inboxLoad();
+  threads.unshift(newThread);
+  inboxSave(threads);
+  // Rebuild thread list row
   var list=document.getElementById('inbox-thread-list');
   if(list){
     var row=document.createElement('div');
     row.className='feed-row';
     row.style.cssText='padding:10px 12px;cursor:pointer;border-left:3px solid var(--green)';
-    row.innerHTML='<div class="feed-ico"><div style="width:32px;height:32px;border-radius:50%;background:'+user.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+inits+'</div></div>'
-      +'<div><strong>'+recipName+'</strong><span>'+body.value.trim().slice(0,40)+(body.value.trim().length>40?'\u2026':'')+'</span></div>'
+    row.innerHTML='<div class="feed-ico"><div style="width:32px;height:32px;border-radius:50%;background:'+newThread.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+inits+'</div></div>'
+      +'<div><strong>'+recipName+'</strong><span>'+newThread.msgs[0].text.slice(0,40)+(newThread.msgs[0].text.length>40?'\u2026':'')+'</span></div>'
       +'<span class="feed-time">Just now</span>';
-    var msgText=body.value.trim();
-    (function(el,name,clr,txt,ini){
-      el.onclick=function(){
-        document.querySelectorAll('#inbox-thread-list .feed-row').forEach(function(r){ r.style.background=''; });
-        el.style.background='rgba(27,58,107,.07)';
-        var pane=document.getElementById('inbox-msg-pane'); if(!pane) return;
-        var h='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)">';
-        h+='<div style="width:36px;height:36px;border-radius:50%;background:'+clr+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900">'+ini+'</div>';
-        h+='<strong style="font-size:14px">'+name+'</strong></div>';
-        h+='<div style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">';
-        h+='<div style="display:flex;flex-direction:column;align-items:flex-end">';
-        h+='<div style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border)">'+txt+'</div>';
-        h+='<span style="font-size:10px;color:var(--muted);margin-top:3px">Just now \u2713</span></div></div>';
-        h+='<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px">';
-        h+='<input class="input-std" id="inbox-reply-input" style="flex:1;height:38px" placeholder="Type a reply\u2026">';
-        h+='<button class="btn-gold" style="height:38px;padding:0 16px" onclick="sendInboxReply()">Send</button></div>';
-        pane.innerHTML=h;
-      };
-    })(row,recipName,user.color,msgText,inits);
+    row.onclick=function(){ openThread(0); };
     list.insertBefore(row,list.firstChild);
+    // Re-index all static thread rows to match new array positions
+    var allRows=list.querySelectorAll('.feed-row');
+    allRows.forEach(function(r,i){ if(r!==row) r.onclick=function(){ openThread(i+1); }; });
   }
   closeModal('compose-msg-modal');
   showToast('Message sent to '+recipName+'!','green');
-  setTimeout(function(){ row.click(); },80);
+  setTimeout(function(){ openThread(0); },80);
 }
 
 // ============ FILES ============
