@@ -3231,7 +3231,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <!-- Invoices -->
   <div class="card card-pad" style="margin-top:14px">
     <div class="card-head"><span class="card-title">Invoices</span></div>
-    <table class="tbl"><thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody>
+    <table class="tbl"><thead><tr><th>Invoice</th><th>Date</th><th>Amount</th><th>Status</th><th></th></tr></thead><tbody id="billing-invoices-body">
       <tr><td>#INV-2026-06</td><td>Jun 1</td><td>$797</td><td><span class="pill pill-green">PAID</span></td><td><button class="btn-view" onclick="openModal('invoice-modal')">View</button></td></tr>
       <tr><td>#INV-2026-05</td><td>May 1</td><td>$797</td><td><span class="pill pill-green">PAID</span></td><td><button class="btn-view" onclick="openModal('invoice-modal')">View</button></td></tr>
       <tr><td>#INV-2026-04</td><td>Apr 1</td><td>$597</td><td><span class="pill pill-green">PAID</span></td><td><button class="btn-view" onclick="openModal('invoice-modal')">View</button></td></tr>
@@ -6811,6 +6811,7 @@ function refreshScreenForAccount(account){
   if(typeof renderDashboardEmbed==='function') renderDashboardEmbed(null);
   if(currentScreen==='job-logging') renderJobLogs();
   if(currentScreen==='social') loadSocialConnections();
+  if(typeof renderBilling==='function') try{ renderBilling(); }catch(e){}
   var scoreMap={'a1':78,'a2':64,'a3':82,'a4':71,'a5':88};
   var score=scoreMap[account.id]||75;
   var hs=document.getElementById('h-score'); if(hs) hs.textContent=score;
@@ -6911,43 +6912,48 @@ function setClientPlan(id,plan){
 }
 function renderBilling(){
   var role=window.currentRole;
+  var acctId=window.currentAcctId||'a1';
   var planHeader=document.getElementById('billing-plan-header');
   var paymentCard=document.getElementById('billing-payment-card');
   var agencyCard=document.getElementById('billing-agency-card');
   var changePlanBtn=document.getElementById('billing-changeplan-btn');
   var sub=document.getElementById('billing-sub');
   var isAgency=(role==='agency'||role==='test');
-  if(planHeader) planHeader.style.display=isAgency?'none':'';
-  if(paymentCard) paymentCard.style.display=isAgency?'none':'';
-  if(changePlanBtn) changePlanBtn.style.display=isAgency?'none':'';
-  if(agencyCard) agencyCard.style.display=isAgency?'':'none';
-  if(sub) sub.textContent=isAgency?'Manage client subscriptions and payments':'Subscription, payment method and invoices';
+  // Always show per-account view (agency or admin) — hide all-clients table
+  if(planHeader) planHeader.style.display='';
+  if(paymentCard) paymentCard.style.display='';
+  if(changePlanBtn) changePlanBtn.style.display='';
+  if(agencyCard) agencyCard.style.display='none';
+  // Current account info
+  var accts=window.accounts||DEFAULT_ACCOUNTS||[];
+  var a=accts.find(function(x){ return x.id===acctId; })||accts[0]||{name:'Account',plan:'Standard'};
+  var saved=clientPlans();
+  var plan=(saved&&saved[acctId])||a.plan||'Standard';
+  var price=PLAN_PRICES[plan]||'$797/mo';
+  if(sub) sub.textContent=a.name+' \u2014 Subscription & payments';
+  var pn=document.getElementById('billing-plan-name'); if(pn) pn.textContent=plan;
+  var pp=document.getElementById('billing-plan-price'); if(pp) pp.textContent=price;
   // Stripe connect state
   var connected=isStripeConnected();
   var pill=document.getElementById('billing-stripe-pill');
   var btn=document.getElementById('billing-stripe-btn');
   var desc=document.getElementById('billing-stripe-desc');
-  if(pill){ pill.textContent=connected?'Connected':'Not Connected'; pill.className='pill '+(connected?'pill-green':'pill-muted'); }
+  if(pill){ pill.textContent=connected?'Connected':'NOT CONNECTED'; pill.className='pill '+(connected?'pill-green':'pill-muted'); }
   if(btn){ btn.textContent=connected?'Connected':'Connect'; btn.disabled=connected; btn.style.background=connected?'var(--green)':''; }
   if(desc) desc.textContent=connected?'Stripe is connected. Payments and subscriptions are syncing.':'Securely process payments and subscriptions through Stripe.';
-  // Admin own plan reflects current account
-  if(!isAgency){
-    var a=(window.accounts||[]).find(function(x){ return x.id===(window.currentAcctId||'a1'); });
-    var plan=(a&&a.plan)||'Deluxe';
-    var pn=document.getElementById('billing-plan-name'); if(pn) pn.textContent=plan;
-    var pp=document.getElementById('billing-plan-price'); if(pp) pp.textContent=PLAN_PRICES[plan]||'$1,497/mo';
-  }
-  // Agency: list client subscriptions
-  if(isAgency && agencyCard){
-    var body=document.getElementById('billing-clients-body');
-    if(body){
-      var saved=clientPlans();
-      body.innerHTML=(window.accounts||[]).map(function(a){
-        var plan=saved[a.id]||a.plan||'Standard';
-        var opts=['Standard','Deluxe','Premium','Enterprise'].map(function(p){ return '<option'+(p===plan?' selected':'')+'>'+p+'</option>'; }).join('');
-        return '<tr><td>'+a.name+'</td><td><select class="input-std" style="height:32px;padding:2px 8px;font-size:12px" onchange="setClientPlan(\''+a.id+'\',this.value)">'+opts+'</select></td><td>'+(PLAN_PRICES[plan]||'—')+'</td><td><span class="pill pill-green">Active</span></td></tr>';
-      }).join('');
-    }
+  // Per-account invoices
+  var invoiceBody=document.getElementById('billing-invoices-body');
+  if(invoiceBody){
+    var amt=price.replace('/mo','');
+    var prefix=(a.name||'').split(' ').map(function(w){ return w[0]||''; }).join('').toUpperCase().slice(0,3);
+    var rows=[
+      {num:'INV-2026-'+prefix+'-06',date:'Jun 1',amt:amt,status:'PAID'},
+      {num:'INV-2026-'+prefix+'-05',date:'May 1',amt:amt,status:'PAID'},
+      {num:'INV-2026-'+prefix+'-04',date:'Apr 1',amt:amt,status:'PAID'}
+    ];
+    invoiceBody.innerHTML=rows.map(function(r){
+      return '<tr><td>#'+r.num+'</td><td>'+r.date+'</td><td>'+r.amt+'</td><td><span class="pill pill-green">'+r.status+'</span></td><td><button class="btn-view" onclick="openModal(\'invoice-modal\')">View</button></td></tr>';
+    }).join('');
   }
 }
 
