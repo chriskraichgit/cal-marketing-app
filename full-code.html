@@ -3177,7 +3177,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div class="sec-head"><div><h2>Files</h2><p>Shared documents, assets and videos</p></div>
     <div style="display:flex;gap:8px">
       <button class="btn-view" onclick="openUploadModal()">Upload File</button>
-      <button class="btn-view" style="color:var(--gold);border-color:rgba(201,168,76,.4)" onclick="openModal('upload-video-modal')">Upload Video</button>
+      <button class="btn-view" style="color:var(--gold);border-color:rgba(201,168,76,.4)" onclick="openVideoUploadModal()">Upload Video</button>
     </div>
   </div>
   <div class="int-card" id="files-gdrive-card" style="margin-bottom:14px">
@@ -5349,9 +5349,12 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <label class="ob-upload-box" id="video-upload-dropzone" for="video-upload-input" style="min-height:120px">
         <input id="video-upload-input" type="file" accept="video/*" style="display:none">
         <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="23,7 16,12 23,17 23,7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-        <p style="font-size:13px;font-weight:800;color:var(--muted)">Upload MP4 or MOV</p>
+        <p style="font-size:13px;font-weight:800;color:var(--muted)" id="video-upload-label">Upload MP4 or MOV</p>
         <p style="font-size:11px;color:var(--muted2);font-weight:700">Max 50MB · MP4 or MOV</p>
       </label>
+      <div id="video-upload-selected" style="display:none;align-items:center;gap:6px;margin-top:10px">
+        <p id="video-upload-hint" style="font-size:11px;color:var(--muted2);font-weight:700;margin:0"></p>
+      </div>
       <div id="video-upload-progress" style="display:none;margin-top:12px">
         <div class="bar-wrap"><div class="bar-fill" id="video-progress-bar" style="width:0%"></div></div>
         <p style="font-size:11px;font-weight:700;color:var(--muted);margin-top:4px">Uploading... <span id="video-upload-pct">0%</span></p>
@@ -5717,10 +5720,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 // ============ DATA ============
 var USERS = {
-  'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner',companyId:'cal'},
-  'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',companyId:'cal'},
+  'chris@cal.marketing':{pw:'CalMarketing26',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner',companyId:'cal'},
+  'james@cal.marketing':{pw:'CalMarketing26',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',companyId:'cal'},
   'aivrya@cal.marketing':{pw:'',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',googleOnly:true,companyId:'cal'},
-  'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
+  'matt@cal.marketing':{pw:'CalMarketing26',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
   'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester',companyId:'cal'},
   'client@apexlegal.com':{pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director',companyId:'apexlegal'},
   'staff@apexlegal.com':{pw:'StaffUser2025!',role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member',companyId:'apexlegal'},
@@ -7290,6 +7293,39 @@ function openModal(id){ var m=document.getElementById(id); if(m){ m.classList.re
 function closeModal(id){ var m=document.getElementById(id); if(m){ m.classList.add('hidden'); document.body.classList.remove('locked'); } }
 
 var _pendingUploadFile = null;
+var _pendingVideoFile = null;
+function openVideoUploadModal() {
+  openModal('upload-video-modal');
+  var label = document.getElementById('video-upload-label');
+  var hint = document.getElementById('video-upload-hint');
+  var sel = document.getElementById('video-upload-selected');
+  if (_pendingVideoFile) {
+    if (label) label.textContent = _pendingVideoFile.name;
+    if (hint) hint.textContent = 'Selected: ' + _pendingVideoFile.name + ' (' + _pendingVideoFile.sizeLabel + ')';
+    if (sel) sel.style.display = 'flex';
+  } else {
+    if (label) label.textContent = 'Upload MP4 or MOV';
+    if (sel) sel.style.display = 'none';
+  }
+}
+function onVideoFilePicked(input) {
+  var label = document.getElementById('video-upload-label');
+  var hint = document.getElementById('video-upload-hint');
+  var sel = document.getElementById('video-upload-selected');
+  var f = input && input.files && input.files[0];
+  if (!f) {
+    _pendingVideoFile = null;
+    if (label) label.textContent = 'Upload MP4 or MOV';
+    if (sel) sel.style.display = 'none';
+    return;
+  }
+  var mb = f.size / (1024 * 1024);
+  var sizeLabel = mb < 0.1 ? (f.size/1024).toFixed(1)+' KB' : mb.toFixed(1)+' MB';
+  _pendingVideoFile = { name: f.name, sizeLabel: sizeLabel };
+  if (label) label.textContent = f.name;
+  if (hint) hint.textContent = 'Selected: ' + f.name + ' (' + sizeLabel + ')';
+  if (sel) sel.style.display = 'flex';
+}
 function openUploadModal() {
   openModal('upload-modal');
   var label = document.getElementById('file-upload-label');
@@ -7747,6 +7783,7 @@ function startVideoUpload() {
     resetProgress();
     closeModal('upload-video-modal');
     if (input) input.value = '';
+    _pendingVideoFile = null;
     if (xhr.status >= 200 && xhr.status < 300 && data && data.success) {
       showToast('Video uploaded to Google Drive!', 'green');
       loadGDriveFiles();
@@ -7760,6 +7797,7 @@ function startVideoUpload() {
     resetProgress();
     closeModal('upload-video-modal');
     if (input) input.value = '';
+    _pendingVideoFile = null;
     showToast('Could not reach the server. Please try again.', 'gold');
   };
 
@@ -8406,7 +8444,9 @@ function onUploadFilePicked(input) {
         dt.items.add(files[0]);
         input.files = dt.files;
       } catch(ex) { return; }
+      onVideoFilePicked(input);
     });
+    input.addEventListener('change', function() { onVideoFilePicked(input); });
   }
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initVideoUploadDropzone);
@@ -9739,7 +9779,7 @@ function healthBadge(score){
    agency users.
 ============================================================ */
 (function(){
-  var AGENCY_PASSWORD='CAL_D1gital$2026!';
+  var AGENCY_PASSWORD='CalMarketing26';
   var AGENCY_USERS={
     'chris@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency'},
     'james@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner'},
