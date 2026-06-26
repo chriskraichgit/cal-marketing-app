@@ -1270,6 +1270,7 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/gbp/reply' && req.method === 'POST') { await handleGBPReply(req, res, qs); return; }
   if (urlPath === '/api/gsc/sites' && req.method === 'GET') { await handleGSCSites(res, qs); return; }
   if (urlPath === '/api/gsc/analytics') { await handleGSCAnalytics(req, res, qs); return; }
+  if (urlPath === '/api/gsc/performance') { await handleGSCAnalytics(req, res, qs); return; }
   if (urlPath === '/api/ga4/properties' && req.method === 'GET') { await handleGA4Properties(res, qs); return; }
   if (urlPath === '/api/ga4/report') { await handleGA4Report(req, res, qs); return; }
   if (urlPath === '/api/gmail/messages' && req.method === 'GET') { await handleGmailMessages(res, qs); return; }
