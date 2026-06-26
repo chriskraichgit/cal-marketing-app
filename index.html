@@ -10351,7 +10351,10 @@ function healthBadge(score){
     var curPhase=st.completed?'maintenance':(!phaseDone('onboarding')?'onboarding':'setup');
     var header='<div class="sec-head"><div><h2>Your CAL Journey</h2><p>'
       +(canEdit?'Mark steps complete and leave notes \u2014 your client sees updates live.':'Follow your progress from day one through launch and beyond.')
-      +'</p></div>'+(canEdit?'<span class="pill pill-blue">Agency view</span>':'<span class="pill pill-gold">'+p.pct+'% complete</span>')+'</div>';
+      +'</p></div><div style="display:flex;align-items:center;gap:10px">'
+      +(canEdit?'<span class="pill pill-blue">Agency view</span>':'<span class="pill pill-gold">'+p.pct+'% complete</span>')
+      +(canModify?'<button class="btn-gold" onclick="openModal(\'onb-add-step-modal\')" style="height:36px;padding:0 16px;font-size:13px">+ Add</button>':'')
+      +'</div></div>';
     var prog='<div class="onb-prog onb-prog-card"><div class="onb-prog-top"><span>'+p.done+' of '+p.total+' steps complete</span><span>'+p.pct+'%</span></div><div class="onb-prog-bar"><div class="onb-prog-fill" style="width:'+p.pct+'%"></div></div></div>';
     var chips='<div class="onb-phase-row">'+phases.map(function(ph){
       var status=ph.id==='maintenance'?(st.completed?'current':'upcoming'):(phaseDone(ph.id)?'done':(curPhase===ph.id?'current':'upcoming'));
@@ -10385,7 +10388,7 @@ function healthBadge(score){
         var ds=onbStep(st,s.id);
         return '<div class="onb-step'+(ds.done?' done':'')+'"><button class="onb-check-btn'+(ds.done?' done':'')+'" onclick="onbToggleStep(\''+s.id+'\')" aria-label="Toggle step">'+(ds.done?'\u2713':'')+'</button>'
           +'<div class="onb-step-body"><div class="onb-step-head"><p class="onb-step-title">'+esc(s.label)+'</p>'
-          +'<span class="onb-owner cal" style="background:rgba(0,0,0,.07);color:var(--muted)">CUSTOM</span>'
+          +'<span class="onb-owner cal">CAL</span>'
           +'<button '+_xBtn+' onclick="onbDeleteCustomStep(\''+s.id+'\')" title="Remove">\u00d7</button>'
           +'</div>'+(s.desc?'<p class="onb-step-desc">'+esc(s.desc)+'</p>':'')
           +'<textarea class="onb-note-input" placeholder="Add a note for your client..." oninput="onbSaveNote(\''+s.id+'\',this.value)">'+esc(ds.note||'')+'</textarea>'
@@ -10397,12 +10400,9 @@ function healthBadge(score){
     var addBtn='';
     var addModal='';
     if(canModify){
-      addBtn='<div style="text-align:center;padding:8px 0 24px">'
-        +'<button onclick="openModal(\'onb-add-step-modal\')" style="height:40px;padding:0 22px;border:2px dashed var(--border);border-radius:10px;background:transparent;color:var(--muted);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer">+ Add Custom Step</button>'
-        +'</div>';
       addModal='<div id="onb-add-step-modal" class="modal-overlay hidden">'
         +'<div class="modal" style="max-width:460px">'
-        +'<div class="modal-head"><h2>Add Custom Step</h2><button class="modal-close" onclick="closeModal(\'onb-add-step-modal\')">\u00d7</button></div>'
+        +'<div class="modal-head"><h2>Add Step</h2><button class="modal-close" onclick="closeModal(\'onb-add-step-modal\')">\u00d7</button></div>'
         +'<div class="modal-body" style="display:flex;flex-direction:column;gap:16px">'
         +'<div><label style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Where to?</label>'
         +'<select id="onb-modal-phase" style="width:100%;height:42px;border:1.5px solid var(--border);border-radius:10px;padding:0 12px;font-size:13px;font-weight:700;font-family:inherit;color:var(--ink);background:var(--surface);cursor:pointer">'
