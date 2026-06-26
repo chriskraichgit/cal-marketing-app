@@ -3023,9 +3023,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div class="card card-pad">
       <div class="card-head"><span class="card-title">Google Calendar</span></div>
       <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px;padding:18px 6px">
-        <div style="width:56px;height:56px;border-radius:14px;background:rgba(201,168,76,.12);color:var(--gold);display:flex;align-items:center;justify-content:center">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
+        <img src="https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png" style="width:56px;height:56px;object-fit:contain" alt="Google Calendar">
         <div>
           <p style="font-size:15px;font-weight:900;color:var(--ink)">Connect Google Calendar</p>
           <p style="font-size:12px;font-weight:700;color:var(--muted);margin-top:4px;max-width:280px">Sync your meetings and events directly into your CAL OS schedule.</p>
@@ -3037,6 +3035,22 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div class="card-head"><span class="card-title">Meetings</span><button class="btn-view" onclick="openModal('add-event-modal')">+ Add Event</button></div>
       <div class="feed-row"><div class="feed-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><strong>Monthly Strategy Call</strong><span>Jun 25 · 10:00 AM · Zoom</span></div><span class="pill pill-gold">UPCOMING</span></div>
       <div class="feed-row"><div class="feed-ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><strong>Ad Creative Review</strong><span>Jun 27 · 2:00 PM · Zoom</span></div><span class="pill pill-muted">SCHEDULED</span></div>
+    </div>
+  </div>
+  <div class="card card-pad" style="margin-top:16px" id="gcal-live-card">
+    <div class="card-head">
+      <div style="display:flex;align-items:center;gap:10px">
+        <img src="https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png" style="width:22px;height:22px;object-fit:contain" alt="">
+        <span class="card-title">Live Google Calendar</span>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:48px 20px;border:2px dashed var(--border);border-radius:14px;background:var(--page)">
+      <img src="https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png" style="width:48px;height:48px;opacity:.35" alt="">
+      <div style="text-align:center">
+        <p style="font-size:15px;font-weight:900;color:var(--ink);margin:0">Not integrated</p>
+        <p style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0 0;max-width:320px">Connect Google Calendar to see your live calendar here. Events and meetings will sync automatically.</p>
+      </div>
+      <button class="btn-gold" style="height:38px;padding:0 20px" onclick="openOAuthModal('google-calendar')">Connect Google Calendar</button>
     </div>
   </div>
 </div>
@@ -7630,12 +7644,28 @@ function switchPosTab(tab){ showToast('Switched to '+tab+' view','gold'); }
 function selectCuisine(el){ document.querySelectorAll('.pos-cuisine-card').forEach(function(c){ c.classList.remove('selected'); }); el.classList.add('selected'); }
 
 // ============ OAUTH ============
+var OAUTH_ICONS={
+  'gbp':'https://images.seeklogo.com/logo-png/33/1/google-business-logo-png_seeklogo-334128.png',
+  'google-ads':'https://upload.wikimedia.org/wikipedia/commons/c/c7/Google_Ads_logo.svg',
+  'google-calendar':'https://www.gstatic.com/images/branding/product/1x/calendar_48dp.png',
+  'google-drive':'https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg',
+  'google-search-console':'https://www.gstatic.com/images/branding/product/1x/search_console_48dp.png',
+  'meta-ads':'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png',
+  'stripe':'https://www.citypng.com/public/uploads/preview/hd-stripe-official-logo-png-701751694777755j0aa3puxte.png',
+  'whatsapp':'https://upload.wikimedia.org/wikipedia/commons/5/5e/WhatsApp_icon.png'
+};
 function openOAuthModal(platform){
   var data=OAUTH_DATA[platform]; if(!data) return;
   var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
   set('oauth-modal-title','Connect '+data.name);
   set('oauth-platform-name',data.name);
   set('oauth-platform-desc',data.desc);
+  var logoWrap=document.getElementById('oauth-logo-wrap');
+  if(logoWrap){
+    var iconUrl=OAUTH_ICONS[platform];
+    logoWrap.innerHTML=iconUrl?'<img src="'+iconUrl+'" style="width:44px;height:44px;object-fit:contain">':'';
+    logoWrap.style.background=iconUrl?'transparent':'rgba(27,58,107,.1)';
+  }
   var steps=document.getElementById('oauth-steps-list'); if(steps) steps.innerHTML=data.steps.map(function(s,i){ return '<li class="oauth-step"><div class="oauth-step-num">'+(i+1)+'</div><div class="oauth-step-text">'+s+'</div></li>'; }).join('');
   var perms=document.getElementById('oauth-perms-list'); if(perms) perms.innerHTML=data.perms.map(function(p){ return '<li class="oauth-perm">'+p+'</li>'; }).join('');
   var cc=document.getElementById('oauth-connect-content'); if(cc) cc.style.display='';
