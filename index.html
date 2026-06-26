@@ -3057,7 +3057,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: INBOX ============ -->
 <div class="screen" id="s-inbox">
-  <div class="sec-head"><div><h2>Inbox</h2><p>Client messages and support</p></div><button class="btn-primary" onclick="openComposeModal()">+ New Message</button></div>
+  <div class="sec-head"><div><h2>Inbox</h2><p>Client messages and support</p></div><button class="btn-gold" style="height:38px;padding:0 18px;flex-shrink:0" onclick="openComposeModal()">+ New Message</button></div>
   <div class="inbox-layout">
     <div class="card" style="overflow:hidden">
       <div style="padding:10px"><input class="input-std" style="height:36px" placeholder="Search messages..."></div>
@@ -3084,10 +3084,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <div class="modal-overlay hidden" id="compose-msg-modal" onclick="if(event.target===this)closeModal('compose-msg-modal')">
   <div class="modal-box" style="max-width:480px;width:100%">
     <div class="modal-head">
-      <strong>New Message</strong>
+      <h2>New Message</h2>
       <button class="modal-close" onclick="closeModal('compose-msg-modal')">✕</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:16px;padding:20px">
+    <div style="display:flex;flex-direction:column;gap:16px;padding:20px 24px 24px">
       <div class="form-field">
         <label class="form-label">Business</label>
         <select class="input-std" id="compose-acct-sel" onchange="updateComposeRecipients()">
@@ -3104,9 +3104,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <label class="form-label">Message</label>
         <textarea class="input-std" id="compose-msg-body" rows="4" placeholder="Type your message…" style="resize:vertical;min-height:100px;padding:10px;line-height:1.5"></textarea>
       </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end">
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
         <button class="btn-ghost" onclick="closeModal('compose-msg-modal')">Cancel</button>
-        <button class="btn-primary" onclick="sendComposedMsg()">Send Message</button>
+        <button class="btn-gold" style="height:42px;padding:0 22px;font-size:13px" onclick="sendComposedMsg()">Send Message</button>
       </div>
     </div>
   </div>
@@ -7410,6 +7410,7 @@ function sendComposedMsg(){
   }
   closeModal('compose-msg-modal');
   showToast('Message sent to '+recipName+'!','green');
+  setTimeout(function(){ row.click(); },80);
 }
 
 // ============ FILES ============
@@ -11517,7 +11518,7 @@ function renderSettingsTabs(){
   if(!row) return;
   var role=window.currentRole||'admin';
   var tabSets={
-    agency:['general','team','agency-admin','permissions','whitelabel','help'],
+    agency:['general','team','permissions','whitelabel','help'],
     admin:['general','profile','notifications','team','permissions','help'],
     test:['general','team','permissions','help'],
     user:['general','profile','notifications','help']
