@@ -888,7 +888,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <input class="input-std" id="login-identifier" type="text" placeholder="you@company.com" autocomplete="username">
         </div>
         <div class="field">
-          <div class="field-row"><label for="login-pw">Password</label><a href="#">Forgot password?</a></div>
+          <div class="field-row"><label for="login-pw">Password</label><a href="#" onclick="openForgotPassword();return false;">Forgot password?</a></div>
           <div class="pw-wrap">
             <input class="input-std" id="login-pw" type="password" placeholder="••••••••••" autocomplete="current-password">
             <button class="pw-toggle" type="button" aria-pressed="false" onclick="togglePw()">
@@ -5233,6 +5233,64 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
 </div>
 
+<!-- FORGOT PASSWORD MODAL -->
+<div class="modal-overlay hidden" id="forgot-pw-modal" onclick="if(event.target===this)closeModal('forgot-pw-modal')">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-head"><h2>Reset Password</h2><button class="icon-btn" onclick="closeModal('forgot-pw-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div id="forgot-step-1">
+        <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:16px;line-height:1.6">Enter your email, phone, or username and we'll send you a reset link.</p>
+        <div class="field"><label>Email, Phone, or Username</label><input class="input-std" id="forgot-identifier" type="text" placeholder="you@company.com" style="margin-top:4px"></div>
+        <div class="login-error" id="forgot-error" style="margin-top:8px">No account found with that information.</div>
+      </div>
+      <div id="forgot-step-2" style="display:none;text-align:center;padding:8px 0 16px">
+        <div style="width:56px;height:56px;border-radius:50%;background:rgba(52,168,83,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#34A853" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg></div>
+        <p style="font-size:16px;font-weight:900;color:var(--ink);margin-bottom:6px">Reset link sent!</p>
+        <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6">Check your inbox for the password reset email. It may take a minute to arrive.</p>
+      </div>
+    </div>
+    <div class="modal-actions" id="forgot-actions">
+      <button class="btn-gold" onclick="submitForgotPassword()">Send Reset Link</button>
+      <button class="btn-ghost" onclick="closeModal('forgot-pw-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2FA MODAL -->
+<div class="modal-overlay hidden" id="twofa-modal">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-head"><h2>Two-Step Verification</h2></div>
+    <div class="modal-body">
+      <div id="twofa-choose-panel">
+        <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:18px;line-height:1.6">Where should we send your verification code?</p>
+        <div style="display:grid;gap:10px">
+          <button id="twofa-phone-btn" onclick="select2FAMethod('phone')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);cursor:pointer;text-align:left;transition:border-color .14s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(37,211,102,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#25D366" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 016 1.18 2 2 0 018 3v3a2 2 0 01-1.45 1.93 16 16 0 006.52 6.52A2 2 0 0115 13h3a2 2 0 012 1.92z"/></svg></div>
+            <div><p style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">Text message</p><p id="twofa-phone-label" style="font-size:12px;font-weight:600;color:var(--muted)">Send to phone ending in ····</p></div>
+          </button>
+          <button id="twofa-email-btn" onclick="select2FAMethod('email')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--surface);cursor:pointer;text-align:left;transition:border-color .14s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="width:40px;height:40px;border-radius:10px;background:rgba(66,133,244,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#4285F4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+            <div><p style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:2px">Email</p><p id="twofa-email-label" style="font-size:12px;font-weight:600;color:var(--muted)">Send to your email</p></div>
+          </button>
+        </div>
+      </div>
+      <div id="twofa-code-panel" style="display:none">
+        <p id="twofa-sent-msg" style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:18px;line-height:1.6"></p>
+        <div class="field" style="margin-bottom:12px">
+          <label>Enter 6-digit code</label>
+          <input class="input-std" id="twofa-code-input" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="margin-top:4px;letter-spacing:6px;font-size:20px;font-weight:800;text-align:center" oninput="this.value=this.value.replace(/\D/g,'')">
+        </div>
+        <div class="login-error" id="twofa-error" style="margin-bottom:4px">Invalid code. Please try again.</div>
+        <button class="btn-ghost" onclick="show2FAChoose()" style="font-size:12px;padding:6px 0;border:none;background:none;cursor:pointer;color:var(--muted)">← Try a different method</button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-top:1px solid var(--border)">
+      <button class="btn-ghost" onclick="skip2FA()" style="font-size:13px;color:var(--muted);font-weight:700;background:none;border:none;cursor:pointer;padding:0">Skip for now</button>
+      <button class="btn-gold" id="twofa-verify-btn" style="display:none" onclick="verify2FA()">Verify</button>
+    </div>
+  </div>
+</div>
+
 <!-- DEACTIVATE MODAL -->
 <div class="modal-overlay hidden" id="deactivate-modal" onclick="if(event.target===this)closeModal('deactivate-modal')">
   <div class="modal">
@@ -5825,11 +5883,129 @@ function doLogin(){
     return;
   }
   if(err) err.classList.remove('show');
-  currentUser=Object.assign({},u,{email:matchedEmail});
-  currentRole=u.role;
-  currentCompanyId=u.companyId||'default';
-  // Sign In never runs onboarding — business details are only collected under Create Account.
+  _pendingLogin={user:Object.assign({},u,{email:matchedEmail}),role:u.role,companyId:u.companyId||'default'};
+  show2FA();
+}
+
+var _pendingLogin=null;
+var _twoFACode='';
+var _twoFAMethod='';
+
+function completePendingLogin(){
+  if(!_pendingLogin) return;
+  currentUser=_pendingLogin.user;
+  currentRole=_pendingLogin.role;
+  currentCompanyId=_pendingLogin.companyId;
+  _pendingLogin=null;
   launchApp();
+}
+
+function show2FA(){
+  var modal=document.getElementById('twofa-modal');
+  if(!modal||!_pendingLogin){ completePendingLogin(); return; }
+  var user=_pendingLogin.user;
+  var phone=(user.phone||'').replace(/\D/g,'');
+  var last4=phone.length>=4?phone.slice(-4):'';
+  var email=user.email||'';
+  var phoneBtn=document.getElementById('twofa-phone-btn');
+  var phoneLabel=document.getElementById('twofa-phone-label');
+  var emailLabel=document.getElementById('twofa-email-label');
+  if(phoneBtn) phoneBtn.style.display=last4?'':'none';
+  if(phoneLabel) phoneLabel.textContent=last4?'Send to number ending in \u00b7\u00b7\u00b7\u00b7 '+last4:'';
+  if(emailLabel) emailLabel.textContent=email;
+  show2FAChoose();
+  modal.classList.remove('hidden');
+  document.body.classList.add('locked');
+}
+
+function show2FAChoose(){
+  var cp=document.getElementById('twofa-choose-panel');
+  var vp=document.getElementById('twofa-code-panel');
+  var vb=document.getElementById('twofa-verify-btn');
+  if(cp) cp.style.display='';
+  if(vp) vp.style.display='none';
+  if(vb) vb.style.display='none';
+  var err=document.getElementById('twofa-error'); if(err) err.classList.remove('show');
+}
+
+function select2FAMethod(method){
+  _twoFAMethod=method;
+  _twoFACode=String(Math.floor(100000+Math.random()*900000));
+  var user=_pendingLogin&&_pendingLogin.user;
+  var dest='';
+  if(method==='phone'){
+    var phone=(user&&user.phone||'').replace(/\D/g,'');
+    var last4=phone.slice(-4);
+    dest='your number ending in \u00b7\u00b7\u00b7\u00b7 '+last4;
+  } else {
+    dest=(user&&user.email)||'your email';
+  }
+  var msg=document.getElementById('twofa-sent-msg');
+  if(msg) msg.textContent='We\'ve sent a 6-digit code to '+dest+'. Enter it below to continue.';
+  var cp=document.getElementById('twofa-choose-panel');
+  var vp=document.getElementById('twofa-code-panel');
+  var vb=document.getElementById('twofa-verify-btn');
+  var inp=document.getElementById('twofa-code-input');
+  if(cp) cp.style.display='none';
+  if(vp) vp.style.display='';
+  if(vb) vb.style.display='';
+  if(inp){ inp.value=''; inp.focus(); }
+  var err=document.getElementById('twofa-error'); if(err) err.classList.remove('show');
+  showToast('Code sent \u2014 for demo use: '+_twoFACode,'green');
+}
+
+function verify2FA(){
+  var inp=document.getElementById('twofa-code-input');
+  var val=(inp&&inp.value||'').trim();
+  var err=document.getElementById('twofa-error');
+  if(val!==_twoFACode){
+    if(err) err.classList.add('show');
+    if(inp){ inp.value=''; inp.focus(); }
+    return;
+  }
+  if(err) err.classList.remove('show');
+  var modal=document.getElementById('twofa-modal');
+  if(modal) modal.classList.add('hidden');
+  document.body.classList.remove('locked');
+  completePendingLogin();
+}
+
+function skip2FA(){
+  var modal=document.getElementById('twofa-modal');
+  if(modal) modal.classList.add('hidden');
+  document.body.classList.remove('locked');
+  completePendingLogin();
+}
+
+function openForgotPassword(){
+  var modal=document.getElementById('forgot-pw-modal');
+  if(!modal) return;
+  document.getElementById('forgot-step-1').style.display='';
+  document.getElementById('forgot-step-2').style.display='none';
+  document.getElementById('forgot-actions').style.display='';
+  var err=document.getElementById('forgot-error'); if(err) err.classList.remove('show');
+  var inp=document.getElementById('forgot-identifier'); if(inp){ inp.value=''; }
+  modal.classList.remove('hidden');
+  document.body.classList.add('locked');
+  setTimeout(function(){ var i=document.getElementById('forgot-identifier'); if(i) i.focus(); },80);
+}
+
+function submitForgotPassword(){
+  var inp=document.getElementById('forgot-identifier');
+  var val=((inp&&inp.value)||'').trim().toLowerCase();
+  var err=document.getElementById('forgot-error');
+  var found=false;
+  Object.keys(USERS).forEach(function(email){
+    var ud=USERS[email];
+    if(email===val||(ud.username&&ud.username.toLowerCase()===val)||(ud.phone&&ud.phone.replace(/\D/g,'')===val.replace(/\D/g,''))) found=true;
+  });
+  if(!found){
+    if(err) err.classList.add('show'); return;
+  }
+  if(err) err.classList.remove('show');
+  document.getElementById('forgot-step-1').style.display='none';
+  document.getElementById('forgot-step-2').style.display='';
+  document.getElementById('forgot-actions').style.display='none';
 }
 function switchLoginTab(tab){
   var sp=document.getElementById('signin-panel');
