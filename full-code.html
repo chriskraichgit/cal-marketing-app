@@ -3236,6 +3236,80 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
     <button class="btn-gold" style="white-space:nowrap" onclick="nav('nps')">Review Your Team</button>
   </div>
+
+  <!-- Generate Report (agency only) -->
+  <div class="card card-pad" id="generate-report-card" style="margin-top:12px;display:none">
+    <div class="card-head" style="margin-bottom:16px">
+      <span class="card-title">Generate Report</span>
+      <span class="pill pill-gold">AGENCY</span>
+    </div>
+    <div class="grid g2" style="gap:14px;align-items:start">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-field">
+          <label class="form-label">Client Account</label>
+          <select class="input-std" id="gen-report-acct">
+            <option value="all">All Accounts</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Report Type</label>
+          <select class="input-std" id="gen-report-type" onchange="updateGenReportDates()">
+            <option value="monthly">Monthly Report</option>
+            <option value="quarterly">Quarterly Report</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+        <div class="form-field" id="gen-report-date-wrap">
+          <label class="form-label">Period</label>
+          <select class="input-std" id="gen-report-period">
+            <option>June 2026</option>
+            <option>May 2026</option>
+            <option>April 2026</option>
+            <option>March 2026</option>
+            <option>February 2026</option>
+            <option>January 2026</option>
+          </select>
+        </div>
+        <div class="form-field" id="gen-report-custom-wrap" style="display:none">
+          <label class="form-label">Date Range</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input type="date" class="input-std" id="gen-report-from" style="flex:1">
+            <span style="font-size:12px;font-weight:700;color:var(--muted)">to</span>
+            <input type="date" class="input-std" id="gen-report-to" style="flex:1">
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="form-field">
+          <label class="form-label" style="margin-bottom:8px">Sections to Include</label>
+          <div style="display:flex;flex-direction:column;gap:8px" id="gen-report-sections">
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> Executive Summary</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> Google Ads Performance</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> Meta Ads Performance</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> SEO &amp; Organic Traffic</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> Google Business Profile</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--gold)"> Lead Attribution</label>
+            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--gold)"> ROI &amp; Revenue</label>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Delivery Format</label>
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button id="gen-fmt-pdf" onclick="selectGenFmt('pdf')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--gold);background:rgba(201,168,76,.1);font-size:12px;font-weight:900;color:var(--gold);cursor:pointer">PDF</button>
+            <button id="gen-fmt-email" onclick="selectGenFmt('email')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:900;color:var(--muted);cursor:pointer">Email</button>
+            <button id="gen-fmt-both" onclick="selectGenFmt('both')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:900;color:var(--muted);cursor:pointer">Both</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap">
+      <button class="btn-view" onclick="previewGenReport()">Preview</button>
+      <button class="btn-gold" onclick="generateReport()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Generate Report
+      </button>
+    </div>
+  </div>
 </div>
 <!-- ============ SCREEN: SETTINGS ============ -->
 <div class="screen" id="s-settings">
@@ -6363,6 +6437,11 @@ function nav(screen){
   if(screen==='files') initGDriveCard();
   if(screen==='settings'){ renderSettingsTabs(); setTimeout(renderIntegrationsGrid,300); }
   if(screen==='onboarding') renderOnboarding();
+  if(screen==='reports'){
+    var grc=document.getElementById('generate-report-card');
+    if(grc){ grc.style.display=(currentRole==='agency'||currentRole==='test')?'':'none'; }
+    if(currentRole==='agency'||currentRole==='test') initGenReportAcctDropdown();
+  }
 }
 function initHomeScreen(){
   // ROI calculator null-check init
@@ -7294,6 +7373,74 @@ function copyReviewLink(btn, url){
   var orig=btn.textContent; btn.textContent='Copied!';
   setTimeout(function(){ btn.textContent=orig; }, 1800);
   showToast('Review link copied!','green');
+}
+function initGenReportAcctDropdown(){
+  var sel=document.getElementById('gen-report-acct'); if(!sel) return;
+  var accts=window.accounts||window.DEFAULT_ACCOUNTS||[];
+  var opts='<option value="all">All Accounts</option>';
+  accts.forEach(function(a){ opts+='<option value="'+a.id+'">'+a.name+'</option>'; });
+  sel.innerHTML=opts;
+  if(window.currentAcctId&&window.currentAcctId!=='local') sel.value=window.currentAcctId;
+}
+function updateGenReportDates(){
+  var type=(document.getElementById('gen-report-type')||{}).value;
+  var dw=document.getElementById('gen-report-date-wrap');
+  var cw=document.getElementById('gen-report-custom-wrap');
+  if(type==='custom'){
+    if(dw) dw.style.display='none';
+    if(cw) cw.style.display='';
+  } else {
+    if(dw) dw.style.display='';
+    if(cw) cw.style.display='none';
+    var sel=document.getElementById('gen-report-period'); if(!sel) return;
+    if(type==='quarterly'){
+      sel.innerHTML='<option>Q2 2026 (Apr–Jun)</option><option>Q1 2026 (Jan–Mar)</option><option>Q4 2025 (Oct–Dec)</option><option>Q3 2025 (Jul–Sep)</option>';
+    } else {
+      sel.innerHTML='<option>June 2026</option><option>May 2026</option><option>April 2026</option><option>March 2026</option><option>February 2026</option><option>January 2026</option>';
+    }
+  }
+}
+var _genFmt='pdf';
+function selectGenFmt(fmt){
+  _genFmt=fmt;
+  ['pdf','email','both'].forEach(function(f){
+    var btn=document.getElementById('gen-fmt-'+f); if(!btn) return;
+    var active=f===fmt;
+    btn.style.border=active?'2px solid var(--gold)':'1.5px solid var(--border)';
+    btn.style.background=active?'rgba(201,168,76,.1)':'var(--card)';
+    btn.style.color=active?'var(--gold)':'var(--muted)';
+  });
+}
+function previewGenReport(){
+  var acctSel=document.getElementById('gen-report-acct');
+  var acctName=acctSel?acctSel.options[acctSel.selectedIndex].text:'All Accounts';
+  var type=(document.getElementById('gen-report-type')||{value:'monthly'}).value;
+  var period='';
+  if(type==='custom'){
+    var f=(document.getElementById('gen-report-from')||{value:''}).value;
+    var t=(document.getElementById('gen-report-to')||{value:''}).value;
+    period=(f&&t)?f+' → '+t:'Custom Range';
+  } else {
+    var ps=document.getElementById('gen-report-period');
+    period=ps?ps.options[ps.selectedIndex].text:'';
+  }
+  var sections=[];
+  document.querySelectorAll('#gen-report-sections input[type=checkbox]:checked').forEach(function(cb){
+    sections.push(cb.parentNode.textContent.trim());
+  });
+  showToast('Preview: '+acctName+' · '+period+' · '+sections.length+' sections','gold');
+}
+function generateReport(){
+  var acctSel=document.getElementById('gen-report-acct');
+  var acctName=acctSel?acctSel.options[acctSel.selectedIndex].text:'All Accounts';
+  var btn=document.querySelector('#generate-report-card .btn-gold');
+  if(btn){ btn.textContent='Generating…'; btn.disabled=true; }
+  setTimeout(function(){
+    if(btn){ btn.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Generate Report'; btn.disabled=false; }
+    if(_genFmt==='email'||_genFmt==='both') showToast('Report emailed to '+acctName+'!','green');
+    else showToast('Report ready — opening PDF…','green');
+    if(_genFmt!=='email') setTimeout(function(){ openModal('report-modal'); },600);
+  },1800);
 }
 function setReportSchedule(btn, type){
   document.querySelectorAll('.report-toggle-btn[id^="rpt-"]').forEach(function(b){ b.classList.remove('active'); });
