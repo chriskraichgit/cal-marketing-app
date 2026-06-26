@@ -3304,9 +3304,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div class="card card-pad">
       <div class="card-head"><span class="card-title">Support &amp; Resources</span></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
-        <a href="mailto:support@cal.marketing" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+        <a href="mailto:info@cal.marketing" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="width:34px;height:34px;border-radius:8px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="16" height="16"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
-          <div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Email Support</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">support@cal.marketing</p></div>
+          <div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Email Support</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">info@cal.marketing</p></div>
         </a>
         <a href="https://cal.marketing" target="_blank" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="width:34px;height:34px;border-radius:8px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
@@ -3420,7 +3420,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </div>
       <div style="margin-top:18px;padding:14px;background:rgba(27,58,107,.05);border-radius:12px">
         <p style="font-size:13px;font-weight:900;color:var(--blue);margin-bottom:6px">Direct Contact</p>
-        <p style="font-size:12px;font-weight:700;color:var(--muted);line-height:2">📧 support@cal.marketing<br>📞 (305) 555-CALL<br>💬 Live chat M–F, 9AM–6PM ET</p>
+        <p style="font-size:12px;font-weight:700;color:var(--muted);line-height:2">📧 info@cal.marketing<br>📞 (305) 555-CALL<br>💬 Live chat M–F, 9AM–6PM ET</p>
       </div>
     </div>
   </div>
@@ -4481,22 +4481,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div>
       <div class="card" style="margin-bottom:14px">
         <p class="card-label" style="margin-bottom:12px">Branding</p>
-        <div class="form-field"><label class="form-label">Platform Name</label><input class="input-std" id="wl-platform-name" value="CAL OS" oninput="updateWLPreview()"></div>
-        <div class="form-field" style="margin-top:10px"><label class="form-label">Logo Upload</label><label class="btn-view" style="cursor:pointer;display:inline-block"><input type="file" accept="image/*" style="display:none" onchange="handleWLLogo(this)"> Upload Logo</label></div>
-        <div class="form-field" style="margin-top:10px"><label class="form-label">Favicon Upload</label><label class="btn-view" style="cursor:pointer;display:inline-block"><input type="file" accept="image/*" style="display:none"> Upload Favicon</label></div>
+        <div class="form-field"><label class="form-label">Portal Name</label><input class="input-std" id="wl-platform-name" value="CAL OS" oninput="updateWLPreview()"></div>
+        <div class="form-field" style="margin-top:10px"><label class="form-label">Company Logo</label><label class="btn-view" style="cursor:pointer;display:inline-block"><input type="file" accept="image/*" style="display:none" onchange="handleWLLogo(this)"> Upload Logo</label></div>
         <div class="form-field" style="margin-top:10px"><label class="form-label">Primary Color</label><div style="display:flex;align-items:center;gap:10px"><input type="color" value="#c9a84c" id="wl-color" style="width:48px;height:36px;border:2px solid var(--border);border-radius:8px;cursor:pointer" oninput="updateWLPreview()"><span id="wl-color-hex" style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--ink)">#c9a84c</span></div></div>
-      </div>
-      <div class="card" style="margin-bottom:14px">
-        <p class="card-label" style="margin-bottom:12px">Email Settings</p>
-        <div class="form-field"><label class="form-label">Sender Name</label><input class="input-std" id="wl-sender-name" value="CAL Marketing"></div>
-        <div class="form-field" style="margin-top:10px"><label class="form-label">Sender Email</label><input class="input-std" id="wl-sender-email" placeholder="hello@youragency.com"></div>
-        <div class="form-field" style="margin-top:10px"><label class="form-label">Email Footer Text</label><textarea class="notes-textarea" rows="2" placeholder="© 2025 Your Agency. All rights reserved."></textarea></div>
-      </div>
-      <div class="card" style="margin-bottom:14px">
-        <p class="card-label" style="margin-bottom:12px">Login Page</p>
-        <div class="form-field"><label class="form-label">Login Title</label><input class="input-std" id="wl-login-title" value="Client Portal" oninput="updateWLPreview()"></div>
-        <div class="form-field" style="margin-top:10px"><label class="form-label">Login Subtitle</label><input class="input-std" id="wl-login-sub" value="Sign in to access your marketing dashboard" oninput="updateWLPreview()"></div>
-        <div class="form-field" style="margin-top:10px"><label class="form-label">Background Style</label><div style="display:flex;gap:10px;margin-top:6px"><div class="card" style="padding:10px;cursor:pointer;border:2px solid var(--gold);flex:1;text-align:center" onclick="selectWLBg(this,'gradient')"><p style="font-size:13px;font-weight:900;color:var(--ink)">Gradient</p></div><div class="card" style="padding:10px;cursor:pointer;flex:1;text-align:center" onclick="selectWLBg(this,'solid')"><p style="font-size:13px;font-weight:900;color:var(--ink)">Solid</p></div></div></div>
       </div>
       <div class="card" style="margin-bottom:14px">
         <p class="card-label" style="margin-bottom:4px">GitHub Sync</p>
@@ -4510,15 +4497,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           Push to GitHub
         </button>
         <p id="gh-push-result" style="font-size:11px;font-weight:700;margin:8px 0 0;display:none"></p>
-      </div>
-      <div class="card">
-        <p class="card-label" style="margin-bottom:12px">Custom Domain</p>
-        <div class="form-field"><label class="form-label">Custom Domain</label><input class="input-std" placeholder="portal.youragency.com" id="wl-domain"></div>
-        <div class="faq-item" style="margin-top:12px">
-          <button class="faq-btn" onclick="toggleFaq(this)">DNS Configuration Instructions</button>
-          <div class="faq-answer"><p style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.7">Add this CNAME record to your DNS provider:<br><code style="background:var(--page);padding:4px 8px;border-radius:6px;font-family:monospace">CNAME portal → cname.vercel-dns.com</code><br><br>Allow 24–48 hours for DNS propagation.</p></div>
-        </div>
-        <!-- Backend note: PATCH /api/agency/whitelabel with {platformName, logoUrl, primaryColor, senderName, senderEmail, customDomain} → store in Supabase agency_settings. Apply custom domain via Vercel API (POST /v13/projects/:id/domains). On page load fetch agency settings and inject <style> tag overriding --gold CSS variable with custom primaryColor. -->
       </div>
     </div>
     <!-- Live preview -->
@@ -6674,7 +6652,7 @@ function setCurrentAcct(id){
   if(swName) swName.textContent=a.name;
   buildAcctDd();
   refreshScreenForAccount(a);
-  if(currentRole==='agency') updateSbCurrentAcct(a);
+  updateSbCurrentAcct(a);
 }
 function refreshScreenForAccount(account){
   var sbn=document.getElementById('sb-company-name'); if(sbn) sbn.textContent=account.name;
@@ -8103,7 +8081,8 @@ function renderDashboardEmbed(preferPlatform){
   var tabs=document.getElementById('analytics-embed-tabs');
   var titleEl=document.getElementById('analytics-embed-title');
   if(!panel||!frame) return;
-  if(!platforms.length){ panel.style.display='none'; frame.src=''; return; }
+  if(!urls['google-ads']) urls['google-ads']='https://datastudio.google.com/embed/reporting/a3ae21a3-1d49-4451-b089-3202154e332d/page/hIM2F';
+if(!platforms.length){ panel.style.display='none'; frame.src=''; return; }
   panel.style.display='';
   if(tabs){
     tabs.innerHTML=platforms.map(function(p){
@@ -11294,9 +11273,9 @@ function renderSettingsTabContent(tab,pane){
     pane.innerHTML='<div '+W+'>'
       +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:10px">'
         +'<p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">Help & Support</p>'
-        +'<a href="mailto:support@cal.marketing" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none">'
+        +'<a href="mailto:info@cal.marketing" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none">'
           +'<div style="width:36px;height:36px;border-radius:9px;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>'
-          +'<div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Email Support</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">support@cal.marketing</p></div>'
+          +'<div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Email Support</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">info@cal.marketing</p></div>'
         +'</a>'
         +'<a href="https://cal.marketing" target="_blank" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none">'
           +'<div style="width:36px;height:36px;border-radius:9px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>'
