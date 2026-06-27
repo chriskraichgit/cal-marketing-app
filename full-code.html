@@ -6847,6 +6847,7 @@ function launchApp(){
     var el=document.getElementById(id); if(el) el.style.display='none';
   });
   accounts=JSON.parse(localStorage.getItem('cal-accounts')||'null')||DEFAULT_ACCOUNTS.slice();
+  agencyPermissions=JSON.parse(localStorage.getItem('cal-agency-perms')||'null')||{};
   setupRoleUI();
   setTimeout(checkAndPromptGoogleConnect, 1500);
   // Restore persisted profile
