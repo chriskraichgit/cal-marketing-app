@@ -12910,7 +12910,9 @@ function healthBadge(score){
           Object.keys(server).forEach(function(k){
             if(k.indexOf('layoutPrefs_')===0){
               var localRolePrefs=local[k]||{};
-              var result=_mergeLayoutPrefs(localRolePrefs,server[k]||{});
+              var rawSrv=server[k];
+              var safeSrv=(rawSrv!==null&&typeof rawSrv==='object'&&!Array.isArray(rawSrv))?rawSrv:{};
+              var result=_mergeLayoutPrefs(localRolePrefs,safeSrv);
               merged[k]=result.merged;
               if(result.overridden.length){
                 undoData[k]={};
