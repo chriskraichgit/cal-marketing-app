@@ -9987,7 +9987,7 @@ function togglePermission(email, screen, btn){
   else { current.push(screen); btn.classList.remove('off'); }
   saved[email]=current;
   localStorage.setItem(store,JSON.stringify(saved));
-  if(store==='cal-agency-perms'){ agencyPermissions=saved; if(typeof renderMyAccess==='function') renderMyAccess(); if(window.currentRole==='admin' && typeof setupRoleUI==='function') setupRoleUI(); }
+  if(store==='cal-agency-perms'){ agencyPermissions=saved; if(typeof renderMyAccess==='function') renderMyAccess(); if((window.currentRole==='admin'||window.currentRole==='agency') && typeof setupRoleUI==='function') setupRoleUI(); }
   else { adminPermissions=saved; if((window.currentRole==='admin'||window.currentRole==='user') && typeof setupRoleUI==='function') setupRoleUI(); }
   showToast('Permission updated for '+screen.replace(/-/g,' '),'green');
 }
@@ -11113,163 +11113,176 @@ function healthBadge(score){
 
   function renderLeaderboard(){
     var el=screen('leaderboard'); if(!el) return;
-    var key=acctKey();
-    var d=ACCT_LB[key]||ACCT_LB.a1;
-    var msgKey='cal-team-msgs-'+key;
-    var seedKey='cal-team-msgs-seeded-'+key;
-    if(!localStorage.getItem(seedKey)){
-      localStorage.setItem(msgKey,JSON.stringify(d.seedMsgs||[]));
-      localStorage.setItem(seedKey,'1');
-    }
-    // Star rating bar helper
-    var totalStars=d.stars.reduce(function(a,b){return a+b;},0)||1;
-    var starLabels=['5 \u2605','4 \u2605','3 \u2605','2 \u2605','1 \u2605'];
-    var starColors=['var(--green)','var(--green)','var(--gold)','#f97316','#ef4444'];
-    var starBars=d.stars.map(function(n,i){
-      var pct=Math.round(n/totalStars*100);
-      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        +'<span style="font-size:11px;font-weight:800;color:var(--muted);width:28px;text-align:right">'+starLabels[i]+'</span>'
-        +'<div style="flex:1;height:8px;border-radius:999px;background:rgba(27,58,107,.07)">'
-        +'<div style="height:100%;width:'+pct+'%;border-radius:inherit;background:'+starColors[i]+'"></div></div>'
-        +'<span style="font-size:11px;font-weight:800;color:var(--muted);width:20px">'+n+'</span>'
-        +'</div>';
-    }).join('');
-    // Recent reviews
-    var revCards=(d.reviews||[]).map(function(r){
-      var stars='';for(var s=0;s<5;s++) stars+='<span style="color:'+(s<r.rating?'var(--gold)':'rgba(27,58,107,.2)')+'">&#9733;</span>';
-      return '<div style="padding:12px 0;border-bottom:1px solid var(--border)">'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'
-        +'<strong style="font-size:13px;color:var(--ink)">'+r.name+'</strong>'
-        +'<span style="font-size:11px;color:var(--muted);font-weight:600">'+r.ago+'</span>'
+    var isAgency=(window.currentRole==='agency'||window.currentRole==='test');
+
+    if(isAgency){
+      /* ── Agency: cross-portfolio view ── */
+      var defKey='a1';
+      var defD=ACCT_LB[defKey];
+      if(defD&&!localStorage.getItem('cal-team-msgs-seeded-'+defKey)){
+        localStorage.setItem('cal-team-msgs-'+defKey,JSON.stringify(defD.seedMsgs||[]));
+        localStorage.setItem('cal-team-msgs-seeded-'+defKey,'1');
+      }
+      var allKeys=['a1','a2','a3','a4','a5'];
+      var allAccts=allKeys.map(function(k){return ACCT_LB[k]?Object.assign({id:k},ACCT_LB[k]):null;}).filter(Boolean);
+      var sorted=allAccts.slice().sort(function(a,b){return b.month-a.month;});
+      var totalMonth=allAccts.reduce(function(s,a){return s+a.month;},0);
+      var avgPerClient=(totalMonth/allAccts.length).toFixed(1);
+      var avgRating=(allAccts.reduce(function(s,a){return s+parseFloat(a.avg);},0)/allAccts.length).toFixed(2);
+      var bestClient=sorted[0];
+      var benchmark=4.2;
+      var benchPct=Math.round(benchmark/5*100);
+
+      var clientRows=sorted.map(function(a,i){
+        var isTop=(i===0);
+        var rPct=Math.round(parseFloat(a.avg)/5*100);
+        return '<tr>'
+          +'<td><span style="width:28px;height:28px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:'+(isTop?'rgba(201,168,76,.18)':'rgba(27,58,107,.08)')+';color:'+(isTop?'var(--gold)':'var(--muted)')+';font-weight:950;font-size:13px">'+(i+1)+'</span></td>'
+          +'<td><div style="display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:'+a.color+';flex-shrink:0;display:inline-block"></span><strong style="font-size:13px">'+a.name+'</strong></div></td>'
+          +'<td><strong style="color:var(--green);font-size:15px">+'+a.month+'</strong></td>'
+          +'<td style="color:var(--muted);font-size:13px;font-weight:700">'+a.total+'</td>'
+          +'<td><strong style="color:var(--gold)">'+a.avg+' \u2605</strong></td>'
+          +'<td style="width:120px"><div style="height:6px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:'+rPct+'%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div></td>'
+          +'</tr>';
+      }).join('');
+
+      var benchBars=sorted.map(function(a){
+        var rating=parseFloat(a.avg);
+        var delta=rating-benchmark;
+        var deltaStr=(delta>=0?'+':'')+delta.toFixed(1);
+        var deltaColor=delta>=0?'var(--green)':'#ef4444';
+        var rPct=Math.round(rating/5*100);
+        return '<div style="margin-bottom:14px">'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">'
+          +'<div style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:'+a.color+';display:inline-block"></span><span style="font-size:12px;font-weight:800;color:var(--ink)">'+a.name+'</span></div>'
+          +'<div style="display:flex;align-items:center;gap:8px"><strong style="font-size:13px;color:var(--gold)">'+a.avg+' \u2605</strong><span style="font-size:11px;font-weight:900;color:'+deltaColor+'">'+deltaStr+'</span></div>'
+          +'</div>'
+          +'<div style="position:relative;height:8px;border-radius:999px;background:rgba(27,58,107,.08)">'
+          +'<div style="position:absolute;top:0;left:0;height:100%;width:'+rPct+'%;border-radius:inherit;background:'+a.color+';opacity:.7"></div>'
+          +'<div style="position:absolute;top:-3px;bottom:-3px;width:2px;left:'+benchPct+'%;background:var(--muted);border-radius:1px"></div>'
+          +'</div>'
+          +'</div>';
+      }).join('');
+
+      el.innerHTML=
+        '<div class="sec-head"><div><h2>Review Leaderboard</h2><p>Portfolio overview across all clients \u00b7 June 2026</p></div>'
+        +'<button class="btn-primary" onclick="showToast(\'Leaderboard exported.\',\'green\')">Export</button></div>'
+        // Portfolio KPIs
+        +'<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">'
+        +'<div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Reviews This Month</p><p class="kpi-value" style="color:var(--green)">+'+totalMonth+'</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">across all clients</p></div>'
+        +'<div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Avg / Client</p><p class="kpi-value">'+avgPerClient+'</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">reviews this month</p></div>'
+        +'<div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Portfolio Avg Rating</p><p class="kpi-value" style="color:var(--gold)">'+avgRating+' \u2605</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">across all clients</p></div>'
+        +'<div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Best This Month</p><p style="font-size:18px;font-weight:900;color:var(--ink);font-family:\'Barlow Condensed\',sans-serif;line-height:1.1;margin-top:6px">'+bestClient.name+'</p><p style="font-size:11px;color:var(--green);font-weight:800;margin-top:4px">+'+bestClient.month+' reviews</p></div>'
         +'</div>'
-        +'<div style="margin-bottom:5px">'+stars+'</div>'
-        +'<p style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.5">'+r.text+'</p>'
-        +'</div>';
-    }).join('');
-    // Team rows
-    var teamRows=d.team.map(function(r,i){
-      var bg=i===0?'rgba(201,168,76,.14)':'rgba(27,58,107,.08)';
-      var fc=i===0?'var(--gold)':'var(--muted)';
-      var pct=parseInt(r.positive)||90;
-      return '<tr>'
-        +'<td><span style="width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:'+bg+';color:'+fc+';font-weight:950">'+(i+1)+'</span></td>'
-        +'<td><div style="display:flex;align-items:center;gap:8px"><div style="width:28px;height:28px;border-radius:8px;background:'+d.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;font-family:\'Barlow Condensed\',sans-serif;flex-shrink:0">'+r.initials+'</div><strong>'+r.name+'</strong></div></td>'
-        +'<td style="color:var(--muted);font-size:12px">'+r.role+'</td>'
-        +'<td><strong>'+r.reviews+'</strong></td>'
-        +'<td>'+r.nfc+'</td>'
-        +'<td><div style="height:8px;width:90px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:'+pct+'%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),var(--green))"></div></div>'
-        +'<span style="font-size:11px;color:var(--muted);font-weight:700"> '+r.positive+'</span></td>'
-        +'<td><span class="pill '+r.gc+'">'+r.grade+'</span></td>'
-        +'</tr>';
-    }).join('');
-    el.innerHTML=
-      '<div class="sec-head">'
-      +'<div><h2>Review Leaderboard</h2><p style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+d.color+'"></span><strong style="font-weight:800">'+d.name+'</strong> \u00b7 Private &amp; account-specific</p></div>'
-      +'<button class="btn-primary" onclick="showToast(\'Leaderboard exported.\',\'green\')">Export</button>'
-      +'</div>'
-      +'<div class="grid g4" style="gap:14px;margin-bottom:20px">'
-      +'<div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Total Reviews</p><p class="kpi-value">'+d.total+'</p></div>'
-      +'<div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">This Month</p><p class="kpi-value" style="color:var(--green)">'+d.month+'</p></div>'
-      +'<div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">NFC Taps</p><p class="kpi-value">'+d.nfc+'</p></div>'
-      +'<div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Avg Rating</p><p class="kpi-value" style="color:var(--green)">'+d.avg+' \u2605</p></div>'
-      +'</div>'
-      +'<div class="tabs-row" style="margin-bottom:16px">'
-      +'<button class="tab-btn active" id="lb-tab-reviews" onclick="lbTab(\'reviews\')">Reviews</button>'
-      +'<button class="tab-btn" id="lb-tab-team" onclick="lbTab(\'team\')">Team</button>'
-      +'<button class="tab-btn" id="lb-tab-recog" onclick="lbTab(\'recog\')">&#x1F4AC; Team Feed</button>'
-      +'</div>'
-      // ── Reviews pane ──
-      +'<div id="lb-pane-reviews">'
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">'
-      // Star breakdown
-      +'<div class="card card-pad">'
-      +'<p class="card-label" style="margin-bottom:12px">Rating Breakdown</p>'
-      +'<div style="display:flex;align-items:center;gap:18px;margin-bottom:12px">'
-      +'<p style="font-size:52px;font-weight:900;color:var(--ink);font-family:\'Barlow Condensed\',sans-serif;line-height:1">'+d.avg+'</p>'
-      +'<div><p style="font-size:18px;color:var(--gold)">&#9733;&#9733;&#9733;&#9733;&#9733;</p>'
-      +'<p style="font-size:11px;color:var(--muted);font-weight:600">'+d.total+' reviews total</p></div>'
-      +'</div>'
-      +starBars
-      +'</div>'
-      // Stats card
-      +'<div class="card card-pad">'
-      +'<p class="card-label" style="margin-bottom:14px">Performance Stats</p>'
-      +'<div style="display:flex;flex-direction:column;gap:10px">'
-      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">Total Reviews</span><strong style="font-size:14px;color:var(--ink)">'+d.total+'</strong></div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">This Month</span><strong style="font-size:14px;color:var(--green)">+'+d.month+'</strong></div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">NFC Taps</span><strong style="font-size:14px;color:var(--blue)">'+d.nfc+'</strong></div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">Tap \u2192 Review</span><strong style="font-size:14px;color:var(--ink)">'+d.conv+'</strong></div>'
-      +'<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">Avg Rating</span><strong style="font-size:14px;color:var(--gold)">'+d.avg+' \u2605</strong></div>'
-      +'</div></div>'
-      +'</div>'
-      // Recent reviews
-      +'<div class="card">'
-      +'<p class="card-label" style="padding:14px 16px 0">Recent Reviews</p>'
-      +'<div style="padding:0 16px 8px">'+revCards+'</div>'
-      +'</div>'
-      +'</div>'
-      // ── Team pane ──
-      +'<div id="lb-pane-team" style="display:none"><div class="card">'
-      +'<p class="card-label" style="margin-bottom:12px">Team Rankings \u2014 '+d.name+' Reviews</p>'
-      +'<p style="font-size:11px;color:var(--muted);font-weight:600;padding:0 2px 12px">Ranked by reviews generated for this account only. Data is private to this business.</p>'
-      +'<div class="table-wrap"><table class="data-table">'
-      +'<thead><tr><th>#</th><th>Team Member</th><th>Role</th><th>Reviews</th><th>NFC Taps</th><th>Positive Rate</th><th>Grade</th></tr></thead>'
-      +'<tbody>'+teamRows+'</tbody>'
-      +'</table></div></div></div>'
-      // ── Team Feed pane ──
-      +'<div id="lb-pane-recog" style="display:none">'
-      // EOM card
-      +'<div class="eom-card">'
-      +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">'
-      +'<span style="font-size:22px">\uD83C\uDFC6</span>'
-      +'<div><p style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:2px">Employee of the Month \u2014 June 2026</p>'
-      +'<p style="font-size:11px;color:var(--muted);font-weight:600">Top review generator for '+d.name+'</p></div>'
-      +'</div>'
-      +'<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
-      +'<div class="eom-avatar" style="background:linear-gradient(135deg,'+d.color+','+d.eom.color+')">'+d.eom.initials+'</div>'
-      +'<div><p style="font-size:22px;font-weight:900;color:var(--ink);font-family:\'Barlow Condensed\',sans-serif;margin-bottom:2px">'+d.eom.name+'</p>'
-      +'<p style="font-size:12px;color:var(--muted);font-weight:700">'+d.eom.role+' \u00b7 <span style="color:var(--gold);font-weight:900">'+d.eom.reviews+' reviews for '+d.name+'</span></p>'
-      +'<div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">'
-      +'<span class="pill '+d.eom.gc+'">'+d.eom.grade+' Grade</span>'
-      +'<span class="pill pill-gold">'+d.eom.positive+' Positive</span>'
-      +'<span class="pill" style="background:rgba(27,58,107,.08);color:var(--ink)">'+d.eom.nfc+' NFC Taps</span>'
-      +'</div></div></div></div>'
-      // Records
-      +'<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">'
-      +'<div class="card card-pad" style="border-left:4px solid var(--green)">'
-      +'<p style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">\uD83C\uDF1F Daily Record</p>'
-      +'<p style="font-size:32px;font-weight:900;color:var(--green);font-family:\'Barlow Condensed\',sans-serif;line-height:1;margin-bottom:2px">'+d.dailyRec.n+'</p>'
-      +'<p style="font-size:12px;font-weight:800;color:var(--ink)">reviews in one day</p>'
-      +'<p style="font-size:11px;color:var(--muted);font-weight:600;margin-top:4px">'+d.name+' \u00b7 '+d.dailyRec.date+'</p>'
-      +'</div>'
-      +'<div class="card card-pad" style="border-left:4px solid var(--gold)">'
-      +'<p style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">\uD83D\uDCC5 Monthly Record</p>'
-      +'<p style="font-size:32px;font-weight:900;color:var(--gold);font-family:\'Barlow Condensed\',sans-serif;line-height:1;margin-bottom:2px">'+d.monthlyRec.n+'</p>'
-      +'<p style="font-size:12px;font-weight:800;color:var(--ink)">reviews in one month</p>'
-      +'<p style="font-size:11px;color:var(--muted);font-weight:600;margin-top:4px">'+d.name+' \u00b7 '+d.monthlyRec.month+'</p>'
-      +'</div></div>'
-      // Messages
-      +'<div class="card">'
-      +'<div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
-      +'<span style="font-size:14px;font-weight:900;color:var(--ink)">\uD83D\uDCAC Team Messages</span>'
-      +'<span style="font-size:11px;color:var(--muted);font-weight:600">Private to '+d.name+'</span>'
-      +'</div>'
-      +'<div id="team-msg-composer" style="padding:14px 16px;border-bottom:1px solid var(--border)">'
-      +'<textarea id="team-msg-input" class="notes-textarea" style="margin-bottom:10px;min-height:68px" placeholder="Post a shoutout, goal, record, or announcement for '+d.name+'\u2026"></textarea>'
-      +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
-      +'<select id="team-msg-type" class="input-std" style="height:34px;font-size:12px;max-width:190px">'
-      +'<option value="shoutout">\uD83C\uDF89 Shoutout</option>'
-      +'<option value="goal">\uD83C\uDFAF Goal Update</option>'
-      +'<option value="record">\uD83C\uDFC5 New Record</option>'
-      +'<option value="eom">\uD83C\uDFC6 Award</option>'
-      +'<option value="announcement">\uD83D\uDCE3 Announcement</option>'
-      +'</select>'
-      +'<button class="btn-gold" style="height:34px;padding:0 20px;font-size:13px" onclick="postTeamMsg()">Post</button>'
-      +'</div></div>'
-      +'<div id="team-msg-feed"></div>'
-      +'</div>'
-      +'</div>';
-    renderTeamFeed();
+        // Top performer spotlight
+        +'<div class="card card-pad" style="border-left:4px solid var(--gold);margin-bottom:16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
+        +'<span style="font-size:28px;flex-shrink:0">\uD83C\uDFC6</span>'
+        +'<div style="flex:1;min-width:160px"><p style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:4px">Best Client This Month</p>'
+        +'<p style="font-size:22px;font-weight:900;color:var(--ink);font-family:\'Barlow Condensed\',sans-serif;line-height:1">'+bestClient.name+'</p>'
+        +'<p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:3px">'+bestClient.month+' reviews \u00b7 '+bestClient.avg+' \u2605 avg rating</p></div>'
+        +'<div style="text-align:center;flex-shrink:0"><p style="font-size:52px;font-weight:900;color:var(--gold);font-family:\'Barlow Condensed\',sans-serif;line-height:1">'+bestClient.month+'</p><p style="font-size:11px;font-weight:800;color:var(--muted)">reviews this month</p></div>'
+        +'</div>'
+        // Client rankings table
+        +'<div class="card" style="margin-bottom:16px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px 0;margin-bottom:2px"><p class="card-label">Client Rankings</p><span style="font-size:11px;color:var(--muted);font-weight:600">Sorted by reviews this month</span></div>'
+        +'<div class="table-wrap"><table class="data-table"><thead><tr><th>#</th><th>Client</th><th>This Month</th><th>All-Time</th><th>Avg Rating</th><th style="width:120px">Rating Bar</th></tr></thead>'
+        +'<tbody>'+clientRows+'</tbody></table></div></div>'
+        // Rating vs benchmark
+        +'<div class="card card-pad" style="margin-bottom:16px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><p class="card-label">Rating vs Industry Benchmark</p><span style="font-size:11px;font-weight:700;color:var(--muted)">Industry avg: 4.2 \u2605</span></div>'
+        +benchBars
+        +'<div style="display:flex;align-items:center;gap:6px;margin-top:4px"><div style="width:20px;height:2px;background:var(--muted);border-radius:1px"></div><span style="font-size:11px;color:var(--muted);font-weight:600">Industry average (4.2 \u2605)</span></div>'
+        +'</div>'
+        // Team feed
+        +'<div class="card">'
+        +'<div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+        +'<span style="font-size:14px;font-weight:900;color:var(--ink)">\uD83D\uDCAC Team Messages</span>'
+        +'<span style="font-size:11px;color:var(--muted);font-weight:600">CAL Marketing</span></div>'
+        +'<div id="team-msg-composer" style="padding:14px 16px;border-bottom:1px solid var(--border)">'
+        +'<textarea id="team-msg-input" class="notes-textarea" style="margin-bottom:10px;min-height:68px" placeholder="Post a shoutout, goal, or announcement\u2026"></textarea>'
+        +'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'
+        +'<select id="team-msg-type" class="input-std" style="height:34px;font-size:12px;max-width:190px">'
+        +'<option value="shoutout">\uD83C\uDF89 Shoutout</option>'
+        +'<option value="goal">\uD83C\uDFAF Goal Update</option>'
+        +'<option value="record">\uD83C\uDFC5 New Record</option>'
+        +'<option value="eom">\uD83C\uDFC6 Award</option>'
+        +'<option value="announcement">\uD83D\uDCE3 Announcement</option>'
+        +'</select>'
+        +'<button class="btn-gold" style="height:34px;padding:0 20px;font-size:13px" onclick="postTeamMsg()">Post</button>'
+        +'</div></div>'
+        +'<div id="team-msg-feed"></div></div>';
+      renderTeamFeed();
+
+    } else {
+      /* ── Admin: clean per-account view ── */
+      var key=acctKey();
+      var d=ACCT_LB[key]||ACCT_LB.a1;
+      if(!localStorage.getItem('cal-team-msgs-seeded-'+key)){
+        localStorage.setItem('cal-team-msgs-'+key,JSON.stringify(d.seedMsgs||[]));
+        localStorage.setItem('cal-team-msgs-seeded-'+key,'1');
+      }
+      var starRow=function(rating){
+        var s='';for(var i=0;i<5;i++) s+='<span style="color:'+(i<rating?'var(--gold)':'rgba(27,58,107,.2)')+'">&#9733;</span>';return s;
+      };
+      var top1=d.team[0]||{};
+      var runnerRows='';
+      [d.team[1],d.team[2]].forEach(function(r,i){
+        if(!r) return;
+        runnerRows+='<div style="display:flex;align-items:center;gap:12px;padding:12px 0;'+(i>0?'border-top:1px solid var(--border)':'')+'">'
+          +'<span style="width:26px;height:26px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;background:rgba(27,58,107,.08);color:var(--muted);font-weight:950;font-size:12px;flex-shrink:0">'+(i+2)+'</span>'
+          +'<div style="width:32px;height:32px;border-radius:10px;background:'+d.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;font-family:\'Barlow Condensed\',sans-serif;flex-shrink:0">'+r.initials+'</div>'
+          +'<div style="flex:1"><strong style="font-size:13px;color:var(--ink)">'+r.name+'</strong><span style="font-size:12px;color:var(--muted);font-weight:600"> \u00b7 '+r.role+'</span></div>'
+          +'<strong style="font-size:15px;color:var(--ink)">'+r.reviews+'</strong><span style="font-size:11px;color:var(--muted);font-weight:600;margin-left:3px">reviews</span>'
+          +'<span class="pill '+r.gc+'" style="margin-left:8px">'+r.grade+'</span>'
+          +'</div>';
+      });
+      var reviewCards=(d.reviews||[]).slice(0,3).map(function(r){
+        return '<div class="card card-pad">'
+          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px"><strong style="font-size:13px;color:var(--ink)">'+r.name+'</strong><span style="font-size:11px;color:var(--muted);font-weight:600">'+r.ago+'</span></div>'
+          +'<div style="font-size:16px;color:var(--gold);margin-bottom:8px">'+starRow(r.rating)+'</div>'
+          +'<p style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.55">\u201c'+r.text+'\u201d</p>'
+          +'</div>';
+      }).join('');
+
+      el.innerHTML=
+        '<div class="sec-head"><div><h2>Review Leaderboard</h2>'
+        +'<p style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+d.color+'"></span><strong style="font-weight:800">'+d.name+'</strong></p></div>'
+        +'<button class="btn-primary" onclick="showToast(\'Leaderboard exported.\',\'green\')">Export</button></div>'
+        // KPI pills
+        +'<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">'
+        +'<div style="flex:1;min-width:110px;background:rgba(27,58,107,.06);border-radius:14px;padding:14px 18px">'
+        +'<p style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">This Month</p>'
+        +'<p style="font-size:36px;font-weight:900;color:var(--green);font-family:\'Barlow Condensed\',sans-serif;line-height:1">+'+d.month+'</p></div>'
+        +'<div style="flex:1;min-width:110px;background:rgba(27,58,107,.06);border-radius:14px;padding:14px 18px">'
+        +'<p style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">All-Time Total</p>'
+        +'<p style="font-size:36px;font-weight:900;color:var(--ink);font-family:\'Barlow Condensed\',sans-serif;line-height:1">'+d.total+'</p></div>'
+        +'<div style="flex:1;min-width:110px;background:rgba(27,58,107,.06);border-radius:14px;padding:14px 18px">'
+        +'<p style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:4px">Avg Rating</p>'
+        +'<p style="font-size:36px;font-weight:900;color:var(--gold);font-family:\'Barlow Condensed\',sans-serif;line-height:1">'+d.avg+' \u2605</p></div>'
+        +'</div>'
+        // #1 Trophy hero
+        +'<div class="card card-pad" style="border:2px solid rgba(201,168,76,.35);background:rgba(201,168,76,.04);margin-bottom:12px">'
+        +'<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">'
+        +'<span style="font-size:32px;flex-shrink:0">\uD83C\uDFC6</span>'
+        +'<div style="width:56px;height:56px;border-radius:16px;background:'+d.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;font-family:\'Barlow Condensed\',sans-serif;flex-shrink:0">'+top1.initials+'</div>'
+        +'<div style="flex:1;min-width:120px">'
+        +'<p style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin-bottom:4px">#1 \u2014 Most Reviews This Month</p>'
+        +'<p style="font-size:26px;font-weight:900;color:var(--ink);font-family:\'Barlow Condensed\',sans-serif;line-height:1;margin-bottom:4px">'+top1.name+'</p>'
+        +'<p style="font-size:12px;color:var(--muted);font-weight:700">'+top1.role+' \u00b7 '+top1.positive+' positive</p></div>'
+        +'<div style="text-align:center;flex-shrink:0">'
+        +'<p style="font-size:52px;font-weight:900;color:var(--gold);font-family:\'Barlow Condensed\',sans-serif;line-height:1">'+top1.reviews+'</p>'
+        +'<p style="font-size:11px;font-weight:800;color:var(--muted)">reviews</p>'
+        +'</div></div></div>'
+        // #2 and #3
+        +(runnerRows?'<div class="card card-pad" style="margin-bottom:20px">'+runnerRows+'</div>':'')
+        // Latest Google Reviews header
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">'
+        +'<p style="font-size:15px;font-weight:900;color:var(--ink)">Latest Google Reviews</p>'
+        +'<span style="font-size:11px;color:var(--muted);font-weight:600">\u00b7 June 2026</span>'
+        +'<span style="margin-left:auto;font-size:11px;font-weight:700;color:var(--green)">+'+d.month+' this month</span>'
+        +'</div>'
+        +'<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">'+reviewCards+'</div>';
+    }
   }
 
   function lbTab(tab){
@@ -12210,7 +12223,7 @@ function healthBadge(score){
     if(e.key==='cal-agency-perms'){
       try{ agencyPermissions=JSON.parse(e.newValue||'{}'); }catch(err){}
       if(typeof renderMyAccess==='function') renderMyAccess();
-      if(window.currentRole==='admin' && typeof setupRoleUI==='function') setupRoleUI();
+      if((window.currentRole==='admin'||window.currentRole==='agency') && typeof setupRoleUI==='function') setupRoleUI();
     }
     if(e.key==='cal-admin-perms'){
       try{ adminPermissions=JSON.parse(e.newValue||'{}'); }catch(err){}
