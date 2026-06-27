@@ -52,6 +52,7 @@ a{text-decoration:none}
 .login-logo{width:min(180px,55vw);height:auto}
 .login-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(32px,8vw,44px);font-weight:900;text-align:center;color:var(--ink);margin-bottom:6px}
 .login-sub{text-align:center;color:var(--muted);font-size:13px;font-weight:600;margin-bottom:28px}
+#login-main-title,#login-main-sub{transition:opacity 0.15s ease}
 .login-form{display:grid;gap:16px}
 .field{display:grid;gap:6px}
 .field label{font-size:13px;font-weight:800;color:var(--ink)}
@@ -6070,23 +6071,23 @@ function _fpHideErrors(){
   });
 }
 
-/* Hide the main CAL OS title/sub + tabs so our own forgot-panel h1 shows cleanly */
+/* Hide the main CAL OS title/sub + tabs — fade out then display:none */
 function _fpHideLoginHeader(){
   var h1=document.getElementById('login-main-title');
   var sub=document.getElementById('login-main-sub');
   var lc=document.querySelector('#login-view .login-card');
-  if(h1) h1.style.display='none';
-  if(sub) sub.style.display='none';
-  if(lc){ var tabs=lc.querySelector('.login-tabs'); if(tabs) tabs.style.display='none'; }
+  if(h1){h1.style.opacity='0';h1.style.pointerEvents='none';setTimeout(function(){h1.style.display='none';h1.style.opacity='';h1.style.pointerEvents='';},150);}
+  if(sub){sub.style.opacity='0';sub.style.pointerEvents='none';setTimeout(function(){sub.style.display='none';sub.style.opacity='';sub.style.pointerEvents='';},150);}
+  if(lc){var tabs=lc.querySelector('.login-tabs');if(tabs) tabs.style.display='none';}
 }
 
 function _fpRestoreLoginHeader(){
   var h1=document.getElementById('login-main-title');
   var sub=document.getElementById('login-main-sub');
   var lc=document.querySelector('#login-view .login-card');
-  if(h1) h1.style.display='';
-  if(sub) sub.style.display='';
-  if(lc){ var tabs=lc.querySelector('.login-tabs'); if(tabs) tabs.style.display=''; }
+  if(h1){h1.style.display='';h1.style.opacity='0';setTimeout(function(){h1.style.opacity='';},20);}
+  if(sub){sub.style.display='';sub.style.opacity='0';setTimeout(function(){sub.style.opacity='';},20);}
+  if(lc){var tabs=lc.querySelector('.login-tabs');if(tabs) tabs.style.display='';}
 }
 
 function _fpStartResendTimer(){
@@ -6943,9 +6944,9 @@ function setupRoleUI(){
     if(sbFull) sbFull.style.display='flex';
     if(sbUser) sbUser.style.display='none';
     var cn2=document.getElementById('sb-company-name'); if(cn2) cn2.textContent=u.company||(currentRole==='agency'?'CAL Marketing':'Portal');
-    if(navAgency) navAgency.style.display=(currentRole==='agency')?'':'none';
+    if(navAgency) navAgency.style.display=(currentRole==='agency'||currentRole==='test')?'':'none';
     if(navAdmin)  navAdmin.style.display =(currentRole==='admin') ?'':'none';
-    if(navTest)   navTest.style.display  =(currentRole==='test')  ?'':'none';
+    if(navTest)   navTest.style.display  ='none';
   }
   // ── Account switcher ──
   var accWrap=document.getElementById('acct-switcher-wrap');
@@ -10878,9 +10879,9 @@ function healthBadge(score){
 (function(){
   var AGENCY_PASSWORD='CAL_D1gital$2026!';
   var AGENCY_USERS={
-    'chris@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency'},
-    'james@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner'},
-    'matt@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner'}
+    'chris@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'},
+    'james@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'},
+    'matt@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'}
   };
   var FIXED_SCREEN_SET={help:true,plans:true,billing:true,whitelabel:true};
 
@@ -10949,6 +10950,7 @@ function healthBadge(score){
     window.USERS=window.USERS||{};
     Object.keys(AGENCY_USERS).forEach(function(email){ window.USERS[email]=Object.assign({},AGENCY_USERS[email]); });
     var saved=safeJSON('cal-users',{});
+    /* Overwrite any stale agency records in localStorage with fresh canonical data */
     Object.keys(AGENCY_USERS).forEach(function(email){ saved[email]=Object.assign({},AGENCY_USERS[email]); });
     saveJSON('cal-users',saved);
   }
