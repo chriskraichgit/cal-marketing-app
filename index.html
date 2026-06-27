@@ -3138,12 +3138,12 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ COMPOSE MESSAGE MODAL ============ -->
 <div class="modal-overlay hidden" id="compose-msg-modal" onclick="if(event.target===this)closeModal('compose-msg-modal')">
-  <div class="modal-box" style="max-width:460px;width:100%">
+  <div class="modal" style="max-width:460px">
     <div class="modal-head">
       <h2>New Message</h2>
       <button class="modal-close" onclick="closeModal('compose-msg-modal')">✕</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:14px;padding:20px 24px 24px">
+    <div class="modal-body" style="display:flex;flex-direction:column;gap:14px">
       <div class="form-field" id="compose-biz-row">
         <label class="form-label">Business</label>
         <select class="input-std" id="compose-acct-sel" onchange="updateComposeRecipients()">
@@ -3164,10 +3164,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <label class="form-label">Message</label>
         <textarea class="input-std" id="compose-msg-body" rows="4" placeholder="Type your message…" style="resize:vertical;min-height:90px;padding:10px;line-height:1.5"></textarea>
       </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button class="btn-ghost" onclick="closeModal('compose-msg-modal')">Cancel</button>
-        <button class="btn-gold" style="height:42px;padding:0 22px;font-size:13px" onclick="sendComposedMsg()">Send Message</button>
-      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-gold" onclick="sendComposedMsg()">Send Message</button>
+      <button class="btn-ghost" onclick="closeModal('compose-msg-modal')">Cancel</button>
     </div>
   </div>
 </div>
