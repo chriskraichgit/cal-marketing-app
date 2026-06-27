@@ -12823,6 +12823,7 @@ function healthBadge(score){
         var payload=Object.assign({},meta);
         if(payload.logo && payload.logo.startsWith('data:')) delete payload.logo;
         fetch('/api/meta?key='+encodeURIComponent(key),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},_metaAuthHeader()),body:JSON.stringify(payload)})
+          .then(function(r){ if(r.status===401){ localStorage.removeItem('cal-meta-session-token'); _enqueuePush(key); } })
           .catch(function(){ _enqueuePush(key); });
       });
     }catch(ex){}
@@ -12834,6 +12835,7 @@ function healthBadge(score){
       var payload=Object.assign({},meta);
       if(payload.logo && payload.logo.startsWith('data:')) delete payload.logo;
       fetch('/api/meta?key='+encodeURIComponent(key),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},_metaAuthHeader()),body:JSON.stringify(payload)})
+        .then(function(r){ if(r.status===401){ localStorage.removeItem('cal-meta-session-token'); _enqueuePush(key); } })
         .catch(function(){ _enqueuePush(key); });
     }catch(e){ _enqueuePush(key); }
   }
