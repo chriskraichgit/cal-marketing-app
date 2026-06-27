@@ -3197,6 +3197,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
 
   <div id="files-videos-view" style="display:none">
+    <div id="files-testimonials-folder"></div>
     <div class="video-grid">
       <div class="video-card">
         <div class="video-thumb" onclick="openVideoPlayer('Case Win Testimonial — Maria G.')">
@@ -8514,6 +8515,59 @@ function switchFilesTab(tab,btn){
   var dv=document.getElementById('files-docs-view'); var vv=document.getElementById('files-videos-view');
   if(dv) dv.style.display=tab==='videos'?'none':'';
   if(vv) vv.style.display=tab==='videos'?'':'none';
+  if(tab==='videos') renderTestimonialsFolder();
+}
+function _testimonialsKey(){ return 'cal-testimonials-'+(window.acctKey?window.acctKey():'local'); }
+function renderTestimonialsFolder(){
+  var host=document.getElementById('files-testimonials-folder'); if(!host) return;
+  var items; try{ items=JSON.parse(localStorage.getItem(_testimonialsKey())||'[]'); }catch(e){ items=[]; }
+  if(!items.length){ host.innerHTML=''; return; }
+  var colors=['linear-gradient(135deg,#c9a84c,#9a7a1c)','linear-gradient(135deg,#1b3a6b,#254a83)','linear-gradient(135deg,#2e7d32,#388e3c)','linear-gradient(135deg,#7c3aed,#6d28d9)'];
+  host.innerHTML=
+    '<div style="margin-bottom:20px">'
+    +'<div style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1.5px solid rgba(201,168,76,.35);border-radius:12px;background:var(--gold-pale,#faf4e2);margin-bottom:12px">'
+      +'<div style="width:34px;height:34px;border-radius:8px;background:rgba(201,168,76,.18);display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+        +'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>'
+      +'</div>'
+      +'<div style="flex:1">'
+        +'<p style="font-size:13px;font-weight:900;color:var(--ink);margin:0">Client Testimonials</p>'
+        +'<p style="font-size:11px;color:var(--muted);font-weight:600;margin:1px 0 0">'+items.length+' video'+(items.length===1?'':'s')+' · Video Files</p>'
+      +'</div>'
+      +'<span class="pill pill-gold">'+items.length+'</span>'
+    +'</div>'
+    +'<div class="video-grid">'
+    +items.map(function(t,i){
+      var safeTitle=t.name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+      return '<div class="video-card">'
+        +'<div class="video-thumb" onclick="openVideoPlayer(\''+safeTitle+'\')">'
+          +'<div style="position:absolute;inset:0;background:'+colors[i%colors.length]+';opacity:.85"></div>'
+          +'<div class="video-play-btn"><svg viewBox="0 0 24 24" width="20" height="20"><polygon points="5,3 19,12 5,21 5,3"/></svg></div>'
+        +'</div>'
+        +'<div class="video-info"><p class="video-title">'+t.name+'</p><p class="video-meta">'+t.date+' · Client Testimonial</p></div>'
+      +'</div>';
+    }).join('')
+    +'</div>'
+    +'<div style="border-top:1px solid var(--border);margin:16px 0"></div>'
+    +'</div>';
+}
+function submitVideoTestimonial(file){
+  if(!file) return;
+  var now=new Date();
+  var ms=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var dateStr=ms[now.getMonth()]+' '+now.getDate()+', '+now.getFullYear();
+  var name='Video Testimonial — '+dateStr;
+  var key=_testimonialsKey();
+  var items; try{ items=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ items=[]; }
+  items.unshift({name:name,date:dateStr});
+  localStorage.setItem(key,JSON.stringify(items));
+  closeModal('video-testimonial-modal');
+  nav('files');
+  setTimeout(function(){
+    var vBtn=null;
+    document.querySelectorAll('#s-files .f-btn').forEach(function(b){ if(b.textContent.trim()==='Videos') vBtn=b; });
+    switchFilesTab('videos',vBtn);
+    showToast('Saved to Files \u2192 Client Testimonials \uD83C\uDFA5','green');
+  },80);
 }
 function openVideoPlayer(title){ var el=document.getElementById('video-player-title'); if(el) el.textContent=title; openModal('video-player-modal'); }
 function startVideoUpload() {
@@ -9430,7 +9484,24 @@ function updateWLPreview(){
   var ps=document.getElementById('wl-preview-sub'); if(ps) ps.textContent=sub;
   var pb=document.getElementById('wl-preview-btn'); if(pb) pb.style.background=color;
 }
-function handleWLLogo(inp){ if(!inp.files[0]) return; var r=new FileReader(); r.onload=function(e){ var l=document.getElementById('wl-preview-logo'); if(l){ l.src=e.target.result; l.style.filter='none'; } }; r.readAsDataURL(inp.files[0]); }
+function handleWLLogo(inp){
+  if(!inp||!inp.files||!inp.files[0]) return;
+  var file=inp.files[0];
+  var mb=file.size/(1024*1024);
+  if(mb>MAX_UPLOAD_MB){
+    var sizeLabel=mb.toFixed(1)+' MB';
+    showToast('Logo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.','gold');
+    var saveBtn=document.querySelector('#s-whitelabel .btn-primary');
+    if(saveBtn) saveBtn.disabled=true;
+    inp.value='';
+    return;
+  }
+  var saveBtn2=document.querySelector('#s-whitelabel .btn-primary');
+  if(saveBtn2) saveBtn2.disabled=false;
+  var r=new FileReader();
+  r.onload=function(e){ var l=document.getElementById('wl-preview-logo'); if(l){ l.src=e.target.result; l.style.filter='none'; } };
+  r.readAsDataURL(file);
+}
 function selectWLBg(el,style){ document.querySelectorAll('#s-whitelabel .card').forEach(function(c){ if(c.contains(el)) return; }); var bg=document.getElementById('wl-preview-bg'); if(bg) bg.style.background=style==='gradient'?'linear-gradient(135deg,#1b3a6b 0%,#c9a84c 100%)':'#1b3a6b'; el.style.border='2px solid var(--gold)'; el.parentNode.querySelectorAll('.card').forEach(function(c){ if(c!==el) c.style.border=''; }); }
 function saveWhitelabel(){ showToast('White label settings saved!','green'); }
 
@@ -10257,23 +10328,35 @@ function healthBadge(score){
 </div>
 
 <div class="modal-overlay hidden" id="video-testimonial-modal" onclick="if(event.target===this)closeModal('video-testimonial-modal')">
-  <div class="modal" style="max-width:460px">
-    <div class="modal-head"><h2>Leave a Video Testimonial 🎥</h2><button class="icon-btn" onclick="closeModal('video-testimonial-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+  <div class="modal" style="max-width:440px">
+    <div class="modal-head"><h2>Video Testimonial 🎥</h2><button class="icon-btn" onclick="closeModal('video-testimonial-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
-      <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:18px">Record a short 30–60 second video sharing your experience with CAL Marketing. Your story helps other business owners make the best choice for their growth.</p>
-      <div style="display:grid;gap:12px">
-        <div style="padding:16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
-          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:4px">📹 Record Now</p>
-          <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px">Use your camera to record directly from your browser or phone. No account needed.</p>
-          <button class="btn-gold" onclick="showToast('Opening camera — please allow access when prompted.','green');closeModal('video-testimonial-modal')">Start Recording</button>
-        </div>
-        <div style="padding:16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
-          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:4px">📁 Upload a Video</p>
-          <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px">Already have a short clip? Upload it here and we'll take care of the rest.</p>
-          <label class="btn-view" style="cursor:pointer;display:inline-block"><input type="file" accept="video/*" style="display:none" onchange="showToast('Video received — thank you! Our team will follow up shortly.','green');closeModal('video-testimonial-modal')">Choose Video File</label>
-        </div>
+      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.5;margin-bottom:18px">Share a 30–60 second clip about your experience. It'll be saved directly to your account files under <strong>Client Testimonials</strong>.</p>
+      <div style="display:grid;gap:10px">
+        <label style="display:flex;align-items:center;gap:14px;padding:16px;border:1.5px solid var(--border);border-radius:13px;background:var(--page);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(201,168,76,.12);border:1.5px solid rgba(201,168,76,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          </div>
+          <div style="flex:1">
+            <p style="font-size:13px;font-weight:900;color:var(--ink);margin:0 0 2px">Record with Camera</p>
+            <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">Open your camera and record directly — no app needed.</p>
+          </div>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
+          <input type="file" accept="video/*" capture="camcorder" style="display:none" onchange="submitVideoTestimonial(this.files[0])">
+        </label>
+        <label style="display:flex;align-items:center;gap:14px;padding:16px;border:1.5px solid var(--border);border-radius:13px;background:var(--page);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="width:40px;height:40px;border-radius:10px;background:rgba(201,168,76,.12);border:1.5px solid rgba(201,168,76,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16,16 12,12 8,16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0018 9h-1.26A8 8 0 103 16.3"/></svg>
+          </div>
+          <div style="flex:1">
+            <p style="font-size:13px;font-weight:900;color:var(--ink);margin:0 0 2px">Upload a Video</p>
+            <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">Already have a clip? Upload it and we'll take care of the rest.</p>
+          </div>
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--muted2)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,18 15,12 9,6"/></svg>
+          <input type="file" accept="video/*" style="display:none" onchange="submitVideoTestimonial(this.files[0])">
+        </label>
       </div>
-      <p style="font-size:11px;color:var(--muted);font-weight:600;margin-top:14px;text-align:center">Your testimonial may be used on our website or marketing materials with your permission.</p>
+      <p style="font-size:11px;color:var(--muted);font-weight:600;margin-top:14px;text-align:center;line-height:1.5">With your permission, your testimonial may be used on our website or marketing materials.</p>
     </div>
     <div class="modal-actions"><button class="btn-ghost" onclick="closeModal('video-testimonial-modal')">Cancel</button></div>
   </div>
@@ -10835,6 +10918,18 @@ function healthBadge(score){
   };
   window.handleWLLogo=function(inp){
     if(!inp||!inp.files||!inp.files[0]) return;
+    var file=inp.files[0];
+    var mb=file.size/(1024*1024);
+    if(mb>MAX_UPLOAD_MB){
+      var sizeLabel=mb.toFixed(1)+' MB';
+      showToastSafe('Logo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.','gold');
+      var saveBtn=document.querySelector('#s-whitelabel .btn-primary,[onclick="saveWhitelabel()"]');
+      if(saveBtn) saveBtn.disabled=true;
+      inp.value='';
+      return;
+    }
+    var saveBtn2=document.querySelector('#s-whitelabel .btn-primary,[onclick="saveWhitelabel()"]');
+    if(saveBtn2) saveBtn2.disabled=false;
     var r=new FileReader();
     r.onload=function(e){
       var logoData=e.target.result;
