@@ -7600,6 +7600,28 @@ function saveProfile(){
 }
 function handleProfilePhoto(inp){
   if(!inp||!inp.files||!inp.files[0]) return;
+  var file=inp.files[0];
+  var mb=file.size/(1024*1024);
+  if(mb>MAX_UPLOAD_MB){
+    var sizeLabel=mb.toFixed(1)+' MB';
+    var box=inp.closest?inp.closest('.ob-upload-box'):null;
+    if(box){
+      var hint=box.querySelector('p');
+      if(hint){hint.textContent='Photo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.';hint.style.color='var(--danger,#e74c3c)';}
+      var contBtn=box.parentElement&&box.parentElement.querySelector('.ob-btn');
+      if(contBtn) contBtn.disabled=true;
+    }
+    showToast('Photo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.','gold');
+    inp.value='';
+    return;
+  }
+  var box2=inp.closest?inp.closest('.ob-upload-box'):null;
+  if(box2){
+    var hint2=box2.querySelector('p');
+    if(hint2){hint2.textContent='Click to upload a photo';hint2.style.color='';}
+    var contBtn2=box2.parentElement&&box2.parentElement.querySelector('.ob-btn');
+    if(contBtn2) contBtn2.disabled=false;
+  }
   var reader=new FileReader();
   reader.onload=function(e){
     var src=e.target.result;
@@ -12737,19 +12759,44 @@ function healthBadge(score){
     try{
       fetch('/api/meta/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:password})})
         .then(function(r){ return r.json(); }).then(function(data){
-          if(data&&data.token) _setMetaToken(data.token);
+          if(data&&data.token){ _setMetaToken(data.token); _flushPushQueue(); }
           if(typeof cb==='function') cb(!!(data&&data.token));
         }).catch(function(){ if(typeof cb==='function') cb(false); });
     }catch(e){ if(typeof cb==='function') cb(false); }
   }
   window._loginToMetaServer=_loginToMetaServer;
+  var _META_PUSH_QUEUE_KEY='cal-meta-push-queue';
+  function _enqueuePush(key){
+    try{
+      var q=JSON.parse(localStorage.getItem(_META_PUSH_QUEUE_KEY)||'[]')||[];
+      if(q.indexOf(key)<0) q.push(key);
+      localStorage.setItem(_META_PUSH_QUEUE_KEY,JSON.stringify(q));
+    }catch(ex){}
+  }
+  function _flushPushQueue(){
+    try{
+      var t=_getMetaToken(); if(!t) return;
+      var q=JSON.parse(localStorage.getItem(_META_PUSH_QUEUE_KEY)||'[]')||[];
+      if(!q.length) return;
+      localStorage.removeItem(_META_PUSH_QUEUE_KEY);
+      q.forEach(function(key){
+        var meta=_getMeta(key)||{};
+        var payload=Object.assign({},meta);
+        if(payload.logo && payload.logo.startsWith('data:')) delete payload.logo;
+        fetch('/api/meta?key='+encodeURIComponent(key),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},_metaAuthHeader()),body:JSON.stringify(payload)})
+          .catch(function(){ _enqueuePush(key); });
+      });
+    }catch(ex){}
+  }
+  window.addEventListener('online',function(){ _flushPushQueue(); });
   function _pushMetaToServer(key,meta){
     try{
       var t=_getMetaToken(); if(!t) return;
       var payload=Object.assign({},meta);
       if(payload.logo && payload.logo.startsWith('data:')) delete payload.logo;
-      fetch('/api/meta?key='+encodeURIComponent(key),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},_metaAuthHeader()),body:JSON.stringify(payload)}).catch(function(){});
-    }catch(e){}
+      fetch('/api/meta?key='+encodeURIComponent(key),{method:'PUT',headers:Object.assign({'Content-Type':'application/json'},_metaAuthHeader()),body:JSON.stringify(payload)})
+        .catch(function(){ _enqueuePush(key); });
+    }catch(e){ _enqueuePush(key); }
   }
   function _pushLogoToServer(key,dataUrl,cb){
     try{
@@ -13046,6 +13093,7 @@ function healthBadge(score){
   var _launch=window.launchApp;
   window.launchApp=function(){
     if(_launch) _launch();
+    try{ _flushPushQueue(); }catch(e){}
     syncMetaFromServer(_acctKey(),function(){
       try{ applyCalLayout(); renderLayoutPrefs(); }catch(e){}
     });
@@ -13070,7 +13118,7 @@ function healthBadge(score){
   window.addEventListener('storage',function(e){
     if(e && e.key && e.key.indexOf('cal-onboarding-')===0){ try{ applyCalLayout(); }catch(e2){} }
   });
-  document.addEventListener('DOMContentLoaded',function(){ setTimeout(function(){ try{ applyCalLayout(); }catch(e){} },40); });
+  document.addEventListener('DOMContentLoaded',function(){ setTimeout(function(){ try{ _flushPushQueue(); applyCalLayout(); }catch(e){} },40); });
   setTimeout(function(){ try{ applyCalLayout(); }catch(e){} },60);
 })();
 </script>
