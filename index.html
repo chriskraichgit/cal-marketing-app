@@ -12349,9 +12349,13 @@ function healthBadge(score){
   function _hsGet(){
     var raw=localStorage.getItem(_hsKey());
     if(raw){ try{ return JSON.parse(raw); }catch(e){} }
-    // First visit — detect existing vs brand-new account
     var conn=_hsConn(); var hasConn=Object.keys(conn).some(function(k){ return conn[k]; });
-    var hasHist=false; try{ var st=JSON.parse(localStorage.getItem('cal-app-state')||'{}'); hasHist=!!(st.lastNav); }catch(e){}
+    // For agency viewing a client, cal-app-state.lastNav reflects the agency's own
+    // navigation — not the client's — so skip that check to avoid false "existing" detection.
+    var hasHist=false;
+    if(window.currentRole!=='agency'&&window.currentRole!=='test'){
+      try{ var st=JSON.parse(localStorage.getItem('cal-app-state')||'{}'); hasHist=!!(st.lastNav); }catch(e){}
+    }
     var d={completed:hasConn||hasHist,skipped:false,steps:{}};
     localStorage.setItem(_hsKey(),JSON.stringify(d)); return d;
   }
@@ -12429,38 +12433,93 @@ function healthBadge(score){
         :'<span style="font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.06);border:1px solid var(--border);border-radius:999px;padding:3px 9px">Pending</span>';
       var btn=done
         ?'<button disabled style="height:32px;padding:0 14px;border:none;border-radius:8px;background:rgba(34,197,94,.12);color:#16a34a;font-size:11px;font-weight:800;font-family:inherit;cursor:default;display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>Done</button>'
-        :'<button onclick="'+s.action+'" style="height:32px;padding:0 14px;border:none;border-radius:8px;background:var(--gold);color:#000;font-size:11px;font-weight:900;font-family:inherit;cursor:pointer">'+s.btn+'</button>';
+        :(window._hsReadOnly
+          ?'<span style="font-size:11px;font-weight:700;color:var(--muted);font-style:italic">Client action required</span>'
+          :'<button onclick="'+s.action+'" style="height:32px;padding:0 14px;border:none;border-radius:8px;background:var(--gold);color:#000;font-size:11px;font-weight:900;font-family:inherit;cursor:pointer">'+s.btn+'</button>');
       var iconBg=done?'rgba(34,197,94,.12)':'var(--gold-pale,#faf4e2)';
       var iconBorder=done?'rgba(34,197,94,.3)':'rgba(201,168,76,.3)';
       var iconStroke=done?'#16a34a':'var(--gold)';
       return '<div style="display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:13px;box-shadow:var(--soft);margin-bottom:10px'+(done?';opacity:.82':'')+'"><div style="width:38px;height:38px;border-radius:10px;background:'+iconBg+';border:1.5px solid '+iconBorder+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="'+iconStroke+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+s.icon+'</svg></div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px"><span style="font-size:13px;font-weight:900;color:var(--ink)">'+s.title+'</span>'+badge+'</div><p style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.4;margin:0 0 10px">'+s.desc+'</p>'+btn+'</div></div>';
     }).join('');
+    var _ro=window._hsReadOnly;
+    var _heroEyebrow=_ro?('Setup Progress — '+_agencyClientName()):('Welcome to CAL OS 👋');
+    var _heroTitle=_ro?('Client Account Setup'):('Let\'s get your account set up');
+    var _heroSub=_ro?('Read-only view. Steps marked "Client action required" can only be completed by the client.'):('Complete the steps below to unlock your full dashboard and start seeing real results.');
     wrap.innerHTML=
       '<div style="background:linear-gradient(135deg,var(--ink,#10243f),#1b3a6b);border-radius:16px;padding:22px;color:#fff;margin-bottom:14px;box-shadow:var(--soft)">'
-      +'<p style="font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--gold,#f4b942);margin:0 0 4px">Welcome to CAL OS 👋</p>'
-      +'<p style="font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:900;margin:0 0 6px;line-height:1.1">Let\'s get your account set up</p>'
-      +'<p style="font-size:13px;font-weight:600;color:rgba(255,255,255,.82);margin:0 0 14px;line-height:1.5">Complete the steps below to unlock your full dashboard and start seeing real results.</p>'
+      +(_ro?'<div style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border-radius:6px;padding:3px 8px;margin-bottom:8px"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Agency view — read only</div><br>':'')
+      +'<p style="font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--gold,#f4b942);margin:0 0 4px">'+_heroEyebrow+'</p>'
+      +'<p style="font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:900;margin:0 0 6px;line-height:1.1">'+_heroTitle+'</p>'
+      +'<p style="font-size:13px;font-weight:600;color:rgba(255,255,255,.82);margin:0 0 14px;line-height:1.5">'+_heroSub+'</p>'
       +'<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:rgba(255,255,255,.9);margin-bottom:7px"><span>'+doneN+' of '+total+' steps complete</span><span>'+pct+'%</span></div>'
       +'<div style="height:9px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden"><div style="height:100%;width:'+pct+'%;border-radius:999px;background:linear-gradient(90deg,var(--gold,#f4b942),#22c55e);transition:width .5s ease"></div></div>'
       +'</div>'
       +cards
-      +'<div style="text-align:center;margin-top:4px;padding:4px 0 8px">'
-      +'<button onclick="skipHomeSetup()" style="background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:2px">Skip setup and go to dashboard →</button>'
-      +'<div id="hs-skip-conf" style="display:none;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:left">'
-      +'<p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 6px">Are you sure?</p>'
-      +'<p style="font-size:12px;font-weight:600;color:var(--muted);margin:0 0 12px;line-height:1.4">Your dashboard will show placeholder data until setup is complete.</p>'
-      +'<div style="display:flex;gap:8px"><button onclick="confirmSkipHomeSetup()" style="height:34px;padding:0 16px;border:none;border-radius:8px;background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer">Confirm, go to dashboard</button>'
-      +'<button onclick="cancelSkipHomeSetup()" style="height:34px;padding:0 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer">Cancel</button></div>'
-      +'</div></div>';
+      +(_ro?'':
+        '<div style="text-align:center;margin-top:4px;padding:4px 0 8px">'
+        +'<button onclick="skipHomeSetup()" style="background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:2px">Skip setup and go to dashboard →</button>'
+        +'<div id="hs-skip-conf" style="display:none;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:left">'
+        +'<p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 6px">Are you sure?</p>'
+        +'<p style="font-size:12px;font-weight:600;color:var(--muted);margin:0 0 12px;line-height:1.4">Your dashboard will show placeholder data until setup is complete.</p>'
+        +'<div style="display:flex;gap:8px"><button onclick="confirmSkipHomeSetup()" style="height:34px;padding:0 16px;border:none;border-radius:8px;background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer">Confirm, go to dashboard</button>'
+        +'<button onclick="cancelSkipHomeSetup()" style="height:34px;padding:0 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer">Cancel</button></div>'
+        +'</div></div>');
   }
 
   /* ---- applyHomeForRole override: admin sees static admin home; onboarding lives on its own tab ---- */
+  /* ---- helpers for agency home view ---- */
+  function _agencyClientName(){
+    var id=window.currentAcctId||'';
+    var name='';
+    try{ var m=JSON.parse(localStorage.getItem('cal-account-meta')||'{}'); if(m[id]) name=(m[id].name||m[id].bizName||''); }catch(e){}
+    if(!name){ var a=(window.accounts||[]).find(function(x){ return x.id===id; }); if(a) name=a.name||''; }
+    return name||id;
+  }
+  function _applyAgencyViewingBanner(){
+    var sHome=document.getElementById('s-home'); if(!sHome) return;
+    var banner=document.getElementById('hs-agency-viewing-banner');
+    var isAgency=(window.currentRole==='agency'||window.currentRole==='test');
+    if(isAgency){
+      var name=_agencyClientName();
+      if(!banner){
+        banner=document.createElement('div');
+        banner.id='hs-agency-viewing-banner';
+        sHome.insertBefore(banner,sHome.firstChild);
+      }
+      banner.style.cssText='border-left:3px solid var(--gold,#c9a84c);background:var(--gold-pale,#faf4e2);border-radius:10px;padding:9px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px';
+      banner.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--gold,#c9a84c)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+        +'<span style="font-size:12px;font-weight:800;color:var(--ink)">Viewing: <span style="color:#9a7a1c">'+_agencyClientName()+'</span></span>';
+    } else {
+      if(banner) banner.style.display='none';
+    }
+  }
+
   window.applyHomeForRole=function(){
-    var admin=(window.currentRole==='admin');
-    var setup=admin&&_needsHomeSetup();
+    var role=window.currentRole;
+    var admin=(role==='admin');
+    var isAgency=(role==='agency'||role==='test');
     var av=document.getElementById('home-admin-view');
     var fv=document.getElementById('home-full-view');
     var sv=document.getElementById('home-setup-view');
+    _applyAgencyViewingBanner();
+    if(isAgency){
+      // Agency viewing a client — show their setup progress or live dashboard
+      if(av) av.style.display='none';
+      var d=_hsGet(); var clientDone=d.completed||d.skipped;
+      if(clientDone){
+        window._hsReadOnly=false;
+        if(fv) fv.style.display='block';
+        if(sv) sv.style.display='none';
+      } else {
+        // Read-only view of the client's setup steps
+        window._hsReadOnly=true;
+        if(fv) fv.style.display='none';
+        if(sv){ sv.style.display='block'; renderHomeSetup(); }
+      }
+      return;
+    }
+    window._hsReadOnly=false;
+    var setup=admin&&_needsHomeSetup();
     if(fv) fv.style.display=admin?'none':'block';
     if(setup){
       if(av) av.style.display='none';
@@ -12606,9 +12665,18 @@ function healthBadge(score){
   function _seedHomeSetupDemoAdmins(){
     // Known demo admin accounts already have data — mark home setup completed
     // so they always see the regular dashboard, never the new-account flow.
+    // Seed by both email (admin key) and account ID (agency key via acctKey()).
     var DEMO_ADMIN_KEYS=['client@apexlegal.com','info@unitedsewerservice.com'];
     DEMO_ADMIN_KEYS.forEach(function(email){
       var k=_HSP+email;
+      if(!localStorage.getItem(k)){
+        localStorage.setItem(k,JSON.stringify({completed:true,skipped:false,steps:{}}));
+      }
+    });
+    // Seed by account ID — when an agency views a client, acctKey()='a1' etc.
+    var DEMO_ACCT_IDS=['a1','a2','a3','a4','a5'];
+    DEMO_ACCT_IDS.forEach(function(id){
+      var k=_HSP+id;
       if(!localStorage.getItem(k)){
         localStorage.setItem(k,JSON.stringify({completed:true,skipped:false,steps:{}}));
       }
@@ -13711,12 +13779,25 @@ function renderOnboarding(){
         return '<label style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:'+(checked?'var(--muted)':'var(--ink)')+';cursor:pointer;padding:3px 0;text-decoration:'+(checked?'line-through':'none')+'">'
           +'<input type="checkbox" '+(checked?'checked':'')+' onchange="toggleObStep(\''+a.key+'\',\''+s.id+'\')" style="accent-color:var(--gold);width:14px;height:14px;flex-shrink:0">'+esc(s.label)+'</label>';
       }).join('');
+      // Home-setup completion % for this client (keyed by account ID)
+      var _hsAcctData={}; try{ _hsAcctData=JSON.parse(localStorage.getItem('cal-home-setup-'+a.key)||'{}'); }catch(e2){}
+      var _hsConnData={}; try{ _hsConnData=JSON.parse(localStorage.getItem('cal-platform-conn-'+a.key)||'{}'); }catch(e2){}
+      var _hsAcctDone=0;
+      if(_hsAcctData.completed){ _hsAcctDone=6; }
+      else{
+        ['gbp','google-ads','meta-ads'].forEach(function(cid){ if(_hsConnData[cid]) _hsAcctDone++; });
+        ['billing','team','profile'].forEach(function(mid){ if(_hsAcctData.steps&&_hsAcctData.steps[mid]) _hsAcctDone++; });
+      }
+      var _hsAcctPct=_hsAcctData.completed?100:Math.round(_hsAcctDone/6*100);
       var acctName=a.name||a.bizName||a.key;
       return '<div class="card" style="padding:0;display:flex;flex-direction:column;overflow:hidden">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer" onclick="openObAccount(\''+a.key+'\')">'
           +'<div><p style="font-size:13px;font-weight:800;margin:0;color:var(--ink)">'+acctName+'</p>'
           +'<p style="font-size:11px;color:var(--muted);font-weight:600;margin:2px 0 0">'+(a.plan||'')+'</p></div>'
-          +'<span class="pill pill-'+(pct===100?'green':pct>0?'gold':'muted')+'">'+pct+'%</span>'
+          +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">'
+            +'<span class="pill pill-'+(pct===100?'green':pct>0?'gold':'muted')+'">Journey: '+pct+'%</span>'
+            +'<span class="pill pill-'+(_hsAcctPct===100?'green':_hsAcctPct>0?'gold':'muted')+'" title="Account setup completion">Setup: '+_hsAcctPct+'%</span>'
+          +'</div>'
         +'</div>'
         +'<div style="padding:12px 16px 0">'
           +'<div style="background:var(--border);border-radius:4px;height:5px;margin-bottom:10px"><div style="background:var(--gold);height:5px;border-radius:4px;width:'+pct+'%;transition:width .3s"></div></div>'
@@ -13724,6 +13805,7 @@ function renderOnboarding(){
         +'</div>'
         +'<div style="padding:10px 16px;display:flex;gap:8px;margin-top:4px">'
           +'<button class="btn-gold" style="font-size:12px;flex:1" onclick="openObAccount(\''+a.key+'\')">Manage →</button>'
+          +'<button style="font-size:12px;height:34px;padding:0 12px;border:1.5px solid var(--border);border-radius:8px;background:transparent;color:var(--ink);font-weight:800;font-family:inherit;cursor:pointer;flex-shrink:0" onclick="setCurrentAcct(\''+a.key+'\');nav(\'home\')" title="View this client\'s setup progress on their home screen">View Setup →</button>'
         +'</div>'
         +'</div>';
     }).join('');
