@@ -892,8 +892,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div class="login-logo-wrap">
       <img class="login-logo" src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a381eca1c5d711b35cfdfbb.png" alt="CAL Marketing">
     </div>
-    <h1 class="login-title">CAL OS</h1>
-    <p class="login-sub">CLIENT OPERATING SYSTEM — v1.0</p>
+    <h1 class="login-title" id="login-main-title">CAL OS</h1>
+    <p class="login-sub" id="login-main-sub">CLIENT OPERATING SYSTEM — v1.0</p>
     <div class="login-tabs" style="display:flex;gap:0;border:1.5px solid var(--border);border-radius:999px;overflow:hidden;margin-bottom:20px">
       <button id="tab-signin" onclick="switchLoginTab('signin')" style="flex:1;height:40px;border:0;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer">Sign In</button>
       <button id="tab-create" onclick="switchLoginTab('create')" style="flex:1;height:40px;border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer">Create Account</button>
@@ -6072,25 +6072,21 @@ function _fpHideErrors(){
 
 /* Hide the main CAL OS title/sub + tabs so our own forgot-panel h1 shows cleanly */
 function _fpHideLoginHeader(){
+  var h1=document.getElementById('login-main-title');
+  var sub=document.getElementById('login-main-sub');
   var lc=document.querySelector('#login-view .login-card');
-  if(!lc) return;
-  var mainH1=lc.querySelector('h1.login-title:not(#forgot-panel h1)');
-  if(mainH1) mainH1.style.visibility='hidden';
-  var mainSub=lc.querySelector('p.login-sub:not(#fp-subtitle)');
-  if(mainSub) mainSub.style.visibility='hidden';
-  var tabs=document.getElementById('login-view')&&lc.querySelector('.login-tabs');
-  if(tabs) tabs.style.display='none';
+  if(h1) h1.style.display='none';
+  if(sub) sub.style.display='none';
+  if(lc){ var tabs=lc.querySelector('.login-tabs'); if(tabs) tabs.style.display='none'; }
 }
 
 function _fpRestoreLoginHeader(){
+  var h1=document.getElementById('login-main-title');
+  var sub=document.getElementById('login-main-sub');
   var lc=document.querySelector('#login-view .login-card');
-  if(!lc) return;
-  var mainH1=lc.querySelector('h1.login-title:not(#forgot-panel h1)');
-  if(mainH1) mainH1.style.visibility='';
-  var mainSub=lc.querySelector('p.login-sub:not(#fp-subtitle)');
-  if(mainSub) mainSub.style.visibility='';
-  var tabs=lc.querySelector('.login-tabs');
-  if(tabs) tabs.style.display='';
+  if(h1) h1.style.display='';
+  if(sub) sub.style.display='';
+  if(lc){ var tabs=lc.querySelector('.login-tabs'); if(tabs) tabs.style.display=''; }
 }
 
 function _fpStartResendTimer(){
@@ -7663,6 +7659,7 @@ function closeModal(id){ var m=document.getElementById(id); if(m){ m.classList.a
 
 var _pendingUploadFile = null;
 var _pendingVideoFile = null;
+var _videoUploadInProgress = false;
 function openVideoUploadModal() {
   openModal('upload-video-modal');
   var label = document.getElementById('video-upload-label');
@@ -8435,6 +8432,7 @@ function switchFilesTab(tab,btn){
 }
 function openVideoPlayer(title){ var el=document.getElementById('video-player-title'); if(el) el.textContent=title; openModal('video-player-modal'); }
 function startVideoUpload() {
+  if (_videoUploadInProgress) return;
   var input = document.getElementById('video-upload-input');
   var btn = document.getElementById('video-upload-btn');
   var progressWrap = document.getElementById('video-upload-progress');
@@ -8445,7 +8443,10 @@ function startVideoUpload() {
   if (!_gdriveConnected) { showToast('Connect Google Drive before uploading.', 'gold'); return; }
   if (file.size > 50 * 1024 * 1024) { showToast('File exceeds the 50MB limit.', 'gold'); return; }
 
+  _videoUploadInProgress = true;
+
   function resetProgress() {
+    _videoUploadInProgress = false;
     if (progressWrap) progressWrap.style.display = 'none';
     if (progressBar) progressBar.style.width = '0%';
     if (progressPct) progressPct.textContent = '0%';
