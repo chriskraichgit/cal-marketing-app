@@ -3318,33 +3318,86 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: REPORTS ============ -->
 <div class="screen" id="s-reports">
-  <div class="sec-head"><div><h2>Reports</h2><p>Monthly performance summaries</p></div><button class="btn-view" onclick="openModal('report-modal')">View Latest</button></div>
-  <div class="kpi-row" style="margin-top:0;margin-bottom:16px">
+  <div class="sec-head"><div><h2>Reports</h2><p>Monthly performance summaries</p></div></div>
+
+  <!-- KPI Row — clean, no descriptions -->
+  <div class="kpi-row" style="margin-top:0;margin-bottom:18px">
     <div class="kpi-card" style="border-left-color:var(--green)"><div class="kpi-val" style="color:var(--green)">248</div><div class="kpi-label">Leads This Month</div><div style="font-size:10px;font-weight:700;color:var(--green);margin-top:4px">▲ 5% vs May</div></div>
     <div class="kpi-card" style="border-left-color:var(--gold)"><div class="kpi-val" style="color:var(--gold)">4.2×</div><div class="kpi-label">ROAS</div><div style="font-size:10px;font-weight:700;color:var(--green);margin-top:4px">▲ 0.2× vs May</div></div>
     <div class="kpi-card" style="border-left-color:var(--blue)"><div class="kpi-val" style="color:var(--blue)">$4,200</div><div class="kpi-label">Ad Spend</div><div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:4px">Budget on track</div></div>
     <div class="kpi-card" style="border-left-color:var(--ink)"><div class="kpi-val">$18,400</div><div class="kpi-label">Revenue Generated</div><div style="font-size:10px;font-weight:700;color:var(--green);margin-top:4px">▲ 14% YoY</div></div>
   </div>
-  <div class="grid" style="gap:10px">
-    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div><p style="font-size:14px;font-weight:900;color:var(--ink)">June 2026 — Monthly Report</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">248 leads · $4,200 spend · 4.2x ROAS</p></div>
-      <div style="display:flex;gap:8px"><span class="pill pill-gold">LATEST</span><button class="btn-view" onclick="openModal('report-modal')">View</button></div>
-    </div>
-    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div><p style="font-size:14px;font-weight:900;color:var(--ink)">May 2026 — Monthly Report</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">236 leads · $3,900 spend · 4.0x ROAS</p></div>
-      <button class="btn-view" onclick="openModal('report-modal')">View</button>
-    </div>
-    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div><p style="font-size:14px;font-weight:900;color:var(--ink)">Q1 2026 — Quarterly Report</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">748 leads · $11,200 spend · 3.9x ROAS</p></div>
-      <button class="btn-view" onclick="openModal('report-modal')">View</button>
-    </div>
+
+  <!-- Monthly Reports Archive -->
+  <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📋 Monthly Reports</p>
+
+  <!-- ── 2026 ── -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:11px;font-weight:900;color:var(--muted);white-space:nowrap">2026</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+  <div class="grid" style="gap:6px;margin-bottom:16px">
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">June 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">248 leads · $4,200 spend · 4.2× ROAS</p></div><div style="display:flex;align-items:center;gap:8px"><span class="pill pill-gold">LATEST</span><button class="btn-view" onclick="openReportModal('jun-2026')">View</button></div></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">May 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">236 leads · $3,900 spend · 4.0× ROAS</p></div><button class="btn-view" onclick="openReportModal('may-2026')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">April 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">219 leads · $3,750 spend · 3.8× ROAS</p></div><button class="btn-view" onclick="openReportModal('apr-2026')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">March 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">208 leads · $3,600 spend · 3.7× ROAS</p></div><button class="btn-view" onclick="openReportModal('mar-2026')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">February 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">195 leads · $3,400 spend · 3.6× ROAS</p></div><button class="btn-view" onclick="openReportModal('feb-2026')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">January 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">181 leads · $3,200 spend · 3.5× ROAS</p></div><button class="btn-view" onclick="openReportModal('jan-2026')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:.45"><div><p style="font-size:14px;font-weight:900;color:var(--muted)">July 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">Report not yet available</p></div><span style="font-size:12px;color:var(--muted);font-weight:800;padding:5px 12px;border:1px solid var(--border);border-radius:999px">Pending</span></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:.45"><div><p style="font-size:14px;font-weight:900;color:var(--muted)">August 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">Report not yet available</p></div><span style="font-size:12px;color:var(--muted);font-weight:800;padding:5px 12px;border:1px solid var(--border);border-radius:999px">Pending</span></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:.45"><div><p style="font-size:14px;font-weight:900;color:var(--muted)">September 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">Report not yet available</p></div><span style="font-size:12px;color:var(--muted);font-weight:800;padding:5px 12px;border:1px solid var(--border);border-radius:999px">Pending</span></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:.45"><div><p style="font-size:14px;font-weight:900;color:var(--muted)">October 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">Report not yet available</p></div><span style="font-size:12px;color:var(--muted);font-weight:800;padding:5px 12px;border:1px solid var(--border);border-radius:999px">Pending</span></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:.45"><div><p style="font-size:14px;font-weight:900;color:var(--muted)">November 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">Report not yet available</p></div><span style="font-size:12px;color:var(--muted);font-weight:800;padding:5px 12px;border:1px solid var(--border);border-radius:999px">Pending</span></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px;opacity:.45"><div><p style="font-size:14px;font-weight:900;color:var(--muted)">December 2026</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">Report not yet available</p></div><span style="font-size:12px;color:var(--muted);font-weight:800;padding:5px 12px;border:1px solid var(--border);border-radius:999px">Pending</span></div>
   </div>
-  <div class="card card-pad" style="margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border:1px solid var(--gold)">
+
+  <!-- ── 2025 ── -->
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span style="font-size:11px;font-weight:900;color:var(--muted);white-space:nowrap">2025</span><div style="flex:1;height:1px;background:var(--border)"></div></div>
+  <div class="grid" style="gap:6px;margin-bottom:20px">
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">December 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">210 leads · $3,800 spend · 3.9× ROAS</p></div><button class="btn-view" onclick="openReportModal('dec-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">November 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">198 leads · $3,650 spend · 3.7× ROAS</p></div><button class="btn-view" onclick="openReportModal('nov-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">October 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">185 leads · $3,500 spend · 3.6× ROAS</p></div><button class="btn-view" onclick="openReportModal('oct-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">September 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">172 leads · $3,400 spend · 3.5× ROAS</p></div><button class="btn-view" onclick="openReportModal('sep-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">August 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">161 leads · $3,300 spend · 3.4× ROAS</p></div><button class="btn-view" onclick="openReportModal('aug-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">July 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">148 leads · $3,100 spend · 3.3× ROAS</p></div><button class="btn-view" onclick="openReportModal('jul-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">June 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">134 leads · $2,900 spend · 3.1× ROAS</p></div><button class="btn-view" onclick="openReportModal('jun-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">May 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">122 leads · $2,800 spend · 3.0× ROAS</p></div><button class="btn-view" onclick="openReportModal('may-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">April 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">109 leads · $2,700 spend · 2.8× ROAS</p></div><button class="btn-view" onclick="openReportModal('apr-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">March 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">98 leads · $2,600 spend · 2.7× ROAS</p></div><button class="btn-view" onclick="openReportModal('mar-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">February 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">88 leads · $2,500 spend · 2.5× ROAS</p></div><button class="btn-view" onclick="openReportModal('feb-2025')">View</button></div>
+    <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><div><p style="font-size:14px;font-weight:900;color:var(--ink)">January 2025</p><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:1px">81 leads · $2,400 spend · 2.4× ROAS</p></div><button class="btn-view" onclick="openReportModal('jan-2025')">View</button></div>
+  </div>
+
+  <!-- Lead Source Attribution -->
+  <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📊 Where Your Leads Are Coming From</p>
+  <div class="card card-pad" style="margin-bottom:16px">
+    <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:4px">June 2026 — Lead Source Breakdown</p>
+    <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:16px">248 total leads across all active channels</p>
+    <div style="display:grid;gap:10px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:140px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap">Google Ads</div><div style="flex:1;height:9px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:45%;border-radius:inherit;background:#4285f4"></div></div><div style="width:72px;text-align:right;font-size:12px;font-weight:900;color:var(--ink)">112 <span style="color:var(--muted);font-weight:700">45%</span></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:140px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap">Meta Ads</div><div style="flex:1;height:9px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:27%;border-radius:inherit;background:#1877f2"></div></div><div style="width:72px;text-align:right;font-size:12px;font-weight:900;color:var(--ink)">66 <span style="color:var(--muted);font-weight:700">27%</span></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:140px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap">GBP / Maps</div><div style="flex:1;height:9px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:15%;border-radius:inherit;background:#34a853"></div></div><div style="width:72px;text-align:right;font-size:12px;font-weight:900;color:var(--ink)">38 <span style="color:var(--muted);font-weight:700">15%</span></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:140px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap">Organic / SEO</div><div style="flex:1;height:9px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:7%;border-radius:inherit;background:#fbbc04"></div></div><div style="width:72px;text-align:right;font-size:12px;font-weight:900;color:var(--ink)">18 <span style="color:var(--muted);font-weight:700">7%</span></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:140px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap">Website Direct</div><div style="flex:1;height:9px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:4%;border-radius:inherit;background:#9c27b0"></div></div><div style="width:72px;text-align:right;font-size:12px;font-weight:900;color:var(--ink)">9 <span style="color:var(--muted);font-weight:700">4%</span></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div style="width:140px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap">Word of Mouth</div><div style="flex:1;height:9px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:2%;border-radius:inherit;background:#ea4335"></div></div><div style="width:72px;text-align:right;font-size:12px;font-weight:900;color:var(--ink)">5 <span style="color:var(--muted);font-weight:700">2%</span></div></div>
+    </div>
+    <table class="data-table" style="margin:0">
+      <thead><tr><th>Source</th><th>Leads</th><th>% of Total</th><th>CPL</th></tr></thead>
+      <tbody>
+        <tr><td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#4285f4;display:inline-block"></span>Google Ads</span></td><td><strong>112</strong></td><td>45%</td><td>$25</td></tr>
+        <tr><td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#1877f2;display:inline-block"></span>Meta Ads</span></td><td><strong>66</strong></td><td>27%</td><td>$18</td></tr>
+        <tr><td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#34a853;display:inline-block"></span>GBP / Maps</span></td><td><strong>38</strong></td><td>15%</td><td>$0</td></tr>
+        <tr><td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#fbbc04;display:inline-block"></span>Organic / SEO</span></td><td><strong>18</strong></td><td>7%</td><td>$0</td></tr>
+        <tr><td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#9c27b0;display:inline-block"></span>Website Direct</span></td><td><strong>9</strong></td><td>4%</td><td>$0</td></tr>
+        <tr><td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:#ea4335;display:inline-block"></span>Word of Mouth</span></td><td><strong>5</strong></td><td>2%</td><td>$0</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Review Your Team — compact button -->
+  <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border:1px solid var(--gold)">
     <div>
       <p style="font-size:14px;font-weight:900;color:var(--ink)">How is your marketing team doing?</p>
       <p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Review your CAL team and share your satisfaction so we can keep improving your results.</p>
     </div>
-    <button class="btn-gold" style="white-space:nowrap" onclick="nav('nps')">Review Your Team</button>
+    <button onclick="nav('nps')" style="padding:8px 18px;border:1.5px solid var(--gold);border-radius:8px;background:transparent;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;cursor:pointer;white-space:nowrap">Review Your Team</button>
   </div>
 
   <!-- Generate Report (agency only) -->
@@ -5177,16 +5230,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- REPORT MODAL -->
 <div class="modal-overlay hidden" id="report-modal" onclick="if(event.target===this)closeModal('report-modal')">
-  <div class="modal" style="max-width:580px">
-    <div class="modal-head"><h2>June 2026 Report</h2><button class="icon-btn" onclick="closeModal('report-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
-    <div class="modal-body">
-      <div class="kpi-row" style="margin-bottom:14px">
-        <div class="card stat-card" style="--accent:var(--gold)"><span class="stat-label">Total Leads</span><span class="stat-val">248</span><div class="stat-foot"><span class="up">↑ 14%</span></div></div>
-        <div class="card stat-card" style="--accent:var(--green)"><span class="stat-label">ROAS</span><span class="stat-val">4.2x</span><div class="stat-foot"><span class="up">Goal hit</span></div></div>
-        <div class="card stat-card" style="--accent:var(--blue)"><span class="stat-label">Ad Spend</span><span class="stat-val">$4.2k</span></div>
-        <div class="card stat-card" style="--accent:var(--muted)"><span class="stat-label">Reviews</span><span class="stat-val">7</span><div class="stat-foot"><span>new this month</span></div></div>
-      </div>
-      <p style="font-size:13px;font-weight:700;color:var(--muted);line-height:1.65">June performance exceeded all primary KPI targets. Google Ads achieved a 4.8x ROAS on Search campaigns. Meta retargeting delivered 66 additional leads at $16.67 CPL. Recommend scaling Google Search budget by $400 in Q3.</p>
+  <div class="modal" style="max-width:600px;max-height:90vh;overflow-y:auto">
+    <div class="modal-head"><h2 id="report-modal-title">Monthly Report</h2><button class="icon-btn" onclick="closeModal('report-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body" id="report-modal-body">
+      <!-- populated by openReportModal() -->
     </div>
     <div class="modal-actions"><button class="btn-gold" onclick="downloadReportPdf()">Download PDF</button><button class="btn-ghost" onclick="closeModal('report-modal')">Close</button></div>
   </div>
@@ -5399,7 +5446,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <p style="font-size:11px;font-weight:700;color:var(--muted);margin-top:4px">Uploading... <span id="video-upload-pct">0%</span></p>
       </div>
     </div>
-    <div class="modal-actions"><button class="btn-gold" id="video-upload-btn" onclick="startVideoUpload()">Upload Video</button><button class="btn-ghost" onclick="closeModal('upload-video-modal')">Cancel</button></div>
+    <div class="modal-actions"><button class="btn-gold" id="video-upload-btn" onclick="startVideoUpload()" disabled>Upload Video</button><button class="btn-ghost" onclick="closeModal('upload-video-modal')">Cancel</button></div>
   </div>
 </div>
 
@@ -7455,24 +7502,29 @@ function openVideoUploadModal() {
   var label = document.getElementById('video-upload-label');
   var hint = document.getElementById('video-upload-hint');
   var sel = document.getElementById('video-upload-selected');
+  var btn = document.getElementById('video-upload-btn');
   if (_pendingVideoFile) {
     if (label) label.textContent = _pendingVideoFile.name;
     if (hint) hint.textContent = 'Selected: ' + _pendingVideoFile.name + ' (' + _pendingVideoFile.sizeLabel + ')';
     if (sel) sel.style.display = 'flex';
+    if (btn) btn.disabled = false;
   } else {
     if (label) label.textContent = 'Upload MP4 or MOV';
     if (sel) sel.style.display = 'none';
+    if (btn) btn.disabled = true;
   }
 }
 function onVideoFilePicked(input) {
   var label = document.getElementById('video-upload-label');
   var hint = document.getElementById('video-upload-hint');
   var sel = document.getElementById('video-upload-selected');
+  var btn = document.getElementById('video-upload-btn');
   var f = input && input.files && input.files[0];
   if (!f) {
     _pendingVideoFile = null;
     if (label) label.textContent = 'Upload MP4 or MOV';
     if (sel) sel.style.display = 'none';
+    if (btn) btn.disabled = true;
     return;
   }
   var mb = f.size / (1024 * 1024);
@@ -7481,6 +7533,7 @@ function onVideoFilePicked(input) {
   if (label) label.textContent = f.name;
   if (hint) hint.textContent = 'Selected: ' + f.name + ' (' + sizeLabel + ')';
   if (sel) sel.style.display = 'flex';
+  if (btn) btn.disabled = false;
 }
 function clearVideoSelection() {
   _pendingVideoFile = null;
@@ -7489,9 +7542,11 @@ function clearVideoSelection() {
   var label = document.getElementById('video-upload-label');
   var hint = document.getElementById('video-upload-hint');
   var sel = document.getElementById('video-upload-selected');
+  var btn = document.getElementById('video-upload-btn');
   if (label) label.textContent = 'Upload MP4 or MOV';
   if (hint) hint.textContent = '';
   if (sel) sel.style.display = 'none';
+  if (btn) btn.disabled = true;
 }
 function openUploadModal() {
   openModal('upload-modal');
@@ -9086,6 +9141,100 @@ function highlightCurrentPlan(){
 function downloadReportPdf(){
   showToast('Preparing report PDF...','gold');
   setTimeout(function(){ showToast('Report downloaded!','green'); closeModal('report-modal'); }, 1500);
+}
+
+var _reportDb={
+  'jun-2026':{t:'June 2026',leads:248,spend:4200,roas:4.2,rev:18400,top:'Google Search — Emergency Plumber',
+    src:[{n:'Google Ads',l:112,pct:45,c:'#4285f4',cpl:'$25'},{n:'Meta Ads',l:66,pct:27,c:'#1877f2',cpl:'$18'},{n:'GBP / Maps',l:38,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:18,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:9,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:5,pct:2,c:'#ea4335',cpl:'$0'}],
+    spd:[{p:'Google Ads',a:2800},{p:'Meta Ads',a:1200},{p:'Other',a:200}]},
+  'may-2026':{t:'May 2026',leads:236,spend:3900,roas:4.0,rev:15600,top:'Google Search — Plumber Near Me',
+    src:[{n:'Google Ads',l:106,pct:45,c:'#4285f4',cpl:'$24'},{n:'Meta Ads',l:61,pct:26,c:'#1877f2',cpl:'$17'},{n:'GBP / Maps',l:35,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:22,pct:9,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:8,pct:3,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:4,pct:2,c:'#ea4335',cpl:'$0'}],
+    spd:[{p:'Google Ads',a:2600},{p:'Meta Ads',a:1100},{p:'Other',a:200}]},
+  'apr-2026':{t:'April 2026',leads:219,spend:3750,roas:3.8,rev:14200,top:'Google Search — Drain Repair',
+    src:[{n:'Google Ads',l:98,pct:45,c:'#4285f4',cpl:'$24'},{n:'Meta Ads',l:58,pct:26,c:'#1877f2',cpl:'$17'},{n:'GBP / Maps',l:33,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:20,pct:9,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:6,pct:3,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:4,pct:2,c:'#ea4335',cpl:'$0'}],
+    spd:[{p:'Google Ads',a:2500},{p:'Meta Ads',a:1050},{p:'Other',a:200}]},
+  'mar-2026':{t:'March 2026',leads:208,spend:3600,roas:3.7,rev:13300,top:'Google Search — Pipe Repair',
+    src:[{n:'Google Ads',l:93,pct:45,c:'#4285f4',cpl:'$23'},{n:'Meta Ads',l:55,pct:26,c:'#1877f2',cpl:'$16'},{n:'GBP / Maps',l:31,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:19,pct:9,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:6,pct:3,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:4,pct:2,c:'#ea4335',cpl:'$0'}],
+    spd:[{p:'Google Ads',a:2400},{p:'Meta Ads',a:1000},{p:'Other',a:200}]},
+  'feb-2026':{t:'February 2026',leads:195,spend:3400,roas:3.6,rev:12200,top:'Meta Retargeting — Seasonal Offer',
+    src:[{n:'Google Ads',l:87,pct:45,c:'#4285f4',cpl:'$22'},{n:'Meta Ads',l:51,pct:26,c:'#1877f2',cpl:'$16'},{n:'GBP / Maps',l:29,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:18,pct:9,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:6,pct:3,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:4,pct:2,c:'#ea4335',cpl:'$0'}],
+    spd:[{p:'Google Ads',a:2250},{p:'Meta Ads',a:950},{p:'Other',a:200}]},
+  'jan-2026':{t:'January 2026',leads:181,spend:3200,roas:3.5,rev:11200,top:'Google Search — Emergency Plumber',
+    src:[{n:'Google Ads',l:81,pct:45,c:'#4285f4',cpl:'$21'},{n:'Meta Ads',l:47,pct:26,c:'#1877f2',cpl:'$15'},{n:'GBP / Maps',l:27,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:17,pct:9,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:5,pct:3,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:4,pct:2,c:'#ea4335',cpl:'$0'}],
+    spd:[{p:'Google Ads',a:2100},{p:'Meta Ads',a:900},{p:'Other',a:200}]},
+  'dec-2025':{t:'December 2025',leads:210,spend:3800,roas:3.9,rev:14800,top:'Google Search — Plumbing Service',src:[{n:'Google Ads',l:95,pct:45,c:'#4285f4',cpl:'$24'},{n:'Meta Ads',l:57,pct:27,c:'#1877f2',cpl:'$17'},{n:'GBP / Maps',l:32,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:15,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:8,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:3,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:2550},{p:'Meta Ads',a:1050},{p:'Other',a:200}]},
+  'nov-2025':{t:'November 2025',leads:198,spend:3650,roas:3.7,rev:13500,top:'Meta Retargeting — Holiday Offer',src:[{n:'Google Ads',l:89,pct:45,c:'#4285f4',cpl:'$23'},{n:'Meta Ads',l:54,pct:27,c:'#1877f2',cpl:'$17'},{n:'GBP / Maps',l:30,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:14,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:8,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:3,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:2450},{p:'Meta Ads',a:1000},{p:'Other',a:200}]},
+  'oct-2025':{t:'October 2025',leads:185,spend:3500,roas:3.6,rev:12600,top:'Google Search — Plumber Near Me',src:[{n:'Google Ads',l:83,pct:45,c:'#4285f4',cpl:'$23'},{n:'Meta Ads',l:50,pct:27,c:'#1877f2',cpl:'$16'},{n:'GBP / Maps',l:28,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:13,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:7,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:4,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:2350},{p:'Meta Ads',a:950},{p:'Other',a:200}]},
+  'sep-2025':{t:'September 2025',leads:172,spend:3400,roas:3.5,rev:11900,top:'Google Search — Emergency Plumber',src:[{n:'Google Ads',l:77,pct:45,c:'#4285f4',cpl:'$22'},{n:'Meta Ads',l:46,pct:27,c:'#1877f2',cpl:'$15'},{n:'GBP / Maps',l:26,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:12,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:7,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:4,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:2300},{p:'Meta Ads',a:900},{p:'Other',a:200}]},
+  'aug-2025':{t:'August 2025',leads:161,spend:3300,roas:3.4,rev:11200,top:'Google Search — Pipe Repair',src:[{n:'Google Ads',l:72,pct:45,c:'#4285f4',cpl:'$21'},{n:'Meta Ads',l:44,pct:27,c:'#1877f2',cpl:'$15'},{n:'GBP / Maps',l:24,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:11,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:7,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:3,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:2200},{p:'Meta Ads',a:900},{p:'Other',a:200}]},
+  'jul-2025':{t:'July 2025',leads:148,spend:3100,roas:3.3,rev:10200,top:'Google Search — Emergency Plumber',src:[{n:'Google Ads',l:67,pct:45,c:'#4285f4',cpl:'$20'},{n:'Meta Ads',l:40,pct:27,c:'#1877f2',cpl:'$14'},{n:'GBP / Maps',l:22,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:10,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:6,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:3,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:2100},{p:'Meta Ads',a:800},{p:'Other',a:200}]},
+  'jun-2025':{t:'June 2025',leads:134,spend:2900,roas:3.1,rev:9000,top:'Google Search — Plumber Near Me',src:[{n:'Google Ads',l:60,pct:45,c:'#4285f4',cpl:'$19'},{n:'Meta Ads',l:36,pct:27,c:'#1877f2',cpl:'$14'},{n:'GBP / Maps',l:20,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:9,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:6,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:3,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:1950},{p:'Meta Ads',a:750},{p:'Other',a:200}]},
+  'may-2025':{t:'May 2025',leads:122,spend:2800,roas:3.0,rev:8400,top:'Meta Ads — Spring Promo',src:[{n:'Google Ads',l:55,pct:45,c:'#4285f4',cpl:'$18'},{n:'Meta Ads',l:33,pct:27,c:'#1877f2',cpl:'$13'},{n:'GBP / Maps',l:18,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:9,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:5,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:2,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:1900},{p:'Meta Ads',a:700},{p:'Other',a:200}]},
+  'apr-2025':{t:'April 2025',leads:109,spend:2700,roas:2.8,rev:7600,top:'Google Search — Emergency Plumber',src:[{n:'Google Ads',l:49,pct:45,c:'#4285f4',cpl:'$18'},{n:'Meta Ads',l:29,pct:27,c:'#1877f2',cpl:'$13'},{n:'GBP / Maps',l:16,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:8,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:4,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:3,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:1800},{p:'Meta Ads',a:700},{p:'Other',a:200}]},
+  'mar-2025':{t:'March 2025',leads:98,spend:2600,roas:2.7,rev:7000,top:'Google Search — Pipe Repair',src:[{n:'Google Ads',l:44,pct:45,c:'#4285f4',cpl:'$17'},{n:'Meta Ads',l:26,pct:27,c:'#1877f2',cpl:'$12'},{n:'GBP / Maps',l:15,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:7,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:4,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:2,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:1750},{p:'Meta Ads',a:650},{p:'Other',a:200}]},
+  'feb-2025':{t:'February 2025',leads:88,spend:2500,roas:2.5,rev:6200,top:'Google Search — Plumbing Service',src:[{n:'Google Ads',l:40,pct:45,c:'#4285f4',cpl:'$16'},{n:'Meta Ads',l:24,pct:27,c:'#1877f2',cpl:'$12'},{n:'GBP / Maps',l:13,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:6,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:3,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:2,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:1700},{p:'Meta Ads',a:600},{p:'Other',a:200}]},
+  'jan-2025':{t:'January 2025',leads:81,spend:2400,roas:2.4,rev:5800,top:'Google Search — Emergency Plumber',src:[{n:'Google Ads',l:36,pct:45,c:'#4285f4',cpl:'$16'},{n:'Meta Ads',l:22,pct:27,c:'#1877f2',cpl:'$11'},{n:'GBP / Maps',l:12,pct:15,c:'#34a853',cpl:'$0'},{n:'Organic / SEO',l:6,pct:7,c:'#fbbc04',cpl:'$0'},{n:'Website Direct',l:3,pct:4,c:'#9c27b0',cpl:'$0'},{n:'Word of Mouth',l:2,pct:2,c:'#ea4335',cpl:'$0'}],spd:[{p:'Google Ads',a:1600},{p:'Meta Ads',a:600},{p:'Other',a:200}]}
+};
+
+function openReportModal(key){
+  var d=_reportDb[key];
+  if(!d){openModal('report-modal');return;}
+  var acct=(typeof acctKey==='function'?acctKey():'global');
+  var notesKey='cal-report-notes-'+acct+'-'+key;
+  var savedNotes='';
+  try{savedNotes=localStorage.getItem(notesKey)||'';}catch(e){}
+  var isAgency=(window.currentUser&&window.currentUser.role==='agency');
+  var titleEl=document.getElementById('report-modal-title');
+  if(titleEl) titleEl.textContent=d.t+' — Report';
+  var totalSpend=d.spd.reduce(function(s,x){return s+x.a;},0);
+  var srcRows=d.src.map(function(s){
+    return '<tr><td><span style="display:inline-flex;align-items:center;gap:6px"><span style="width:9px;height:9px;border-radius:50%;background:'+s.c+';display:inline-block"></span>'+s.n+'</span></td><td><strong>'+s.l+'</strong></td><td>'+s.pct+'%</td><td>'+s.cpl+'</td></tr>';
+  }).join('');
+  var srcBars=d.src.map(function(s){
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px"><div style="width:120px;font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap">'+s.n+'</div><div style="flex:1;height:8px;border-radius:999px;background:rgba(27,58,107,.08)"><div style="height:100%;width:'+s.pct+'%;border-radius:inherit;background:'+s.c+'"></div></div><div style="width:60px;text-align:right;font-size:12px;font-weight:900;color:var(--ink)">'+s.l+' <span style="color:var(--muted);font-weight:700">'+s.pct+'%</span></div></div>';
+  }).join('');
+  var spdRows=d.spd.map(function(x){
+    return '<tr><td>'+x.p+'</td><td><strong>$'+x.a.toLocaleString()+'</strong></td><td>'+(Math.round(x.a/totalSpend*100))+'%</td></tr>';
+  }).join('');
+  var notesSection=isAgency
+    ? '<div><p style="font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Agency Notes <span style="font-size:11px;font-weight:700;text-transform:none">(saved automatically)</span></p><textarea id="report-notes-ta" class="notes-textarea" style="height:100px" placeholder="Write a summary for this month\'s report — clients will see this when they view their report.">'+(savedNotes?savedNotes.replace(/</g,'&lt;'):'')+'</textarea><button class="btn-view" style="margin-top:8px" onclick="saveReportNotes(\''+notesKey+'\')">Save Notes</button></div>'
+    : (savedNotes ? '<div style="padding:14px;background:var(--surface);border-radius:10px;border:1.5px solid var(--border)"><p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">From Your Account Manager</p><p style="font-size:13px;font-weight:700;color:var(--ink);line-height:1.6">'+savedNotes.replace(/</g,'&lt;').replace(/\n/g,'<br>')+'</p></div>' : '');
+  var body=document.getElementById('report-modal-body');
+  if(!body) return;
+  body.innerHTML=
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px">'
+    +'<div style="padding:12px;border-radius:10px;border-left:4px solid var(--gold);background:var(--surface)"><p style="font-size:11px;font-weight:800;color:var(--muted)">TOTAL LEADS</p><p style="font-size:24px;font-weight:900;font-family:\'Barlow Condensed\',sans-serif;color:var(--gold)">'+d.leads+'</p></div>'
+    +'<div style="padding:12px;border-radius:10px;border-left:4px solid var(--green);background:var(--surface)"><p style="font-size:11px;font-weight:800;color:var(--muted)">ROAS</p><p style="font-size:24px;font-weight:900;font-family:\'Barlow Condensed\',sans-serif;color:var(--green)">'+d.roas+'×</p></div>'
+    +'<div style="padding:12px;border-radius:10px;border-left:4px solid var(--blue);background:var(--surface)"><p style="font-size:11px;font-weight:800;color:var(--muted)">AD SPEND</p><p style="font-size:24px;font-weight:900;font-family:\'Barlow Condensed\',sans-serif;color:var(--blue)">$'+d.spend.toLocaleString()+'</p></div>'
+    +'<div style="padding:12px;border-radius:10px;border-left:4px solid var(--ink);background:var(--surface)"><p style="font-size:11px;font-weight:800;color:var(--muted)">REVENUE</p><p style="font-size:24px;font-weight:900;font-family:\'Barlow Condensed\',sans-serif;color:var(--ink)">$'+d.rev.toLocaleString()+'</p></div>'
+    +'</div>'
+    +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Lead Sources</p>'
+    +srcBars
+    +'<table class="data-table" style="margin-bottom:16px"><thead><tr><th>Source</th><th>Leads</th><th>Share</th><th>CPL</th></tr></thead><tbody>'+srcRows+'</tbody></table>'
+    +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Ad Spend Breakdown</p>'
+    +'<table class="data-table" style="margin-bottom:16px"><thead><tr><th>Platform</th><th>Spend</th><th>% of Budget</th></tr></thead><tbody>'+spdRows+'</tbody></table>'
+    +'<div style="padding:12px 16px;border-radius:10px;background:rgba(201,168,76,.06);border:1.5px solid var(--gold);margin-bottom:16px"><p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px">Top Performing Campaign</p><p style="font-size:14px;font-weight:900;color:var(--ink)">'+d.top+'</p></div>'
+    +(notesSection ? notesSection : '');
+  openModal('report-modal');
+}
+
+function saveReportNotes(notesKey){
+  var ta=document.getElementById('report-notes-ta');
+  if(!ta) return;
+  try{localStorage.setItem(notesKey,ta.value);}catch(e){}
+  showToast('Notes saved.','green');
+}
+function renderNpsLastDate(){
+  var acct=(typeof acctKey==='function'?acctKey():'global');
+  var user=(window.currentUser&&window.currentUser.email)||'user';
+  var key='cal-nps-response-'+acct+'-'+user;
+  var el=document.getElementById('nps-last-date');
+  if(!el) return;
+  try{
+    var raw=localStorage.getItem(key);
+    if(raw){var rec=JSON.parse(raw);if(rec&&rec.date){el.textContent='Last submitted: '+rec.date;return;}}
+  }catch(e){}
+  el.textContent='';
 }
 var selectedCreateRole='admin';
 function selectCreateRole(role){
@@ -10702,18 +10851,7 @@ function healthBadge(score){
     renderNpsLastDate();
   }
 
-  function renderNpsLastDate(){
-    var acct=(typeof acctKey==='function'?acctKey():'global');
-    var user=(window.currentUser&&window.currentUser.email)||'user';
-    var key='cal-nps-response-'+acct+'-'+user;
-    var el=document.getElementById('nps-last-date');
-    if(!el) return;
-    try{
-      var raw=localStorage.getItem(key);
-      if(raw){var rec=JSON.parse(raw);if(rec&&rec.date){el.textContent='Last submitted: '+rec.date;return;}}
-    }catch(e){}
-    el.textContent='';
-  }
+  function renderNpsLastDate(){ window.renderNpsLastDate(); }
 
   function renderReferrals(){
     var el=screen('referrals'); if(!el) return;
