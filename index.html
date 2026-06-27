@@ -1385,8 +1385,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <p style="font-size:13px;color:var(--ink);font-weight:700;margin-top:2px">Your campaigns are performing above benchmark.</p>
       </div>
       <div style="text-align:center;flex-shrink:0">
-        <div class="admin-money-total" id="admin-health-score" style="font-size:38px">78</div>
-        <p style="font-size:10px;font-weight:900;color:var(--green);letter-spacing:.5px">HEALTHY</p>
+        <div id="admin-health-score" style="font-size:30px;font-weight:900;font-family:'Barlow Condensed',sans-serif;color:var(--ink);line-height:1">78 <span style="font-size:18px;color:var(--muted);font-weight:700">/ 100</span></div>
+        <p style="font-size:10px;font-weight:900;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;margin-top:3px">Health Score</p>
+        <p style="font-size:10px;font-weight:800;color:var(--green);margin-top:1px">HEALTHY</p>
       </div>
     </div>
 
@@ -1431,47 +1432,16 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="card card-pad admin-cta" id="admin-onb-cta" onclick="nav('onboarding')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg></div><div><p class="admin-cta-title">Onboarding</p><p class="admin-cta-sub">Track your setup</p></div></button>
       <button class="card card-pad admin-cta" onclick="nav('reviews')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg></div><div><p class="admin-cta-title">Reviews</p><p class="admin-cta-sub">4.8★ rating</p></div></button>
       <button class="card card-pad admin-cta" onclick="nav('inbox')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div><div><p class="admin-cta-title">Messages</p><p class="admin-cta-sub">Talk to your team</p></div></button>
-      <button class="card card-pad admin-cta" onclick="openAiPanel()"><div class="admin-cta-ico" style="background:var(--ink)"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 00-7 7c0 2.4 1.2 4.5 3 5.7V17a1 1 0 001 1h6a1 1 0 001-1v-2.3c1.8-1.2 3-3.3 3-5.7a7 7 0 00-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/></svg></div><div><p class="admin-cta-title">Ask CAL AI</p><p class="admin-cta-sub">Get instant answers</p></div></button>
     </div>
 
-    <div id="ga4-widget" style="margin-top:14px"></div>
+    <div id="ga4-widget" style="display:none"></div>
+    <div id="gsc-widget" style="display:none"></div>
+    <div id="gbp-insights-widget" style="display:none"></div>
+    <div id="gbp-reviews-widget" style="display:none"></div>
+    <div id="pagespeed-widget" style="display:none"></div>
+    <div id="gmail-widget" style="display:none"></div>
 
-    <div id="gsc-widget" style="margin-top:14px"></div>
-
-    <div id="gbp-insights-widget" style="margin-top:14px"></div>
-
-    <div id="gbp-reviews-widget" style="margin-top:14px"></div>
-
-    <div id="pagespeed-widget" style="margin-top:14px"></div>
-
-    <div id="gmail-widget" style="margin-top:14px"></div>
-
-    <div class="card card-pad" style="margin-top:18px">
-      <div class="card-head"><span class="card-title">Latest Reviews</span><button onclick="nav('reviews')" style="background:none;border:none;color:var(--gold);font-weight:800;font-size:11px;cursor:pointer;padding:0">See all →</button></div>
-      <div class="update-item" style="align-items:flex-start">
-        <div style="color:#f5a623;font-size:13px;font-weight:900;flex-shrink:0;margin-top:2px;letter-spacing:-1px">★★★★★</div>
-        <div style="flex:1;min-width:0">
-          <span class="update-text"><strong>Robert M.</strong> — <em>"James was incredibly professional and fast. Will definitely be back."</em></span>
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:2px">Google · Jun 22 · 📸 Photo included</div>
-        </div>
-      </div>
-      <div class="update-item" style="align-items:flex-start">
-        <div style="color:#f5a623;font-size:13px;font-weight:900;flex-shrink:0;margin-top:2px;letter-spacing:-1px">★★★★★</div>
-        <div style="flex:1;min-width:0">
-          <span class="update-text"><strong>Sarah K.</strong> — <em>"Friendly staff, clean facility, and they got us in same-day."</em></span>
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:2px">Google · Jun 21</div>
-        </div>
-      </div>
-      <div class="update-item" style="align-items:flex-start">
-        <div style="color:#f5a623;font-size:13px;font-weight:900;flex-shrink:0;margin-top:2px;letter-spacing:-1px">★★★★☆</div>
-        <div style="flex:1;min-width:0">
-          <span class="update-text"><strong>Tony B.</strong> — <em>"Great service overall, wait was a bit long but worth it."</em></span>
-          <div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:2px">Google · Jun 19</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card card-pad" style="margin-top:12px">
+    <div class="card card-pad" style="margin-top:14px">
       <div class="card-head"><span class="card-title">Latest from Your Team</span></div>
       <div class="update-item"><div class="update-dot"></div><div><span class="update-text"><strong>CAL Team:</strong> New leads report uploaded to your Files section. Highlights 14% YoY growth.</span></div><span class="update-time">Jun 18</span></div>
       <div class="update-item"><div class="update-dot" style="background:var(--green)"></div><div><span class="update-text"><strong>CAL Team:</strong> Google Ads campaign optimized — expect improved CPL over next 7 days.</span></div><span class="update-time">Jun 15</span></div>
@@ -3244,12 +3214,43 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: BILLING ============ -->
 <div class="screen" id="s-billing">
-  <div class="sec-head"><div><h2>Billing</h2><p id="billing-sub">Subscription, payment method and invoices</p></div><button class="btn-view" id="billing-changeplan-btn" onclick="nav('plans')">Change Plan</button></div>
+  <div class="sec-head"><div><h2>Billing</h2><p id="billing-sub">Subscription, payment method and invoices</p></div></div>
 
   <!-- Plan header (admin/user own plan) -->
   <div class="plan-header" id="billing-plan-header">
-    <div><div style="font-size:10px;font-weight:900;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Current Plan</div><div class="plan-name" id="billing-plan-name">Deluxe</div></div>
-    <div style="text-align:right"><div class="plan-price" id="billing-plan-price">$797/mo</div><button class="btn-view" style="margin-top:6px;color:var(--gold);border-color:rgba(201,168,76,.4)" onclick="nav('plans')">Upgrade Plan</button></div>
+    <div>
+      <div style="font-size:10px;font-weight:900;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Your Investment</div>
+      <div class="plan-name" id="billing-plan-name" style="font-size:32px">$797</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.5);font-weight:600;margin-top:4px">per month · custom package</div>
+    </div>
+    <div style="text-align:right">
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.45);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em">Monthly Investment</div>
+      <div class="plan-price" id="billing-plan-price">$797/mo</div>
+    </div>
+  </div>
+
+  <!-- Stripe Portal link (shown when Customer ID is set for this account) -->
+  <div id="billing-portal-card" class="card card-pad" style="margin-top:14px;display:none;border:1.5px solid #635bff">
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div style="width:42px;height:42px;border-radius:10px;background:#635bff;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="#fff" width="22" height="22"><path d="M13.5 9.3c0-.62.51-.86 1.35-.86 1.2 0 2.72.37 3.92 1.02V5.8a10.4 10.4 0 00-3.92-.72c-3.2 0-5.33 1.67-5.33 4.47 0 4.36 6 3.66 6 5.54 0 .73-.64.97-1.53.97-1.31 0-2.99-.54-4.31-1.27v3.71c1.47.63 2.95.9 4.31.9 3.28 0 5.54-1.62 5.54-4.46-.02-4.7-6.03-3.86-6.03-5.65z"/></svg></div>
+      <div style="flex:1;min-width:180px">
+        <p style="font-size:14px;font-weight:900;color:var(--ink)">Stripe Billing Portal</p>
+        <p style="font-size:12px;color:var(--muted);font-weight:600">Manage your card on file, download invoices, and update payment details directly through Stripe.</p>
+      </div>
+      <a id="billing-portal-link" href="https://billing.stripe.com/p/login" target="_blank" rel="noopener" class="btn-gold" style="white-space:nowrap;text-decoration:none">Open Billing Portal →</a>
+    </div>
+  </div>
+
+  <!-- Agency: set Stripe Customer ID per account -->
+  <div id="billing-stripe-cid-card" class="card card-pad" style="margin-top:14px;display:none">
+    <div class="card-head" style="margin-bottom:10px"><span class="card-title">Stripe Customer ID</span><span class="pill pill-gold">AGENCY</span></div>
+    <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px">Enter this client's Stripe Customer ID (starts with <code>cus_</code>). Once saved, their billing view will show a direct link to the Stripe Customer Portal.</p>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <input class="input-std" id="billing-cid-input" placeholder="cus_xxxxxxxxxxxxxxxxxx" style="flex:1;min-width:220px">
+      <button class="btn-gold" onclick="saveBillingStripeCustomerId()">Save</button>
+      <button class="btn-ghost" id="billing-cid-clear-btn" onclick="clearBillingStripeCustomerId()" style="display:none">Clear</button>
+    </div>
+    <p id="billing-cid-saved-msg" style="font-size:11px;color:var(--green);font-weight:700;margin-top:8px;display:none">✓ Stripe Customer ID saved for this account.</p>
   </div>
 
   <!-- Stripe payment processor (Connect) -->
@@ -4359,16 +4360,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <div class="screen" id="s-nps">
   <div class="sec-head">
     <div><h2>Client Satisfaction</h2><p>NPS tracking, survey responses and customer sentiment</p></div>
-    <button class="btn-primary" onclick="showToast('Survey sent to all active clients.','green')">Send Survey</button>
+    <button class="btn-view" onclick="showToast('Survey sent to all active clients.','green')">Send Survey</button>
   </div>
-  <!-- Google Review CTA -->
-  <div class="card" style="border:1.5px solid var(--gold);background:rgba(201,168,76,.07);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px">
-    <div>
-      <p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:3px">⭐ Enjoying CAL? Leave us a Google Review</p>
-      <p style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.5">Your kind words help other businesses find us — and mean the world to our team. Takes 30 seconds!</p>
-    </div>
-    <a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="btn-gold" style="white-space:nowrap;text-decoration:none">Leave a Review ⭐</a>
-  </div>
+
+  <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📋 Review Your CAL Team</p>
   <!-- Hero NPS card -->
   <div class="card" style="text-align:center;padding:36px 32px;margin-bottom:16px;background:linear-gradient(135deg,var(--blue) 0%,#1a4a90 100%)">
     <p style="font-size:11px;font-weight:900;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.55);margin-bottom:8px">Net Promoter Score</p>
@@ -4438,6 +4433,17 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </table>
     </div>
   </div>
+
+  <!-- Support CAL Marketing section -->
+  <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 12px">⭐ Support CAL Marketing</p>
+  <div class="card card-pad" style="border:2px solid var(--gold);background:rgba(201,168,76,.06)">
+    <p style="font-size:15px;font-weight:900;color:var(--ink);margin-bottom:6px">Your feedback helps us grow and serve you better.</p>
+    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:18px">We'd be grateful if you shared your experience publicly — it helps other businesses find great marketing partners, and means the world to our team.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none">Leave Us a Google Review ⭐</a>
+      <button class="btn-view" onclick="openModal('video-testimonial-modal')">Leave a Video Testimonial 🎥</button>
+    </div>
+  </div>
 </div>
 
 <!-- ============================================================ -->
@@ -4445,23 +4451,24 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============================================================ -->
 <div class="screen" id="s-referrals">
   <div class="sec-head">
-    <div><h2>Referral Program</h2><p>Manage referrals, track conversions and reward advocates</p></div>
-    <button class="btn-primary" onclick="showToast('New referral invite created and copied.','green')">+ Create Referral</button>
+    <div><h2>Referral Program</h2><p>Grow your business and help CAL Marketing grow too</p></div>
   </div>
+
+  <!-- ── SECTION 1: Referrals For Your Business ── -->
+  <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">👥 Referrals For Your Business</p>
+  <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px">Share a link with your customers so they can refer new clients directly to your business. Track every referral that comes in and see who converted.</p>
   <!-- KPI row -->
-  <div class="grid g4" style="gap:14px;margin-bottom:20px">
+  <div class="grid g3" style="gap:14px;margin-bottom:16px">
     <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Invites Sent</p><p class="kpi-value">28</p></div>
-    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Referral Leads</p><p class="kpi-value">9</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">New Leads In</p><p class="kpi-value">9</p></div>
     <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Converted</p><p class="kpi-value" style="color:var(--green)">3</p></div>
-    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Credits Issued</p><p class="kpi-value" style="color:var(--gold)">$300</p></div>
   </div>
-  <!-- Referral link widget -->
-  <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(27,58,107,.06))">
-    <p class="card-label" style="margin-bottom:12px">Your Client Shareable Link</p>
-    <p style="font-size:13px;color:var(--muted);font-weight:700;margin-bottom:12px">Give this link to your customers so they can refer other businesses to CAL Marketing. You earn $100 credit per qualified sign-up.</p>
+  <!-- Referral link -->
+  <div class="card card-pad" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(201,168,76,.06),rgba(27,58,107,.04))">
+    <p class="card-label" style="margin-bottom:10px">Your Business Referral Link</p>
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
-      <div style="flex:1;padding:12px 16px;background:var(--surface);border-radius:10px;border:2px dashed var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);overflow-wrap:anywhere">cal.marketing/ref/client</div>
-      <button class="btn-primary" onclick="showToast('Referral link copied to clipboard!','green')">Copy Link</button>
+      <div style="flex:1;padding:11px 16px;background:var(--surface);border-radius:10px;border:2px dashed var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--gold);overflow-wrap:anywhere">cal.marketing/ref/biz/your-business</div>
+      <button class="btn-primary" onclick="showToast('Business referral link copied!','green')">Copy Link</button>
     </div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn-view" onclick="showToast('Email template copied.','green')">✉️ Email Template</button>
@@ -4469,38 +4476,65 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="btn-view" onclick="showToast('SMS template copied.','green')">💬 SMS Template</button>
     </div>
   </div>
-  <!-- Pipeline + Offer -->
+  <!-- Pipeline -->
+  <div class="card card-pad" style="margin-bottom:28px">
+    <p class="card-label" style="margin-bottom:12px">Referral Pipeline — Your Business</p>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Customer</th><th>Date</th><th>Source</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Maria G.</strong></td><td>May 10</td><td>Link</td><td><span class="pill pill-green">Converted</span></td></tr>
+          <tr><td><strong>Tom R.</strong></td><td>Jun 3</td><td>WhatsApp</td><td><span class="pill pill-blue">Contacted</span></td></tr>
+          <tr><td><strong>Lisa K.</strong></td><td>Jun 14</td><td>Email</td><td><span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted)">Invited</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── SECTION 2: Refer a Business to CAL ── -->
+  <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">🤝 Refer a Business to CAL</p>
+  <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px">Know a business owner who needs better marketing? Refer them to CAL Marketing. When they sign up and complete their first month, you earn a reward — our way of saying thank you.</p>
+  <!-- KPI row -->
+  <div class="grid g3" style="gap:14px;margin-bottom:16px">
+    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Businesses Referred</p><p class="kpi-value">4</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Joined CAL</p><p class="kpi-value" style="color:var(--green)">2</p></div>
+    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Rewards Earned</p><p class="kpi-value" style="color:var(--gold)">2</p></div>
+  </div>
+  <!-- CAL Referral link -->
+  <div class="card card-pad" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(27,58,107,.05),rgba(201,168,76,.05))">
+    <p class="card-label" style="margin-bottom:10px">Your CAL Referral Link</p>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+      <div style="flex:1;padding:11px 16px;background:var(--surface);border-radius:10px;border:2px dashed var(--blue);font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--blue);overflow-wrap:anywhere">cal.marketing/ref/cal/your-link</div>
+      <button class="btn-primary" onclick="showToast('CAL referral link copied!','green')">Copy Link</button>
+    </div>
+  </div>
+  <!-- Pipeline + How it works -->
   <div class="grid g2" style="gap:16px;margin-bottom:16px">
-    <div class="card">
-      <p class="card-label" style="margin-bottom:12px">Referral Pipeline</p>
+    <div class="card card-pad">
+      <p class="card-label" style="margin-bottom:12px">Referral Pipeline — CAL</p>
       <div class="table-wrap">
         <table class="data-table">
-          <thead><tr><th>Business</th><th>Date</th><th>Source</th><th>Status</th><th>Credit</th></tr></thead>
+          <thead><tr><th>Business</th><th>Date</th><th>Status</th><th>Reward</th></tr></thead>
           <tbody>
-            <tr><td><strong>Miami Pet Clinic</strong></td><td>Apr 15</td><td>Email</td><td><span class="pill pill-green">Converted</span></td><td style="font-weight:900;color:var(--gold)">$100</td></tr>
-            <tr><td><strong>South Beach Dental</strong></td><td>May 2</td><td>Direct Link</td><td><span class="pill pill-green">Converted</span></td><td style="font-weight:900;color:var(--gold)">$100</td></tr>
-            <tr><td><strong>Sunrise Yoga Studio</strong></td><td>Jun 1</td><td>WhatsApp</td><td><span class="pill pill-blue">Signed Up</span></td><td>Pending</td></tr>
-            <tr><td><strong>Bay Harbor Plumbing</strong></td><td>Jun 10</td><td>Direct Link</td><td><span class="pill" style="background:rgba(201,168,76,.1);color:var(--gold)">Contacted</span></td><td>—</td></tr>
-            <tr><td><strong>Hudson Valley Electric</strong></td><td>Jun 18</td><td>Email</td><td><span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted)">Invited</span></td><td>—</td></tr>
+            <tr><td><strong>Miami Pet Clinic</strong></td><td>Apr 15</td><td><span class="pill pill-green">Converted</span></td><td><span class="pill pill-gold">Earned</span></td></tr>
+            <tr><td><strong>South Beach Dental</strong></td><td>May 2</td><td><span class="pill pill-green">Converted</span></td><td><span class="pill pill-gold">Earned</span></td></tr>
+            <tr><td><strong>Sunrise Yoga Studio</strong></td><td>Jun 1</td><td><span class="pill pill-blue">Signed Up</span></td><td>Pending</td></tr>
+            <tr><td><strong>Bay Harbor Plumbing</strong></td><td>Jun 10</td><td><span class="pill" style="background:rgba(201,168,76,.1);color:var(--gold)">Contacted</span></td><td>—</td></tr>
           </tbody>
         </table>
       </div>
     </div>
-    <div class="card">
-      <p class="card-label" style="margin-bottom:12px">Referral Offer Settings</p>
-      <div style="padding:18px;background:var(--page);border-radius:12px;border:1px solid var(--border);margin-bottom:12px">
-        <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:4px">Current Offer: $100 Invoice Credit</p>
-        <p style="font-size:12px;color:var(--muted);font-weight:700">Reward issued automatically when a referred business completes their first month of service.</p>
+    <div class="card card-pad">
+      <p class="card-label" style="margin-bottom:14px">How It Works</p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">1</div><p style="font-size:12px;font-weight:800;color:var(--ink)">Share your CAL referral link with a business owner</p></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">2</div><p style="font-size:12px;font-weight:800;color:var(--ink)">They sign up with CAL and complete their first month</p></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">3</div><p style="font-size:12px;font-weight:800;color:var(--ink)">You earn a reward from CAL — details below</p></div>
       </div>
-      <div style="padding:18px;background:var(--page);border-radius:12px;border:1px solid var(--border);margin-bottom:16px">
-        <p style="font-size:11px;font-weight:900;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px">How It Works</p>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">1</div><p style="font-size:12px;font-weight:800;color:var(--ink)">Share your referral link with another business</p></div>
-          <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">2</div><p style="font-size:12px;font-weight:800;color:var(--ink)">They sign up and start their first month</p></div>
-          <div style="display:flex;align-items:center;gap:10px"><div style="min-width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;display:flex;align-items:center;justify-content:center">3</div><p style="font-size:12px;font-weight:800;color:var(--ink)">You get $100 credited to your next invoice</p></div>
-        </div>
+      <div style="padding:14px;background:rgba(201,168,76,.07);border:1.5px solid var(--gold);border-radius:12px">
+        <p style="font-size:12px;font-weight:900;color:var(--gold);margin-bottom:4px">🎁 Reward Coming Soon</p>
+        <p style="font-size:12px;color:var(--muted);font-weight:600">We appreciate you spreading the word. Your reward for each successful CAL referral will be announced soon — it won't be a discount, but something even better. Stay tuned.</p>
       </div>
-      <button class="btn-primary" style="width:100%" onclick="showToast('Referral campaign launched!','gold')">Launch Referral Push</button>
     </div>
   </div>
 </div>
@@ -7234,13 +7268,12 @@ function renderBilling(){
   var planHeader=document.getElementById('billing-plan-header');
   var paymentCard=document.getElementById('billing-payment-card');
   var agencyCard=document.getElementById('billing-agency-card');
-  var changePlanBtn=document.getElementById('billing-changeplan-btn');
+  var portalCard=document.getElementById('billing-portal-card');
+  var cidCard=document.getElementById('billing-stripe-cid-card');
   var sub=document.getElementById('billing-sub');
   var isAgency=(role==='agency'||role==='test');
-  // Always show per-account view (agency or admin) — hide all-clients table
   if(planHeader) planHeader.style.display='';
   if(paymentCard) paymentCard.style.display='';
-  if(changePlanBtn) changePlanBtn.style.display='';
   if(agencyCard) agencyCard.style.display='none';
   // Current account info
   var accts=window.accounts||DEFAULT_ACCOUNTS||[];
@@ -7248,9 +7281,30 @@ function renderBilling(){
   var saved=clientPlans();
   var plan=(saved&&saved[acctId])||a.plan||'Standard';
   var price=PLAN_PRICES[plan]||'$797/mo';
+  var priceAmt=price.replace('/mo','');
   if(sub) sub.textContent=a.name+' \u2014 Subscription & payments';
-  var pn=document.getElementById('billing-plan-name'); if(pn) pn.textContent=plan;
+  var pn=document.getElementById('billing-plan-name'); if(pn) pn.textContent=priceAmt;
   var pp=document.getElementById('billing-plan-price'); if(pp) pp.textContent=price;
+  // Stripe Customer ID (per account)
+  var cidKey='cal-stripe-cid-'+acctId;
+  var cid=localStorage.getItem(cidKey)||'';
+  // Portal card — visible whenever a CID is saved
+  if(portalCard){
+    portalCard.style.display=cid?'':'none';
+    var pl=document.getElementById('billing-portal-link');
+    if(pl&&cid) pl.href='https://billing.stripe.com/p/login?prefilled_customer_id='+encodeURIComponent(cid);
+  }
+  // Agency: show CID input card, populate with saved value
+  if(cidCard){
+    cidCard.style.display=isAgency?'':'none';
+    if(isAgency){
+      var ci=document.getElementById('billing-cid-input'); if(ci) ci.value=cid;
+      var cb=document.getElementById('billing-cid-clear-btn'); if(cb) cb.style.display=cid?'':'none';
+      var cs=document.getElementById('billing-cid-saved-msg'); if(cs) cs.style.display='none';
+    }
+  }
+  // Admin: if CID is set, hide static payment card (portal replaces it)
+  if(!isAgency&&paymentCard) paymentCard.style.display=cid?'none':'';
   // Stripe connect state
   var connected=isStripeConnected();
   var pill=document.getElementById('billing-stripe-pill');
@@ -7262,7 +7316,7 @@ function renderBilling(){
   // Per-account invoices
   var invoiceBody=document.getElementById('billing-invoices-body');
   if(invoiceBody){
-    var amt=price.replace('/mo','');
+    var amt=priceAmt;
     var prefix=(a.name||'').split(' ').map(function(w){ return w[0]||''; }).join('').toUpperCase().slice(0,3);
     var rows=[
       {num:'INV-2026-'+prefix+'-06',date:'Jun 1',amt:amt,status:'PAID'},
@@ -7273,6 +7327,28 @@ function renderBilling(){
       return '<tr><td>#'+r.num+'</td><td>'+r.date+'</td><td>'+r.amt+'</td><td><span class="pill pill-green">'+r.status+'</span></td><td><button class="btn-view" onclick="openModal(\'invoice-modal\')">View</button></td></tr>';
     }).join('');
   }
+}
+function saveBillingStripeCustomerId(){
+  var acctId=window.currentAcctId||'a1';
+  var ci=document.getElementById('billing-cid-input');
+  var cid=(ci?ci.value:'').trim();
+  if(!cid){ showToast('Please enter a Stripe Customer ID (cus_...).','gold'); return; }
+  localStorage.setItem('cal-stripe-cid-'+acctId,cid);
+  var cb=document.getElementById('billing-cid-clear-btn'); if(cb) cb.style.display='';
+  var cs=document.getElementById('billing-cid-saved-msg'); if(cs) cs.style.display='';
+  var pc=document.getElementById('billing-portal-card');
+  if(pc){ pc.style.display=''; var pl=document.getElementById('billing-portal-link'); if(pl) pl.href='https://billing.stripe.com/p/login?prefilled_customer_id='+encodeURIComponent(cid); }
+  showToast('Stripe Customer ID saved for this account.','green');
+}
+function clearBillingStripeCustomerId(){
+  var acctId=window.currentAcctId||'a1';
+  localStorage.removeItem('cal-stripe-cid-'+acctId);
+  var ci=document.getElementById('billing-cid-input'); if(ci) ci.value='';
+  var cb=document.getElementById('billing-cid-clear-btn'); if(cb) cb.style.display='none';
+  var cs=document.getElementById('billing-cid-saved-msg'); if(cs) cs.style.display='none';
+  var pc=document.getElementById('billing-portal-card'); if(pc) pc.style.display='none';
+  var payCard=document.getElementById('billing-payment-card'); if(payCard) payCard.style.display='';
+  showToast('Stripe Customer ID removed.','gold');
 }
 
 // ============ ANALYTICS (connector-gated) ============
@@ -9261,6 +9337,29 @@ function healthBadge(score){
 </script>
 
 <!-- ====== MODAL: UPDATE PAYMENT ====== -->
+<div class="modal-overlay hidden" id="video-testimonial-modal" onclick="if(event.target===this)closeModal('video-testimonial-modal')">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-head"><h2>Leave a Video Testimonial 🎥</h2><button class="icon-btn" onclick="closeModal('video-testimonial-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:18px">Record a short 30–60 second video sharing your experience with CAL Marketing. Your story helps other business owners make the best choice for their growth.</p>
+      <div style="display:grid;gap:12px">
+        <div style="padding:16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
+          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:4px">📹 Record Now</p>
+          <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px">Use your camera to record directly from your browser or phone. No account needed.</p>
+          <button class="btn-gold" onclick="showToast('Opening camera — please allow access when prompted.','green');closeModal('video-testimonial-modal')">Start Recording</button>
+        </div>
+        <div style="padding:16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
+          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:4px">📁 Upload a Video</p>
+          <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px">Already have a short clip? Upload it here and we'll take care of the rest.</p>
+          <label class="btn-view" style="cursor:pointer;display:inline-block"><input type="file" accept="video/*" style="display:none" onchange="showToast('Video received — thank you! Our team will follow up shortly.','green');closeModal('video-testimonial-modal')">Choose Video File</label>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);font-weight:600;margin-top:14px;text-align:center">Your testimonial may be used on our website or marketing materials with your permission.</p>
+    </div>
+    <div class="modal-actions"><button class="btn-ghost" onclick="closeModal('video-testimonial-modal')">Cancel</button></div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="update-payment-modal" onclick="if(event.target===this)closeModal('update-payment-modal')">
   <div class="modal" style="max-width:420px">
     <div class="modal-head"><h2>Update Payment</h2><button class="icon-btn" onclick="closeModal('update-payment-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
@@ -9894,8 +9993,27 @@ function healthBadge(score){
     setHtml('s-help','<div class="sec-head"><div><h2>Help & Support</h2><p>Contact CAL Marketing and get answers fast</p></div></div><div class="fix-grid fix-grid-2"><div class="fix-card"><h3 class="card-title">Direct Contact</h3><table class="fix-table"><tbody><tr><td>Email</td><td><a href="mailto:info@cal.marketing" style="color:var(--gold);font-weight:900">info@cal.marketing</a></td></tr><tr><td>Phone</td><td><a href="tel:+18459579261" style="color:var(--blue);font-weight:900">(845) 957-9261</a></td></tr><tr><td>Website</td><td><a href="https://www.cal.marketing" target="_blank" style="color:var(--green);font-weight:900">www.cal.marketing</a></td></tr></tbody></table></div><div class="fix-card"><h3 class="card-title">Hours</h3><p class="fix-sub">Monday - Friday: 9:00 AM - 6:00 PM EST</p><p class="fix-sub">Saturday: Appointment only</p><p class="fix-sub">Sunday: Closed</p><button class="fix-action" style="margin-top:16px" onclick="location.href=\'mailto:info@cal.marketing\'">Email Support</button></div></div><div class="fix-card" style="margin-top:14px"><h3 class="card-title">Support Request</h3><div class="fix-form-grid" style="margin-top:12px"><div class="field"><label>Subject</label><input class="input-std" placeholder="What do you need help with?"></div><div class="field"><label>Priority</label><select class="input-std"><option>Normal</option><option>Urgent</option></select></div></div><textarea class="notes-textarea" style="margin-top:12px;height:110px" placeholder="Describe the issue..."></textarea><button class="fix-action" style="margin-top:12px" onclick="showToast(\'Support request prepared.\',\'green\')">Submit Ticket</button></div>');
     setHtml('s-plans','<div class="sec-head"><div><h2>Change Plan</h2><p>Select the plan that fits your growth</p></div></div><div class="tier-grid"><div class="tier-card"><div class="tier-badge">Standard</div><div class="tier-name">Standard Plan</div><div class="tier-price">$797/mo</div><ul class="tier-list"><li>Google Business + review dashboard</li><li>Google Ads management</li><li>Monthly report</li></ul></div><div class="tier-card active"><div class="tier-badge" style="color:var(--gold)">★ Current</div><div class="tier-name">Deluxe Plan</div><div class="tier-price">$1,497/mo</div><ul class="tier-list"><li>Everything in Standard</li><li>Meta Ads + Social Media</li><li>Content support</li><li>Bi-weekly reporting</li></ul></div><div class="tier-card"><div class="tier-badge">Premium</div><div class="tier-name">Premium Plan</div><div class="tier-price">$2,497/mo</div><ul class="tier-list"><li>Everything in Deluxe</li><li>Dedicated strategist</li><li>Video production support</li><li>Weekly optimization calls</li></ul></div></div>');
     /* s-billing kept as static role-aware screen (see #s-billing markup); rendered by renderBilling() */
-    setHtml('s-nps','<div class="sec-head"><div><h2>Client Satisfaction</h2><p>NPS score, survey responses and customer sentiment</p></div><button class="btn-primary" onclick="showToast(\'Survey sent.\',\'green\')">Send Survey</button></div><div class="fix-grid fix-grid-4"><div class="fix-kpi" style="--accent:var(--gold)"><span>NPS Score</span><strong>72</strong></div><div class="fix-kpi" style="--accent:var(--green)"><span>Promoters</span><strong>75%</strong></div><div class="fix-kpi" style="--accent:var(--blue)"><span>Responses</span><strong>18</strong></div><div class="fix-kpi" style="--accent:var(--red)"><span>Detractors</span><strong>0</strong></div></div><div class="fix-card" style="margin-top:14px"><h3 class="card-title">Recent Survey Responses</h3><table class="fix-table"><thead><tr><th>Client</th><th>Score</th><th>Feedback</th><th>Status</th></tr></thead><tbody><tr><td>Apex Legal Group</td><td>10</td><td>CAL has transformed our lead volume.</td><td><span class="pill pill-green">Followed Up</span></td></tr><tr><td>United Sewer and Septic</td><td>9</td><td>Great dashboard visibility and support.</td><td><span class="pill pill-blue">Reviewed</span></td></tr></tbody></table></div>');
-    setHtml('s-referrals','<div class="sec-head"><div><h2>Referral Program</h2><p>Track referrals, rewards and top referral sources</p></div></div><div class="fix-grid fix-grid-3"><div class="fix-kpi" style="--accent:var(--gold)"><span>Referrals Sent</span><strong>4</strong></div><div class="fix-kpi" style="--accent:var(--green)"><span>Signed Up</span><strong>2</strong></div><div class="fix-kpi" style="--accent:var(--blue)"><span>Credits Earned</span><strong>$200</strong></div></div><div class="fix-card" style="margin-top:14px"><h3 class="card-title">Referral Tracking</h3><table class="fix-table"><thead><tr><th>Business</th><th>Source</th><th>Status</th><th>Reward</th></tr></thead><tbody><tr><td>Miami Pet Clinic</td><td>Email</td><td><span class="pill pill-green">Converted</span></td><td>$100 credit</td></tr><tr><td>Bay Harbor Plumbing</td><td>Direct Link</td><td><span class="pill pill-gold">Pending</span></td><td>Pending</td></tr></tbody></table></div>');
+    setHtml('s-nps',
+      '<div class="sec-head"><div><h2>Client Satisfaction</h2><p>Review your CAL team and help us improve</p></div></div>'
+      +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📋 Review Your CAL Team</p>'
+      +'<div class="fix-grid fix-grid-4" style="margin-bottom:14px"><div class="fix-kpi" style="--accent:var(--gold)"><span>NPS Score</span><strong>72</strong></div><div class="fix-kpi" style="--accent:var(--green)"><span>Promoters</span><strong>75%</strong></div><div class="fix-kpi" style="--accent:var(--blue)"><span>Responses</span><strong>18</strong></div><div class="fix-kpi" style="--accent:var(--red)"><span>Detractors</span><strong>0</strong></div></div>'
+      +'<div class="fix-card" style="margin-bottom:14px"><h3 class="card-title" style="margin-bottom:12px">Recent Survey Responses</h3><table class="fix-table"><thead><tr><th>Client</th><th>Score</th><th>Feedback</th><th>Status</th></tr></thead><tbody><tr><td>Apex Legal Group</td><td>10</td><td>CAL has transformed our lead volume.</td><td><span class="pill pill-green">Followed Up</span></td></tr><tr><td>United Sewer and Septic</td><td>9</td><td>Great dashboard visibility and support.</td><td><span class="pill pill-blue">Reviewed</span></td></tr></tbody></table><div style="margin-top:16px"><button class="btn-view" onclick="showToast(\'Survey sent to your contacts.\',\'green\')">Send Satisfaction Survey</button></div></div>'
+      +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 12px">⭐ Support CAL Marketing</p>'
+      +'<div class="fix-card" style="border:2px solid var(--gold);background:rgba(201,168,76,.06)">'
+      +'<p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:6px">Your feedback helps us grow and serve you better.</p>'
+      +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:16px">We\'d be grateful if you shared your experience publicly — it helps other businesses find great marketing partners, and means the world to our team.</p>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap"><a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none">Leave Us a Google Review ⭐</a><button class="btn-view" onclick="openModal(\'video-testimonial-modal\')">Leave a Video Testimonial 🎥</button></div>'
+      +'</div>');
+    setHtml('s-referrals',
+      '<div class="sec-head"><div><h2>Referral Program</h2><p>Grow your business and help CAL Marketing grow too</p></div></div>'
+      +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">👥 Referrals For Your Business</p>'
+      +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px">Share a link with your customers so they can refer new clients directly to your business.</p>'
+      +'<div class="fix-grid fix-grid-3" style="margin-bottom:12px"><div class="fix-kpi" style="--accent:var(--gold)"><span>Invites Sent</span><strong>28</strong></div><div class="fix-kpi" style="--accent:var(--blue)"><span>New Leads In</span><strong>9</strong></div><div class="fix-kpi" style="--accent:var(--green)"><span>Converted</span><strong>3</strong></div></div>'
+      +'<div class="fix-card" style="margin-bottom:12px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="flex:1;padding:10px 14px;background:var(--page);border-radius:8px;border:2px dashed var(--gold);font-family:\'Barlow Condensed\',sans-serif;font-size:16px;font-weight:900;color:var(--gold)">cal.marketing/ref/biz/your-business</div><button class="btn-view" onclick="showToast(\'Business referral link copied!\',\'green\')">Copy</button></div><h3 class="card-title" style="margin-bottom:10px">Referral Pipeline</h3><table class="fix-table"><thead><tr><th>Customer</th><th>Date</th><th>Status</th></tr></thead><tbody><tr><td>Maria G.</td><td>May 10</td><td><span class="pill pill-green">Converted</span></td></tr><tr><td>Tom R.</td><td>Jun 3</td><td><span class="pill pill-blue">Contacted</span></td></tr><tr><td>Lisa K.</td><td>Jun 14</td><td><span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted)">Invited</span></td></tr></tbody></table></div>'
+      +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 10px">🤝 Refer a Business to CAL</p>'
+      +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px">Know a business owner who needs better marketing? Refer them to CAL Marketing and earn a reward when they complete their first month.</p>'
+      +'<div class="fix-grid fix-grid-3" style="margin-bottom:12px"><div class="fix-kpi" style="--accent:var(--blue)"><span>Businesses Referred</span><strong>4</strong></div><div class="fix-kpi" style="--accent:var(--green)"><span>Joined CAL</span><strong>2</strong></div><div class="fix-kpi" style="--accent:var(--gold)"><span>Rewards Earned</span><strong>2</strong></div></div>'
+      +'<div class="fix-card"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><div style="flex:1;padding:10px 14px;background:var(--page);border-radius:8px;border:2px dashed var(--blue);font-family:\'Barlow Condensed\',sans-serif;font-size:16px;font-weight:900;color:var(--blue)">cal.marketing/ref/cal/your-link</div><button class="btn-view" onclick="showToast(\'CAL referral link copied!\',\'green\')">Copy</button></div><table class="fix-table" style="margin-bottom:14px"><thead><tr><th>Business</th><th>Date</th><th>Status</th><th>Reward</th></tr></thead><tbody><tr><td>Miami Pet Clinic</td><td>Apr 15</td><td><span class="pill pill-green">Converted</span></td><td><span class="pill pill-gold">Earned</span></td></tr><tr><td>South Beach Dental</td><td>May 2</td><td><span class="pill pill-green">Converted</span></td><td><span class="pill pill-gold">Earned</span></td></tr><tr><td>Sunrise Yoga Studio</td><td>Jun 1</td><td><span class="pill pill-blue">Signed Up</span></td><td>Pending</td></tr></tbody></table><div style="padding:12px 14px;background:rgba(201,168,76,.07);border:1.5px solid var(--gold);border-radius:10px"><p style="font-size:12px;font-weight:900;color:var(--gold);margin-bottom:3px">🎁 Reward Coming Soon</p><p style="font-size:12px;color:var(--muted);font-weight:600">We appreciate you spreading the word. Your reward will be announced soon — it won\'t be a discount, but something even better.</p></div></div>');
     setHtml('s-proposals','<div class="sec-head"><div><h2>Proposals</h2><p>Active proposals, sent proposals and signed contracts</p></div><button class="btn-primary" onclick="showToast(\'Proposal builder ready.\',\'gold\')">Create Proposal</button></div><div class="fix-grid fix-grid-3"><div class="fix-kpi" style="--accent:var(--gold)"><span>Open Value</span><strong>$8.4k</strong></div><div class="fix-kpi" style="--accent:var(--blue)"><span>Sent</span><strong>5</strong></div><div class="fix-kpi" style="--accent:var(--green)"><span>Signed</span><strong>2</strong></div></div><div class="fix-card" style="margin-top:14px"><h3 class="card-title">Proposal Pipeline</h3><table class="fix-table"><thead><tr><th>Proposal</th><th>Client</th><th>Value</th><th>Status</th><th>Action</th></tr></thead><tbody><tr><td>Deluxe Plan Proposal</td><td>Apex Legal Group</td><td>$1,497/mo</td><td><span class="pill pill-green">Signed</span></td><td><button class="fix-outline">View</button></td></tr><tr><td>Premium Plan — Full Service</td><td>United Sewer</td><td>$2,497/mo</td><td><span class="pill pill-blue">Viewed</span></td><td><button class="fix-outline">Send Reminder</button></td></tr></tbody></table></div>');
     setHtml('s-job-logging','<div class="sec-head"><div><h2>Job Logging</h2><p>Log closed jobs and tag revenue to marketing channels</p></div><button class="btn-view" onclick="openModal(\'log-job-modal\')">+ Log Job</button></div><div class="fix-grid fix-grid-3"><div class="fix-kpi" style="--accent:var(--gold)"><span>Jobs Logged</span><strong id="job-count">0</strong></div><div class="fix-kpi" style="--accent:var(--green)"><span>Revenue Attributed</span><strong id="job-revenue">$0</strong></div><div class="fix-kpi" style="--accent:var(--blue)"><span>Top Channel</span><strong id="job-top-channel" style="font-size:28px">—</strong></div></div><div class="fix-card" style="margin-top:14px"><div id="job-log-list"></div></div>');
     setHtml('s-whitelabel','<div class="sec-head"><div><h2>White Label</h2><p>Customize this account dashboard branding</p></div><button class="btn-primary" onclick="saveWhitelabel()">Save Changes</button></div><div class="fix-grid fix-grid-2"><div class="fix-card"><h3 class="card-title">Brand Settings</h3><div class="field" style="margin-top:12px"><label>Business / Platform Name</label><input class="input-std" id="wl-platform-name" value="CAL OS"></div><div class="field" style="margin-top:12px"><label>Business Logo</label><label class="fix-outline" style="width:max-content"><input type="file" accept="image/*" style="display:none" onchange="handleWLLogo(this)">Upload Logo</label></div><div class="fix-form-grid" style="margin-top:12px"><div class="field"><label>Primary Color</label><input class="input-std" type="color" id="wl-color" value="#c9a84c"></div><div class="field"><label>Accent Color</label><input class="input-std" type="color" id="wl-accent-color" value="#1b3a6b"></div></div><div class="field" style="margin-top:12px"><label>Font</label><select class="input-std" id="wl-font"><option>Inter</option><option>Arial</option><option>Georgia</option><option>Barlow Condensed</option></select></div></div><div class="fix-card"><h3 class="card-title">Live Preview</h3><div style="margin-top:14px;border-radius:16px;overflow:hidden;border:1px solid var(--border)"><div style="padding:34px;text-align:center;background:linear-gradient(135deg,var(--blue),var(--gold))"><img id="wl-preview-logo" src="'+CAL_LOGO+'" style="height:54px;object-fit:contain;background:#fff;border-radius:12px;padding:6px"><h3 id="wl-preview-title" style="font-family:Barlow Condensed,sans-serif;font-size:34px;color:#fff;margin-top:16px">Client Portal</h3></div><div style="padding:20px;background:var(--surface)"><div class="fix-action" id="wl-preview-btn" style="width:100%">Sign In</div></div></div></div></div>');
@@ -10475,8 +10593,8 @@ function healthBadge(score){
 
   function renderSatisfaction(){
     var el=screen('nps'); if(!el) return;
-    el.innerHTML=`<div class="sec-head"><div><h2>Client Satisfaction</h2><p>Track customer happiness, response trends, and at-risk feedback.</p></div><button class="cal-action" onclick="showToast('Survey queued.','green')">Send Survey</button></div>
-      <div class="card" style="border:1.5px solid var(--gold);background:rgba(201,168,76,.07);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px"><div><p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:3px">⭐ Enjoying CAL? Leave us a Google Review</p><p style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.5">Your kind words help other businesses find us — and mean the world to our team. Takes 30 seconds!</p></div><a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="cal-action" style="white-space:nowrap;text-decoration:none">Leave a Review ⭐</a></div>
+    el.innerHTML=`<div class="sec-head"><div><h2>Client Satisfaction</h2><p>Review your CAL team and help us improve</p></div></div>
+      <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📋 Review Your CAL Team</p>
       <div class="cal-page-grid cal-grid-4">
         <div class="cal-kpi" style="--accent:var(--gold)"><span>NPS Score</span><strong>72</strong></div>
         <div class="cal-kpi" style="--accent:var(--green)"><span>Promoters</span><strong>75%</strong></div>
@@ -10486,27 +10604,57 @@ function healthBadge(score){
       <div class="cal-page-grid cal-grid-2" style="margin-top:16px">
         <div class="cal-panel"><h3 class="cal-panel-title">Satisfaction Trend</h3><p class="cal-muted">Scores are trending up after faster reporting and review response changes.</p><div style="display:grid;gap:14px;margin-top:18px"><div><div class="cal-muted">Response Rate</div><div class="cal-bar" style="--w:78%"><span></span></div></div><div><div class="cal-muted">Positive Sentiment</div><div class="cal-bar" style="--w:91%"><span></span></div></div><div><div class="cal-muted">Follow-Up Completion</div><div class="cal-bar" style="--w:88%"><span></span></div></div></div></div>
         <div class="cal-panel"><h3 class="cal-panel-title">Recent Feedback</h3><table class="cal-table" style="margin-top:12px"><tbody><tr><td>Apex Legal Group</td><td>10/10</td><td><span class="pill pill-green">Promoter</span></td></tr><tr><td>United Sewer and Septic</td><td>9/10</td><td><span class="pill pill-green">Promoter</span></td></tr><tr><td>Willy Diamond Tree Care</td><td>7/10</td><td><span class="pill pill-gold">Follow Up</span></td></tr></tbody></table></div>
+      </div>
+      <div style="margin-top:16px"><button class="cal-outline" onclick="showToast('Survey sent to your contacts.','green')">Send Satisfaction Survey</button></div>
+      <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 12px">⭐ Support CAL Marketing</p>
+      <div class="cal-panel" style="border:2px solid var(--gold);background:rgba(201,168,76,.06)">
+        <p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:6px">Your feedback helps us grow and serve you better.</p>
+        <p class="cal-muted" style="margin-bottom:16px">We'd be grateful if you shared your experience publicly — it helps other businesses find great marketing partners, and means the world to our team.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="cal-action" style="text-decoration:none">Leave Us a Google Review ⭐</a><button class="cal-outline" onclick="openModal('video-testimonial-modal')">Leave a Video Testimonial 🎥</button></div>
       </div>`;
   }
 
   function renderReferrals(){
     var el=screen('referrals'); if(!el) return;
-    var link='https://cal.marketing/ref/'+(window.currentUser&&window.currentUser.initials||'client').toLowerCase();
-    el.innerHTML=`<div class="sec-head"><div><h2>Referral Program</h2><p>Give customers and partner businesses a clear way to refer new clients.</p></div><button class="cal-action" onclick="showToast('Referral invite copied.','green')">Copy Invite</button></div>
-      <div class="cal-page-grid cal-grid-4">
+    var bizLink='cal.marketing/ref/biz/'+(window.currentUser&&window.currentUser.initials||'client').toLowerCase();
+    var calLink='cal.marketing/ref/cal/'+(window.currentUser&&window.currentUser.initials||'client').toLowerCase();
+    el.innerHTML=`<div class="sec-head"><div><h2>Referral Program</h2><p>Grow your business and help CAL Marketing grow too</p></div></div>
+      <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">👥 Referrals For Your Business</p>
+      <p class="cal-muted" style="margin-bottom:12px">Share a link with your customers so they can refer new clients directly to your business.</p>
+      <div class="cal-page-grid cal-grid-3">
         <div class="cal-kpi" style="--accent:var(--gold)"><span>Invites Sent</span><strong>28</strong></div>
-        <div class="cal-kpi" style="--accent:var(--blue)"><span>Referral Leads</span><strong>9</strong></div>
+        <div class="cal-kpi" style="--accent:var(--blue)"><span>New Leads In</span><strong>9</strong></div>
         <div class="cal-kpi" style="--accent:var(--green)"><span>Converted</span><strong>3</strong></div>
-        <div class="cal-kpi" style="--accent:var(--gold)"><span>Rewards</span><strong>$300</strong></div>
       </div>
-      <div class="cal-panel" style="margin-top:16px">
-        <h3 class="cal-panel-title">Shareable Referral Link</h3>
-        <p class="cal-muted">Use this in email, text messages, invoices, and thank-you follow-ups.</p>
-        <div class="cal-ref-link" style="margin-top:14px"><span>${link}</span><button class="cal-outline" onclick="showToast('Referral link copied.','green')">Copy</button></div>
+      <div class="cal-panel" style="margin-top:14px">
+        <h3 class="cal-panel-title" style="margin-bottom:10px">Your Business Referral Link</h3>
+        <div class="cal-ref-link" style="margin-bottom:14px"><span>${bizLink}</span><button class="cal-outline" onclick="showToast('Business referral link copied.','green')">Copy</button></div>
+        <h3 class="cal-panel-title" style="margin-bottom:10px">Referral Pipeline</h3>
+        <table class="cal-table"><tbody><tr><td>Maria G.</td><td>May 10</td><td><span class="pill pill-green">Converted</span></td></tr><tr><td>Tom R.</td><td>Jun 3</td><td><span class="pill pill-blue">Contacted</span></td></tr><tr><td>Lisa K.</td><td>Jun 14</td><td><span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted)">Invited</span></td></tr></tbody></table>
       </div>
-      <div class="cal-page-grid cal-grid-2" style="margin-top:16px">
-        <div class="cal-panel"><h3 class="cal-panel-title">Referral Pipeline</h3><table class="cal-table" style="margin-top:12px"><tbody><tr><td>Bay Harbor Plumbing</td><td><span class="pill pill-blue">Contacted</span></td></tr><tr><td>Miami Pet Clinic</td><td><span class="pill pill-green">Converted</span></td></tr><tr><td>Hudson Valley Electric</td><td><span class="pill pill-gold">Pending</span></td></tr></tbody></table></div>
-        <div class="cal-panel"><h3 class="cal-panel-title">Referral Offer</h3><p class="cal-muted">Reward advocates with a $100 credit for each qualified business that signs up after their referral.</p><button class="cal-action" style="margin-top:16px" onclick="showToast('Referral campaign ready.','gold')">Launch Referral Push</button></div>
+      <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px">🤝 Refer a Business to CAL</p>
+      <p class="cal-muted" style="margin-bottom:12px">Know a business owner who needs better marketing? Refer them to CAL Marketing and earn a reward when they complete their first month.</p>
+      <div class="cal-page-grid cal-grid-3">
+        <div class="cal-kpi" style="--accent:var(--blue)"><span>Businesses Referred</span><strong>4</strong></div>
+        <div class="cal-kpi" style="--accent:var(--green)"><span>Joined CAL</span><strong>2</strong></div>
+        <div class="cal-kpi" style="--accent:var(--gold)"><span>Rewards Earned</span><strong>2</strong></div>
+      </div>
+      <div class="cal-page-grid cal-grid-2" style="margin-top:14px">
+        <div class="cal-panel">
+          <h3 class="cal-panel-title" style="margin-bottom:10px">Your CAL Referral Link</h3>
+          <div class="cal-ref-link" style="margin-bottom:14px"><span>${calLink}</span><button class="cal-outline" onclick="showToast('CAL referral link copied.','green')">Copy</button></div>
+          <h3 class="cal-panel-title" style="margin-bottom:10px">CAL Referral Pipeline</h3>
+          <table class="cal-table"><tbody><tr><td>Miami Pet Clinic</td><td><span class="pill pill-green">Converted</span></td><td><span class="pill pill-gold">Earned</span></td></tr><tr><td>South Beach Dental</td><td><span class="pill pill-green">Converted</span></td><td><span class="pill pill-gold">Earned</span></td></tr><tr><td>Sunrise Yoga Studio</td><td><span class="pill pill-blue">Signed Up</span></td><td>Pending</td></tr></tbody></table>
+        </div>
+        <div class="cal-panel">
+          <h3 class="cal-panel-title" style="margin-bottom:12px">How It Works</h3>
+          <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:16px">
+            <div style="display:flex;align-items:center;gap:10px"><div style="min-width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center">1</div><p class="cal-muted">Share your CAL referral link with a business owner</p></div>
+            <div style="display:flex;align-items:center;gap:10px"><div style="min-width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center">2</div><p class="cal-muted">They sign up with CAL and complete their first month</p></div>
+            <div style="display:flex;align-items:center;gap:10px"><div style="min-width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;display:flex;align-items:center;justify-content:center">3</div><p class="cal-muted">You earn a reward from CAL — details announced soon</p></div>
+          </div>
+          <div style="padding:12px 14px;background:rgba(201,168,76,.07);border:1.5px solid var(--gold);border-radius:10px"><p style="font-size:12px;font-weight:900;color:var(--gold);margin-bottom:3px">🎁 Reward Coming Soon</p><p class="cal-muted">We appreciate you spreading the word. Your reward won't be a discount — it'll be something even better. Stay tuned.</p></div>
+        </div>
       </div>`;
   }
 
@@ -11243,8 +11391,6 @@ function healthBadge(score){
     var fv=document.getElementById('home-full-view');
     if(fv) fv.style.display=admin?'none':'block';
     if(av) av.style.display=admin?'block':'none';
-    if(admin && typeof loadGBPInsightsWidget==='function') loadGBPInsightsWidget('gbp-insights-widget');
-    if(admin && typeof loadGBPReviewsWidget==='function') loadGBPReviewsWidget('gbp-reviews-widget');
   };
 
   /* ---- nav override: render onboarding tab + admin enhancers ---- */
