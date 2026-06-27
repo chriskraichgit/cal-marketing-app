@@ -779,6 +779,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 .modal-actions{display:flex;gap:8px;padding:0 20px 20px}
 .btn-gold{flex:1;height:42px;border:0;border-radius:999px;background:var(--gold);color:#000;font-size:13px;font-weight:800}
 .btn-ghost{height:42px;padding:0 16px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--muted);font-size:13px;font-weight:800}
+.nps-num{width:36px;height:36px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink);font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
+.nps-num.nps-sel{background:var(--gold);border-color:var(--gold);color:#fff}
+.nps-opt{padding:8px 20px;border:1.5px solid var(--border);border-radius:8px;background:var(--surface);color:var(--ink);font-size:13px;font-weight:900;cursor:pointer;transition:background .12s,border-color .12s,color .12s}
+.nps-opt.nps-sel{background:var(--gold);border-color:var(--gold);color:#fff}
 .btn-green{height:42px;padding:0 16px;border:0;border-radius:999px;background:var(--green);color:#fff;font-size:13px;font-weight:800}
 /* AI panel */
 .ai-panel{position:fixed;bottom:0;right:0;z-index:3500;width:100%;max-width:330px;height:450px;background:var(--surface);border-radius:18px 18px 0 0;box-shadow:-3px -3px 30px rgba(0,0,0,.14);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .28s ease}
@@ -4360,7 +4364,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <div class="screen" id="s-nps">
   <div class="sec-head">
     <div><h2>Client Satisfaction</h2><p>NPS tracking, survey responses and customer sentiment</p></div>
-    <button class="btn-view" onclick="showToast('Survey sent to all active clients.','green')">Send Survey</button>
+    <button class="btn-view" onclick="openModal('nps-survey-modal')">Send Survey</button>
   </div>
 
   <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📋 Review Your CAL Team</p>
@@ -4439,9 +4443,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div class="card card-pad" style="border:2px solid var(--gold);background:rgba(201,168,76,.06)">
     <p style="font-size:15px;font-weight:900;color:var(--ink);margin-bottom:6px">Your feedback helps us grow and serve you better.</p>
     <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:18px">We'd be grateful if you shared your experience publicly — it helps other businesses find great marketing partners, and means the world to our team.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none">Leave Us a Google Review ⭐</a>
-      <button class="btn-view" onclick="openModal('video-testimonial-modal')">Leave a Video Testimonial 🎥</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" style="text-decoration:none;padding:7px 14px;border:1.5px solid var(--gold);border-radius:8px;background:transparent;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;white-space:nowrap">Leave Us a Google Review ⭐</a>
+      <button onclick="openModal('video-testimonial-modal')" style="padding:7px 14px;border:1.5px solid var(--gold);border-radius:8px;background:transparent;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap">Leave a Video Testimonial 🎥</button>
     </div>
   </div>
 </div>
@@ -9337,6 +9341,56 @@ function healthBadge(score){
 </script>
 
 <!-- ====== MODAL: UPDATE PAYMENT ====== -->
+<div class="modal-overlay hidden" id="nps-survey-modal" onclick="if(event.target===this)closeModal('nps-survey-modal')">
+  <div class="modal" style="max-width:520px;max-height:88vh;overflow-y:auto">
+    <div class="modal-head"><h2>How are we doing?</h2><button class="icon-btn" onclick="closeModal('nps-survey-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:24px">Your feedback helps us serve you better. This takes less than a minute.</p>
+
+      <div style="display:grid;gap:20px">
+        <div class="nps-group">
+          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:10px">1. Overall, how satisfied are you with CAL Marketing?</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="nps-num" data-q="q1" data-val="1" onclick="selectNpsNum(this)">1</button><button class="nps-num" data-q="q1" data-val="2" onclick="selectNpsNum(this)">2</button><button class="nps-num" data-q="q1" data-val="3" onclick="selectNpsNum(this)">3</button><button class="nps-num" data-q="q1" data-val="4" onclick="selectNpsNum(this)">4</button><button class="nps-num" data-q="q1" data-val="5" onclick="selectNpsNum(this)">5</button><button class="nps-num" data-q="q1" data-val="6" onclick="selectNpsNum(this)">6</button><button class="nps-num" data-q="q1" data-val="7" onclick="selectNpsNum(this)">7</button><button class="nps-num" data-q="q1" data-val="8" onclick="selectNpsNum(this)">8</button><button class="nps-num" data-q="q1" data-val="9" onclick="selectNpsNum(this)">9</button><button class="nps-num" data-q="q1" data-val="10" onclick="selectNpsNum(this)">10</button>
+          </div>
+        </div>
+
+        <div class="nps-group">
+          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:10px">2. How would you rate the results we've delivered so far?</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="nps-num" data-q="q2" data-val="1" onclick="selectNpsNum(this)">1</button><button class="nps-num" data-q="q2" data-val="2" onclick="selectNpsNum(this)">2</button><button class="nps-num" data-q="q2" data-val="3" onclick="selectNpsNum(this)">3</button><button class="nps-num" data-q="q2" data-val="4" onclick="selectNpsNum(this)">4</button><button class="nps-num" data-q="q2" data-val="5" onclick="selectNpsNum(this)">5</button><button class="nps-num" data-q="q2" data-val="6" onclick="selectNpsNum(this)">6</button><button class="nps-num" data-q="q2" data-val="7" onclick="selectNpsNum(this)">7</button><button class="nps-num" data-q="q2" data-val="8" onclick="selectNpsNum(this)">8</button><button class="nps-num" data-q="q2" data-val="9" onclick="selectNpsNum(this)">9</button><button class="nps-num" data-q="q2" data-val="10" onclick="selectNpsNum(this)">10</button>
+          </div>
+        </div>
+
+        <div class="nps-group">
+          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:10px">3. How would you rate our communication and responsiveness?</p>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="nps-num" data-q="q3" data-val="1" onclick="selectNpsNum(this)">1</button><button class="nps-num" data-q="q3" data-val="2" onclick="selectNpsNum(this)">2</button><button class="nps-num" data-q="q3" data-val="3" onclick="selectNpsNum(this)">3</button><button class="nps-num" data-q="q3" data-val="4" onclick="selectNpsNum(this)">4</button><button class="nps-num" data-q="q3" data-val="5" onclick="selectNpsNum(this)">5</button><button class="nps-num" data-q="q3" data-val="6" onclick="selectNpsNum(this)">6</button><button class="nps-num" data-q="q3" data-val="7" onclick="selectNpsNum(this)">7</button><button class="nps-num" data-q="q3" data-val="8" onclick="selectNpsNum(this)">8</button><button class="nps-num" data-q="q3" data-val="9" onclick="selectNpsNum(this)">9</button><button class="nps-num" data-q="q3" data-val="10" onclick="selectNpsNum(this)">10</button>
+          </div>
+        </div>
+
+        <div>
+          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:10px">4. Is there anything specific you'd like us to improve? <span style="font-weight:600;color:var(--muted)">(optional)</span></p>
+          <textarea id="nps-q4-text" class="notes-textarea" style="height:80px;margin:0" placeholder="Share any thoughts here..."></textarea>
+        </div>
+
+        <div>
+          <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:10px">5. Would you refer CAL Marketing to another business?</p>
+          <div style="display:flex;gap:8px">
+            <button class="nps-opt" data-q="q5" onclick="selectNpsOpt(this)">Yes</button>
+            <button class="nps-opt" data-q="q5" onclick="selectNpsOpt(this)">Maybe</button>
+            <button class="nps-opt" data-q="q5" onclick="selectNpsOpt(this)">No</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('nps-survey-modal')">Cancel</button>
+      <button class="btn-gold" onclick="submitNpsSurvey()">Submit Feedback</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="video-testimonial-modal" onclick="if(event.target===this)closeModal('video-testimonial-modal')">
   <div class="modal" style="max-width:460px">
     <div class="modal-head"><h2>Leave a Video Testimonial 🎥</h2><button class="icon-btn" onclick="closeModal('video-testimonial-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
@@ -9997,13 +10051,14 @@ function healthBadge(score){
       '<div class="sec-head"><div><h2>Client Satisfaction</h2><p>Review your CAL team and help us improve</p></div></div>'
       +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px">📋 Review Your CAL Team</p>'
       +'<div class="fix-grid fix-grid-4" style="margin-bottom:14px"><div class="fix-kpi" style="--accent:var(--gold)"><span>NPS Score</span><strong>72</strong></div><div class="fix-kpi" style="--accent:var(--green)"><span>Promoters</span><strong>75%</strong></div><div class="fix-kpi" style="--accent:var(--blue)"><span>Responses</span><strong>18</strong></div><div class="fix-kpi" style="--accent:var(--red)"><span>Detractors</span><strong>0</strong></div></div>'
-      +'<div class="fix-card" style="margin-bottom:14px"><h3 class="card-title" style="margin-bottom:12px">Recent Survey Responses</h3><table class="fix-table"><thead><tr><th>Client</th><th>Score</th><th>Feedback</th><th>Status</th></tr></thead><tbody><tr><td>Apex Legal Group</td><td>10</td><td>CAL has transformed our lead volume.</td><td><span class="pill pill-green">Followed Up</span></td></tr><tr><td>United Sewer and Septic</td><td>9</td><td>Great dashboard visibility and support.</td><td><span class="pill pill-blue">Reviewed</span></td></tr></tbody></table><div style="margin-top:16px"><button class="btn-view" onclick="showToast(\'Survey sent to your contacts.\',\'green\')">Send Satisfaction Survey</button></div></div>'
+      +'<div class="fix-card" style="margin-bottom:14px"><h3 class="card-title" style="margin-bottom:12px">Recent Survey Responses</h3><table class="fix-table"><thead><tr><th>Client</th><th>Score</th><th>Feedback</th><th>Status</th></tr></thead><tbody><tr><td>Apex Legal Group</td><td>10</td><td>CAL has transformed our lead volume.</td><td><span class="pill pill-green">Followed Up</span></td></tr><tr><td>United Sewer and Septic</td><td>9</td><td>Great dashboard visibility and support.</td><td><span class="pill pill-blue">Reviewed</span></td></tr></tbody></table><div style="margin-top:16px;display:flex;align-items:center;gap:12px"><button class="btn-view" onclick="openModal(\'nps-survey-modal\')">Send Satisfaction Survey</button><span id="nps-last-date" style="font-size:11px;color:var(--muted);font-weight:700"></span></div></div>'
       +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 12px">⭐ Support CAL Marketing</p>'
       +'<div class="fix-card" style="border:2px solid var(--gold);background:rgba(201,168,76,.06)">'
       +'<p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:6px">Your feedback helps us grow and serve you better.</p>'
       +'<p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:16px">We\'d be grateful if you shared your experience publicly — it helps other businesses find great marketing partners, and means the world to our team.</p>'
-      +'<div style="display:flex;gap:10px;flex-wrap:wrap"><a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="btn-gold" style="text-decoration:none">Leave Us a Google Review ⭐</a><button class="btn-view" onclick="openModal(\'video-testimonial-modal\')">Leave a Video Testimonial 🎥</button></div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap"><a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" style="text-decoration:none;padding:7px 14px;border:1.5px solid var(--gold);border-radius:8px;background:transparent;color:var(--gold);font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:900;white-space:nowrap">Leave Us a Google Review ⭐</a><button onclick="openModal(\'video-testimonial-modal\')" style="padding:7px 14px;border:1.5px solid var(--gold);border-radius:8px;background:transparent;color:var(--gold);font-family:\'Barlow Condensed\',sans-serif;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap">Leave a Video Testimonial 🎥</button></div>'
       +'</div>');
+    setTimeout(renderNpsLastDate,50);
     setHtml('s-referrals',
       '<div class="sec-head"><div><h2>Referral Program</h2><p>Grow your business and help CAL Marketing grow too</p></div></div>'
       +'<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">👥 Referrals For Your Business</p>'
@@ -10605,13 +10660,59 @@ function healthBadge(score){
         <div class="cal-panel"><h3 class="cal-panel-title">Satisfaction Trend</h3><p class="cal-muted">Scores are trending up after faster reporting and review response changes.</p><div style="display:grid;gap:14px;margin-top:18px"><div><div class="cal-muted">Response Rate</div><div class="cal-bar" style="--w:78%"><span></span></div></div><div><div class="cal-muted">Positive Sentiment</div><div class="cal-bar" style="--w:91%"><span></span></div></div><div><div class="cal-muted">Follow-Up Completion</div><div class="cal-bar" style="--w:88%"><span></span></div></div></div></div>
         <div class="cal-panel"><h3 class="cal-panel-title">Recent Feedback</h3><table class="cal-table" style="margin-top:12px"><tbody><tr><td>Apex Legal Group</td><td>10/10</td><td><span class="pill pill-green">Promoter</span></td></tr><tr><td>United Sewer and Septic</td><td>9/10</td><td><span class="pill pill-green">Promoter</span></td></tr><tr><td>Willy Diamond Tree Care</td><td>7/10</td><td><span class="pill pill-gold">Follow Up</span></td></tr></tbody></table></div>
       </div>
-      <div style="margin-top:16px"><button class="cal-outline" onclick="showToast('Survey sent to your contacts.','green')">Send Satisfaction Survey</button></div>
+      <div style="margin-top:16px;display:flex;align-items:center;gap:12px"><button class="cal-outline" onclick="openModal('nps-survey-modal')">Send Satisfaction Survey</button><span id="nps-last-date" style="font-size:11px;color:var(--muted);font-weight:700"></span></div>
       <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 12px">⭐ Support CAL Marketing</p>
       <div class="cal-panel" style="border:2px solid var(--gold);background:rgba(201,168,76,.06)">
         <p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:6px">Your feedback helps us grow and serve you better.</p>
         <p class="cal-muted" style="margin-bottom:16px">We'd be grateful if you shared your experience publicly — it helps other businesses find great marketing partners, and means the world to our team.</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap"><a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" class="cal-action" style="text-decoration:none">Leave Us a Google Review ⭐</a><button class="cal-outline" onclick="openModal('video-testimonial-modal')">Leave a Video Testimonial 🎥</button></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><a href="https://g.page/r/CdfJ3g0HpunIEAI/review" target="_blank" rel="noopener" style="text-decoration:none;padding:7px 14px;border:1.5px solid var(--gold);border-radius:8px;background:transparent;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;white-space:nowrap">Leave Us a Google Review ⭐</a><button onclick="openModal('video-testimonial-modal')" style="padding:7px 14px;border:1.5px solid var(--gold);border-radius:8px;background:transparent;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:900;cursor:pointer;white-space:nowrap">Leave a Video Testimonial 🎥</button></div>
       </div>`;
+    renderNpsLastDate();
+  }
+
+  function selectNpsNum(btn){
+    var q=btn.dataset.q;
+    document.querySelectorAll('.nps-num[data-q="'+q+'"]').forEach(function(b){b.classList.remove('nps-sel');});
+    btn.classList.add('nps-sel');
+    if(!window._npsData) window._npsData={};
+    window._npsData[q]=btn.dataset.val;
+  }
+
+  function selectNpsOpt(btn){
+    var q=btn.dataset.q;
+    document.querySelectorAll('.nps-opt[data-q="'+q+'"]').forEach(function(b){b.classList.remove('nps-sel');});
+    btn.classList.add('nps-sel');
+    if(!window._npsData) window._npsData={};
+    window._npsData[q]=btn.textContent.trim();
+  }
+
+  function submitNpsSurvey(){
+    var d=window._npsData||{};
+    var ta=document.getElementById('nps-q4-text');
+    var feedback=ta?ta.value.trim():'';
+    var dateStr=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    var acct=(typeof acctKey==='function'?acctKey():'global');
+    var user=(window.currentUser&&window.currentUser.email)||'user';
+    var key='cal-nps-response-'+acct+'-'+user;
+    var record={date:dateStr,q1:d.q1||null,q2:d.q2||null,q3:d.q3||null,q4:feedback||null,q5:d.q5||null};
+    try{localStorage.setItem(key,JSON.stringify(record));}catch(e){}
+    window._npsData={};
+    showToast('Thank you for your feedback!','green');
+    closeModal('nps-survey-modal');
+    renderNpsLastDate();
+  }
+
+  function renderNpsLastDate(){
+    var acct=(typeof acctKey==='function'?acctKey():'global');
+    var user=(window.currentUser&&window.currentUser.email)||'user';
+    var key='cal-nps-response-'+acct+'-'+user;
+    var el=document.getElementById('nps-last-date');
+    if(!el) return;
+    try{
+      var raw=localStorage.getItem(key);
+      if(raw){var rec=JSON.parse(raw);if(rec&&rec.date){el.textContent='Last submitted: '+rec.date;return;}}
+    }catch(e){}
+    el.textContent='';
   }
 
   function renderReferrals(){
