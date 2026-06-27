@@ -5353,9 +5353,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 </div>
 
 <!-- UPLOAD VIDEO MODAL -->
-<div class="modal-overlay hidden" id="upload-video-modal" onclick="if(event.target===this)closeModal('upload-video-modal')">
+<div class="modal-overlay hidden" id="upload-video-modal" onclick="if(event.target===this)closeVideoUploadModal()">
   <div class="modal">
-    <div class="modal-head"><h2>Upload Video</h2><button class="icon-btn" onclick="closeModal('upload-video-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-head"><h2>Upload Video</h2><button class="icon-btn" onclick="closeVideoUploadModal()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body">
       <label class="ob-upload-box" id="video-upload-dropzone" for="video-upload-input" style="min-height:120px">
         <input id="video-upload-input" type="file" accept="video/*" style="display:none">
@@ -5372,7 +5372,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <p style="font-size:11px;font-weight:700;color:var(--muted);margin-top:4px">Uploading... <span id="video-upload-pct">0%</span></p>
       </div>
     </div>
-    <div class="modal-actions"><button class="btn-gold" id="video-upload-btn" onclick="startVideoUpload()" disabled>Upload Video</button><button class="btn-ghost" onclick="closeModal('upload-video-modal')">Cancel</button></div>
+    <div class="modal-actions"><button class="btn-gold" id="video-upload-btn" onclick="startVideoUpload()" disabled>Upload Video</button><button class="btn-ghost" onclick="closeVideoUploadModal()">Cancel</button></div>
   </div>
 </div>
 
@@ -7741,6 +7741,7 @@ function closeModal(id){ var m=document.getElementById(id); if(m){ m.classList.a
 var _pendingUploadFile = null;
 var _pendingVideoFile = null;
 var _videoUploadInProgress = false;
+var _activeVideoXhr = null;
 function openVideoUploadModal() {
   openModal('upload-video-modal');
   var label = document.getElementById('video-upload-label');
@@ -8528,6 +8529,7 @@ function startVideoUpload() {
 
   function resetProgress() {
     _videoUploadInProgress = false;
+    _activeVideoXhr = null;
     if (progressWrap) progressWrap.style.display = 'none';
     if (progressBar) progressBar.style.width = '0%';
     if (progressPct) progressPct.textContent = '0%';
@@ -8582,7 +8584,25 @@ function startVideoUpload() {
     showToast('Upload timed out. Please check your connection and try again.', 'gold');
   };
 
+  _activeVideoXhr = xhr;
   xhr.send(fd);
+}
+
+function closeVideoUploadModal() {
+  if (_videoUploadInProgress && _activeVideoXhr) {
+    _activeVideoXhr.abort();
+    _videoUploadInProgress = false;
+    _activeVideoXhr = null;
+    var progressWrap = document.getElementById('video-upload-progress');
+    var progressBar  = document.getElementById('video-progress-bar');
+    var progressPct  = document.getElementById('video-upload-pct');
+    var btn          = document.getElementById('video-upload-btn');
+    if (progressWrap) progressWrap.style.display = 'none';
+    if (progressBar)  progressBar.style.width = '0%';
+    if (progressPct)  progressPct.textContent = '0%';
+    if (btn) { btn.textContent = 'Upload Video'; btn.disabled = false; }
+  }
+  closeModal('upload-video-modal');
 }
 
 // ============ REVIEWS ============
