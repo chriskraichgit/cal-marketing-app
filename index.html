@@ -2835,7 +2835,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <option value="">All Sources</option>
       <option>Google Ads</option><option>Meta Ads</option><option>Google Business Profile</option>
       <option>Organic / SEO</option><option>Website Direct</option><option>Word of Mouth</option>
-      <option>Referral</option><option>GHL</option><option>Other</option>
+      <option>Referral</option><option>Social Media</option><option>Other</option>
     </select>
   </div>
   <div id="leads-list"></div>
@@ -5392,7 +5392,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div class="form-field"><label class="form-label">Full Name *</label><input id="al-name" class="input-std" placeholder="John Smith"></div>
       <div class="form-field"><label class="form-label">Phone</label><input id="al-phone" class="input-std" type="tel" placeholder="(305) 555-0000"></div>
       <div class="form-field"><label class="form-label">Email</label><input id="al-email" class="input-std" type="email" placeholder="john@email.com"></div>
-      <div class="form-field"><label class="form-label">Source</label><select id="al-source" class="input-std"><option>Google Ads</option><option>Meta Ads</option><option>Google Business Profile</option><option>Organic / SEO</option><option>Website Direct</option><option>Word of Mouth</option><option>Referral</option><option>GHL</option><option>Other</option></select></div>
+      <div class="form-field"><label class="form-label">Source</label><select id="al-source" class="input-std"><option>Google Ads</option><option>Meta Ads</option><option>Google Business Profile</option><option>Organic / SEO</option><option>Website Direct</option><option>Word of Mouth</option><option>Referral</option><option>Social Media</option><option>Other</option></select></div>
       <div class="form-field"><label class="form-label">Service / Case Type</label><input id="al-case" class="input-std" placeholder="e.g. Personal Injury, Car Accident"></div>
       <div class="form-field" style="grid-column:1/-1"><label class="form-label">Notes <span style="font-weight:600;color:var(--muted)">(optional)</span></label><textarea id="al-notes" class="notes-textarea" style="height:72px" placeholder="Any additional notes about this lead..."></textarea></div>
     </div></div>
@@ -7613,7 +7613,7 @@ var _leadSrcMap={
   'Website Direct':{badge:'Website',cls:'src-web'},
   'Word of Mouth':{badge:'WoM',cls:'src-wom'},
   'Referral':{badge:'Referral',cls:'src-ref'},
-  'GHL':{badge:'GHL',cls:'src-ghl'},
+  'Social Media':{badge:'Social',cls:'src-ghl'},
   'Other':{badge:'Other',cls:'src-other'}
 };
 function _leadsKey(){ return 'cal-leads-'+(typeof acctKey==='function'?acctKey():'global'); }
@@ -7624,7 +7624,7 @@ function _defaultLeads(){
     {id:'l2',name:'Sarah Kim',phone:'(786) 555-0183',email:'skim@gmail.com',source:'Meta Ads',caseType:'Car Accident',status:'new',notes:'',receivedAt:now-18*60*1000,activity:[{label:'Lead received from Meta Ads',time:now-18*60*1000}]},
     {id:'l3',name:'Amanda Rivera',phone:'(305) 555-0291',email:'arivera@email.com',source:'Google Ads',caseType:'Slip & Fall',status:'contacted',notes:'',receivedAt:now-2*3600*1000,activity:[{label:'Lead received from Google Ads',time:now-2*3600*1000},{label:'Status changed to Contacted',time:now-90*60*1000}]},
     {id:'l4',name:'Robert Chen',phone:'(786) 555-0364',email:'rchen@email.com',source:'Organic / SEO',caseType:'Wrongful Death',status:'qualified',notes:'',receivedAt:now-86400*1000,activity:[{label:'Lead received from Organic / SEO',time:now-86400*1000},{label:'Status changed to Qualified',time:now-72000*1000}]},
-    {id:'l5',name:'Lisa Morales',phone:'(305) 555-0417',email:'lmorales@email.com',source:'GHL',caseType:'Medical Malpractice',status:'closed',notes:'Signed retainer.',receivedAt:now-3*86400*1000,activity:[{label:'Lead received from GHL',time:now-3*86400*1000},{label:'Status changed to Closed',time:now-2*86400*1000}]}
+    {id:'l5',name:'Lisa Morales',phone:'(305) 555-0417',email:'lmorales@email.com',source:'Social Media',caseType:'Medical Malpractice',status:'closed',notes:'Signed retainer.',receivedAt:now-3*86400*1000,activity:[{label:'Lead received from Social Media',time:now-3*86400*1000},{label:'Status changed to Closed',time:now-2*86400*1000}]}
   ];
 }
 function _loadLeads(){ try{ var r=localStorage.getItem(_leadsKey()); if(r){_leadsDb=JSON.parse(r);return;} }catch(e){} _leadsDb=_defaultLeads(); _saveLeads(); }
@@ -9654,7 +9654,7 @@ function togglePermission(email, screen, btn){
   saved[email]=current;
   localStorage.setItem(store,JSON.stringify(saved));
   if(store==='cal-agency-perms'){ agencyPermissions=saved; if(typeof renderMyAccess==='function') renderMyAccess(); if(window.currentRole==='admin' && typeof setupRoleUI==='function') setupRoleUI(); }
-  else { adminPermissions=saved; if(window.currentRole==='admin' && typeof setupRoleUI==='function') setupRoleUI(); }
+  else { adminPermissions=saved; if((window.currentRole==='admin'||window.currentRole==='user') && typeof setupRoleUI==='function') setupRoleUI(); }
   showToast('Permission updated for '+screen.replace(/-/g,' '),'green');
 }
 
@@ -11910,7 +11910,7 @@ function healthBadge(score){
     }
     if(e.key==='cal-admin-perms'){
       try{ adminPermissions=JSON.parse(e.newValue||'{}'); }catch(err){}
-      if(window.currentRole==='admin' && typeof setupRoleUI==='function') setupRoleUI();
+      if((window.currentRole==='admin'||window.currentRole==='user') && typeof setupRoleUI==='function') setupRoleUI();
     }
   });
 
