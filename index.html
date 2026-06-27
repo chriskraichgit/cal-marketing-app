@@ -6055,7 +6055,14 @@ function _fpRestoreLoginHeader(){
   var lc=document.querySelector('#login-view .login-card');
   if(h1){h1.style.display='';h1.style.opacity='0';setTimeout(function(){h1.style.opacity='';},20);}
   if(sub){sub.style.display='';sub.style.opacity='0';setTimeout(function(){sub.style.opacity='';},20);}
-  if(lc){var tabs=lc.querySelector('.login-tabs');if(tabs) tabs.style.display='';}
+  if(lc){
+    var tabs=lc.querySelector('.login-tabs');
+    if(tabs) tabs.style.display='flex';
+    var tb=document.getElementById('tab-signin');
+    var tc=document.getElementById('tab-create');
+    if(tb){tb.style.background='var(--blue)';tb.style.color='#fff';}
+    if(tc){tc.style.background='transparent';tc.style.color='var(--muted)';}
+  }
 }
 
 function _fpStartResendTimer(){
