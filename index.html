@@ -6797,10 +6797,48 @@ var UOB_STEPS=[
       +'<input type="file" id="uob-photo-file" accept="image/*" style="display:none" onchange="handleProfilePhoto(this)">'
       +'<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--muted2)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>'
       +'<p style="font-size:13px;font-weight:800;color:var(--muted)">Click to upload a photo</p></label>'
-      +'<button class="ob-btn" onclick="finishUserOnboarding()">Finish Setup</button>'
+      +'<button class="ob-btn" id="uob-finish-btn" onclick="finishUserOnboarding()" disabled>Finish Setup</button>'
       +'<button class="ob-skip" onclick="finishUserOnboarding()">Skip for now</button>';
   }}
 ];
+function initUobPhotoDropzone(){
+  var input=document.getElementById('uob-photo-file');
+  var zone=input&&input.closest('label');
+  if(!zone||!input||zone._dropInited) return;
+  zone._dropInited=true;
+  var dragCounter=0;
+  function isImageItem(dt){
+    if(dt&&dt.items&&dt.items.length) return dt.items[0].type.indexOf('image/')===0;
+    return true;
+  }
+  zone.addEventListener('dragenter',function(e){
+    e.preventDefault(); e.stopPropagation();
+    dragCounter++;
+    zone.classList.toggle('drag-over',isImageItem(e.dataTransfer));
+    zone.classList.toggle('drag-over-invalid',!isImageItem(e.dataTransfer));
+  });
+  zone.addEventListener('dragover',function(e){
+    e.preventDefault(); e.stopPropagation();
+    e.dataTransfer.dropEffect=isImageItem(e.dataTransfer)?'copy':'none';
+  });
+  zone.addEventListener('dragleave',function(e){
+    e.preventDefault(); e.stopPropagation();
+    dragCounter--;
+    if(dragCounter<=0){ dragCounter=0; zone.classList.remove('drag-over','drag-over-invalid'); }
+  });
+  zone.addEventListener('drop',function(e){
+    e.preventDefault(); e.stopPropagation();
+    dragCounter=0; zone.classList.remove('drag-over','drag-over-invalid');
+    var files=e.dataTransfer&&e.dataTransfer.files;
+    if(!files||!files.length) return;
+    if(!files[0].type||files[0].type.indexOf('image/')!==0){
+      showToast('Please drop an image file.','gold');
+      return;
+    }
+    try{ var dt=new DataTransfer(); dt.items.add(files[0]); input.files=dt.files; } catch(ex){ return; }
+    handleProfilePhoto(input);
+  });
+}
 function renderUobStep(){
   var step=UOB_STEPS[uobStep]; if(!step) return;
   var lbl=document.getElementById('uob-step-label'); if(lbl) lbl.textContent=step.label;
@@ -6814,6 +6852,7 @@ function renderUobStep(){
       prog.appendChild(d);
     }
   }
+  if(uobStep===1) initUobPhotoDropzone();
 }
 function startUserOnboarding(){
   uobStep=0;
