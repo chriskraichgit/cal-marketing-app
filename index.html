@@ -6955,6 +6955,26 @@ function setupRoleUI(){
     if(sbFull) sbFull.style.display='none';
     if(sbUser) sbUser.style.display='flex';
     var cn=document.getElementById('sb-company-name-user'); if(cn) cn.textContent=u.company||'Staff';
+    // ── Filter sidebar-user buttons by the staff user's actual permission list ──
+    var userPerms=getPermissions('user', currentUser&&currentUser.email?currentUser.email:'');
+    var sidebarUserEl=document.getElementById('sidebar-user');
+    if(sidebarUserEl){
+      sidebarUserEl.querySelectorAll('.nav-btn').forEach(function(btn){
+        var oc=btn.getAttribute('onclick')||'';
+        var m=oc.match(/nav\('([^']+)'\)/);
+        var screen=m?m[1]:null;
+        btn.style.display=(!screen||userPerms.indexOf(screen)>=0)?'':'none';
+      });
+      sidebarUserEl.querySelectorAll('.nav-label').forEach(function(lbl){
+        var sibling=lbl.nextElementSibling;
+        var anyVisible=false;
+        while(sibling&&!sibling.classList.contains('nav-label')){
+          if(sibling.classList.contains('nav-btn')&&sibling.style.display!=='none') anyVisible=true;
+          sibling=sibling.nextElementSibling;
+        }
+        lbl.style.display=anyVisible?'':'none';
+      });
+    }
   } else {
     if(sbFull) sbFull.style.display='flex';
     if(sbUser) sbUser.style.display='none';
