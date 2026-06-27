@@ -948,6 +948,10 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
     <!-- ── Forgot Password Inline Flow ── -->
     <div id="forgot-panel" style="display:none">
+      <!-- Own header — no mutation of main h1 needed -->
+      <h1 class="login-title" style="margin-bottom:2px">Forgot Password</h1>
+      <p class="login-sub" id="fp-subtitle" style="margin-bottom:20px">Reset your account password</p>
+
       <!-- Step 1: Enter identifier -->
       <div id="fp-step-1">
         <p style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:20px;line-height:1.6;text-align:center">Enter your email or phone number associated with your account.</p>
@@ -959,6 +963,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <button class="btn-primary btn-blue" style="margin-top:16px" onclick="fpSubmitStep1()">Continue</button>
         <a href="javascript:void(0)" onclick="fpBack(1)" style="display:block;text-align:center;margin-top:14px;font-size:13px;font-weight:700;color:var(--muted);text-decoration:none">← Back to Login</a>
       </div>
+
       <!-- Step 2: 6-digit verification -->
       <div id="fp-step-2" style="display:none">
         <p style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:6px;text-align:center">We sent a verification code to</p>
@@ -971,11 +976,21 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <input class="fp-code-box" maxlength="1" id="fp-d5" type="text" inputmode="numeric" pattern="[0-9]*">
           <input class="fp-code-box" maxlength="1" id="fp-d6" type="text" inputmode="numeric" pattern="[0-9]*">
         </div>
-        <div class="login-error" id="fp-err2" style="margin-bottom:10px">Please enter all 6 digits.</div>
+        <div class="login-error" id="fp-err2" style="margin-bottom:10px">Please enter the full 6-digit code.</div>
         <button class="btn-primary btn-blue" onclick="fpVerifyCode()">Verify</button>
-        <a href="javascript:void(0)" onclick="fpResend()" style="display:block;text-align:center;margin-top:12px;font-size:13px;font-weight:700;color:var(--gold);text-decoration:none">Resend Code</a>
+        <div id="fp-resend-wrap" style="text-align:center;margin-top:14px">
+          <a href="javascript:void(0)" id="fp-resend-link" onclick="fpResend()"
+             style="font-size:13px;font-weight:700;color:var(--muted);pointer-events:none;text-decoration:none">
+            Resend Code <span id="fp-resend-timer">(60s)</span>
+          </a>
+          <p id="fp-resend-max-msg" style="display:none;font-size:12px;font-weight:600;color:var(--muted);line-height:1.6;margin:0">
+            Maximum resend attempts reached. Please
+            <a href="javascript:void(0)" onclick="fpBack(1)" style="color:var(--gold);font-weight:700;text-decoration:none">restart the process</a>.
+          </p>
+        </div>
         <a href="javascript:void(0)" onclick="fpBack(2)" style="display:block;text-align:center;margin-top:10px;font-size:13px;font-weight:700;color:var(--muted);text-decoration:none">← Back</a>
       </div>
+
       <!-- Step 3: New password -->
       <div id="fp-step-3" style="display:none">
         <p style="font-size:13px;font-weight:700;color:var(--muted);margin-bottom:20px;line-height:1.6;text-align:center">Create a new password for your account.</p>
@@ -5364,7 +5379,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <p style="font-size:11px;font-weight:700;color:var(--muted);margin-top:4px">Uploading... <span id="file-upload-pct">0%</span></p>
       </div>
     </div>
-    <div class="modal-actions"><button class="btn-gold" id="file-upload-btn" onclick="submitDriveUpload()">Upload</button><button class="btn-ghost" onclick="closeUploadModal()">Cancel</button></div>
+    <div class="modal-actions"><button class="btn-gold" id="file-upload-btn" onclick="submitDriveUpload()" disabled>Upload</button><button class="btn-ghost" onclick="closeUploadModal()">Cancel</button></div>
   </div>
 </div>
 
@@ -5754,6 +5769,7 @@ var USERS = {
   'aivrya@cal.marketing':{pw:'',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',googleOnly:true,companyId:'cal'},
   'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
   'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester',companyId:'cal'},
+  'test@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test User',initials:'TU',username:'testuser',phone:'',title:'Owner / Tester',companyId:'cal'},
   'client@apexlegal.com':{pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director',companyId:'apexlegal'},
   'staff@apexlegal.com':{pw:'StaffUser2025!',role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member',companyId:'apexlegal'},
   'info@unitedsewerservice.com':{pw:'United2026!',role:'admin',name:'United Owner',initials:'US',username:'unitedsewer',company:'United Sewer and Septic',phone:'(845) 555-0200',title:'Owner',companyId:'unitedsewer'}
@@ -6035,6 +6051,10 @@ function skip2FA(){
 
 var _fpIdentifier='';
 var _fpCurrentStep=1;
+var _fpResendTimer=null;
+var _fpResendCount=0;
+var _fpResendMax=2;
+var _FP_CODE_IDS=['fp-d1','fp-d2','fp-d3','fp-d4','fp-d5','fp-d6'];
 
 function _fpShowStep(n){
   [1,2,3].forEach(function(i){
@@ -6050,36 +6070,79 @@ function _fpHideErrors(){
   });
 }
 
+/* Hide the main CAL OS title/sub + tabs so our own forgot-panel h1 shows cleanly */
+function _fpHideLoginHeader(){
+  var lc=document.querySelector('#login-view .login-card');
+  if(!lc) return;
+  var mainH1=lc.querySelector('h1.login-title:not(#forgot-panel h1)');
+  if(mainH1) mainH1.style.visibility='hidden';
+  var mainSub=lc.querySelector('p.login-sub:not(#fp-subtitle)');
+  if(mainSub) mainSub.style.visibility='hidden';
+  var tabs=document.getElementById('login-view')&&lc.querySelector('.login-tabs');
+  if(tabs) tabs.style.display='none';
+}
+
+function _fpRestoreLoginHeader(){
+  var lc=document.querySelector('#login-view .login-card');
+  if(!lc) return;
+  var mainH1=lc.querySelector('h1.login-title:not(#forgot-panel h1)');
+  if(mainH1) mainH1.style.visibility='';
+  var mainSub=lc.querySelector('p.login-sub:not(#fp-subtitle)');
+  if(mainSub) mainSub.style.visibility='';
+  var tabs=lc.querySelector('.login-tabs');
+  if(tabs) tabs.style.display='';
+}
+
+function _fpStartResendTimer(){
+  clearInterval(_fpResendTimer);
+  var link=document.getElementById('fp-resend-link');
+  var timer=document.getElementById('fp-resend-timer');
+  var maxMsg=document.getElementById('fp-resend-max-msg');
+  if(!link) return;
+  link.style.pointerEvents='none';
+  link.style.color='var(--muted)';
+  var secs=60;
+  if(timer) timer.textContent='('+secs+'s)';
+  _fpResendTimer=setInterval(function(){
+    secs--;
+    if(secs>0){
+      if(timer) timer.textContent='('+secs+'s)';
+    } else {
+      clearInterval(_fpResendTimer);
+      if(timer) timer.textContent='';
+      if(_fpResendCount>=_fpResendMax){
+        if(link) link.style.display='none';
+        if(maxMsg) maxMsg.style.display='';
+      } else {
+        link.style.pointerEvents='';
+        link.style.color='var(--gold)';
+      }
+    }
+  },1000);
+}
+
 function openForgotPassword(){
   _fpIdentifier='';
   _fpCurrentStep=1;
+  _fpResendCount=0;
+  clearInterval(_fpResendTimer);
   _fpHideErrors();
-  var lv=document.getElementById('login-view');
-  var lc=lv&&lv.querySelector('.login-card');
-  if(!lc) return;
   document.getElementById('signin-panel').style.display='none';
   var cp=document.getElementById('create-panel'); if(cp) cp.style.display='none';
-  var tabs=lc.querySelector('.login-tabs'); if(tabs) tabs.style.display='none';
   var fp=document.getElementById('forgot-panel'); if(fp) fp.style.display='';
-  var lt=lc.querySelector('.login-title'); if(lt) lt.textContent='Forgot Password';
-  var ls=lc.querySelector('.login-sub'); if(ls) ls.style.display='none';
+  _fpHideLoginHeader();
   _fpShowStep(1);
+  _fpInitCodeBoxes();
   var fi=document.getElementById('fp-identifier');
   if(fi){ fi.value=''; setTimeout(function(){fi.focus();},80); }
-  _fpInitCodeBoxes();
 }
 
 function fpBack(fromStep){
+  clearInterval(_fpResendTimer);
   _fpHideErrors();
-  if(fromStep===1){
-    var lv=document.getElementById('login-view');
-    var lc=lv&&lv.querySelector('.login-card');
-    if(lc){
-      var tabs=lc.querySelector('.login-tabs'); if(tabs) tabs.style.display='';
-      var lt=lc.querySelector('.login-title'); if(lt) lt.textContent='CAL OS';
-      var ls=lc.querySelector('.login-sub'); if(ls) ls.style.display='';
-    }
-    document.getElementById('forgot-panel').style.display='none';
+  if(fromStep===1||fromStep===2&&_fpCurrentStep===1){
+    _fpRestoreLoginHeader();
+    var fp=document.getElementById('forgot-panel'); if(fp) fp.style.display='none';
     document.getElementById('signin-panel').style.display='';
     setTimeout(function(){var i=document.getElementById('login-identifier');if(i)i.focus();},80);
   } else if(fromStep===2){
@@ -6103,45 +6166,49 @@ function fpSubmitStep1(){
     display='(***) ***-'+(digits.length>=4?digits.slice(-4):'****');
   }
   var dest=document.getElementById('fp-dest'); if(dest) dest.textContent=display;
-  ['fp-d1','fp-d2','fp-d3','fp-d4','fp-d5','fp-d6'].forEach(function(bid){var b=document.getElementById(bid);if(b)b.value='';});
+  _FP_CODE_IDS.forEach(function(bid){var b=document.getElementById(bid);if(b)b.value='';});
+  /* Reset resend UI */
+  var link=document.getElementById('fp-resend-link');
+  var maxMsg=document.getElementById('fp-resend-max-msg');
+  if(link){link.style.display='';link.style.pointerEvents='none';link.style.color='var(--muted)';}
+  if(maxMsg) maxMsg.style.display='none';
+  _fpResendCount=0;
   _fpShowStep(2);
+  _fpStartResendTimer();
   setTimeout(function(){var d1=document.getElementById('fp-d1');if(d1)d1.focus();},80);
 }
 
 function _fpInitCodeBoxes(){
-  var ids=['fp-d1','fp-d2','fp-d3','fp-d4','fp-d5','fp-d6'];
-  ids.forEach(function(id,idx){
+  _FP_CODE_IDS.forEach(function(id,idx){
     var el=document.getElementById(id); if(!el) return;
     el.oninput=function(){
       this.value=this.value.replace(/\D/g,'').slice(0,1);
-      if(this.value&&idx<ids.length-1){
-        var nxt=document.getElementById(ids[idx+1]); if(nxt) nxt.focus();
+      if(this.value&&idx<_FP_CODE_IDS.length-1){
+        var nxt=document.getElementById(_FP_CODE_IDS[idx+1]); if(nxt) nxt.focus();
       }
       var ce=document.getElementById('fp-err2'); if(ce) ce.classList.remove('show');
     };
     el.onkeydown=function(e){
       if(e.key==='Backspace'&&!this.value&&idx>0){
-        var prv=document.getElementById(ids[idx-1]); if(prv){prv.value='';prv.focus();}
+        var prv=document.getElementById(_FP_CODE_IDS[idx-1]); if(prv){prv.value='';prv.focus();}
       }
       if(e.key==='Enter') fpVerifyCode();
     };
     el.onpaste=function(e){
       e.preventDefault();
       var txt=(e.clipboardData||window.clipboardData).getData('text').replace(/\D/g,'').slice(0,6);
-      txt.split('').forEach(function(ch,i){
-        var b=document.getElementById(ids[i]); if(b) b.value=ch;
-      });
-      var last=document.getElementById(ids[Math.min(txt.length,5)]); if(last) last.focus();
+      txt.split('').forEach(function(ch,i){var b=document.getElementById(_FP_CODE_IDS[i]);if(b)b.value=ch;});
+      var last=document.getElementById(_FP_CODE_IDS[Math.min(txt.length,5)]); if(last) last.focus();
     };
   });
 }
 
 function fpVerifyCode(){
-  var ids=['fp-d1','fp-d2','fp-d3','fp-d4','fp-d5','fp-d6'];
-  var code=ids.map(function(id){var el=document.getElementById(id);return el?el.value.trim():'';}).join('');
+  var code=_FP_CODE_IDS.map(function(id){var el=document.getElementById(id);return el?el.value.trim():'';}).join('');
   var err=document.getElementById('fp-err2');
   if(code.length<6){if(err)err.classList.add('show');return;}
   if(err) err.classList.remove('show');
+  clearInterval(_fpResendTimer);
   ['fp-pw1','fp-pw2'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var sb=document.getElementById('fp-strength-bar'); if(sb){sb.style.width='0';}
   var sl=document.getElementById('fp-strength-lbl'); if(sl)sl.textContent='';
@@ -6150,10 +6217,16 @@ function fpVerifyCode(){
 }
 
 function fpResend(){
-  ['fp-d1','fp-d2','fp-d3','fp-d4','fp-d5','fp-d6'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  var link=document.getElementById('fp-resend-link');
+  if(link&&link.style.pointerEvents==='none') return;
+  if(_fpResendCount>=_fpResendMax) return;
+  _fpResendCount++;
+  _FP_CODE_IDS.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   var d1=document.getElementById('fp-d1'); if(d1) d1.focus();
   showToast('Verification code resent.','green');
+  _fpStartResendTimer();
 }
+
 
 function fpUpdateStrength(){
   var pw=(document.getElementById('fp-pw1')||{value:''}).value;
@@ -6188,7 +6261,7 @@ function fpSavePassword(){
     fpBack(1);
     var li=document.getElementById('login-identifier'); if(li) li.value=_fpIdentifier;
     _fpIdentifier='';
-  },1000);
+  },2000);
 }
 
 function submitForgotPassword(){
@@ -7645,15 +7718,18 @@ function openUploadModal() {
   openModal('upload-modal');
   var label = document.getElementById('file-upload-label');
   var hint = document.getElementById('file-upload-hint');
+  var btn = document.getElementById('file-upload-btn');
   if (_pendingUploadFile) {
     if (label) label.textContent = _pendingUploadFile.name;
     if (hint) {
       hint.textContent = 'Selected: ' + _pendingUploadFile.name + ' (' + _pendingUploadFile.sizeLabel + ')';
       hint.style.display = '';
     }
+    if (btn) btn.disabled = false;
   } else {
     if (label) label.textContent = 'Click to browse or drag \u0026 drop';
     if (hint) hint.style.display = 'none';
+    if (btn) btn.disabled = true;
   }
 }
 function closeUploadModal() {
@@ -8947,11 +9023,13 @@ function gdriveSearch(e) {
 function onUploadFilePicked(input) {
   var label = document.getElementById('file-upload-label');
   var hint = document.getElementById('file-upload-hint');
+  var btn = document.getElementById('file-upload-btn');
   var f = input && input.files && input.files[0];
   if (!f) {
     _pendingUploadFile = null;
     if (label) label.textContent = 'Click to browse & drop';
     if (hint) hint.style.display = 'none';
+    if (btn) btn.disabled = true;
     return;
   }
   var mb = f.size / (1024 * 1024);
@@ -8962,6 +9040,7 @@ function onUploadFilePicked(input) {
     hint.textContent = 'Selected: ' + f.name + ' (' + sizeLabel + ')';
     hint.style.display = '';
   }
+  if (btn) btn.disabled = false;
 }
 
 (function() {
