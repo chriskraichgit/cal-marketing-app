@@ -1592,6 +1592,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
   </div>
   </div><!-- /home-full-view -->
+
+  <!-- Home setup onboarding view (new accounts only — content injected by renderHomeSetup()) -->
+  <div id="home-setup-view" style="display:none"></div>
 </div>
 
 <!-- ============ SCREEN: ONBOARDING (CAL Journey) ============ -->
@@ -6702,7 +6705,7 @@ function obNextStep(){
   else { finishOnboarding(); }
 }
 function selectIndustry(el){ document.querySelectorAll('.ob-ind-card').forEach(function(c){ c.classList.remove('selected'); }); el.classList.add('selected'); }
-function obLogoPreview(inp){ if(!inp||!inp.files||!inp.files[0]) return; var r=new FileReader(); r.onload=function(e){ var p=document.getElementById('ob-logo-preview'); if(p){ p.src=e.target.result; p.style.display='block'; } }; r.readAsDataURL(inp.files[0]); }
+function obLogoPreview(inp){ if(!inp||!inp.files||!inp.files[0]) return; var file=inp.files[0]; var maxBytes=(typeof MAX_UPLOAD_MB!=='undefined'?MAX_UPLOAD_MB:50)*1024*1024; if(file.size>maxBytes){ var p=document.getElementById('ob-logo-preview'); if(p){ p.src=''; p.style.display='none'; } return; } var r=new FileReader(); r.onload=function(e){ var p=document.getElementById('ob-logo-preview'); if(p){ p.src=e.target.result; p.style.display='block'; } }; r.readAsDataURL(file); }
 function initObLogoDropzone(){
   var input=document.getElementById('ob-logo-file');
   var zone=input&&input.closest('label');
@@ -10951,10 +10954,31 @@ function healthBadge(score){
       return '<h3 class="ob-title">Welcome to CAL OS</h3><p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;margin-bottom:20px;line-height:1.6">Connect your platforms. You can skip and connect later from Settings.</p><div style="display:grid;gap:10px;margin-bottom:16px">'+connector('gbp','Google Business','Sync profile, reviews and local analytics','#4285F4')+connector('google-ads','Google Ads','Sync campaigns and spend','#34A853')+connector('meta-ads','Meta','Sync paid social campaigns','#1877f2')+connector('whatsapp','WhatsApp','Enable client messaging','#25D366')+'</div><button class="ob-btn" onclick="obNextStep()">Continue</button><button class="ob-skip" onclick="obNextStep()" style="display:block;text-align:center;margin-top:10px;color:var(--muted);font-size:12px;font-weight:700;background:none;border:none;cursor:pointer">Skip — I\'ll connect later</button>';
     }},
     {label:'Step 2 of 4',html:function(){ var prefill=(window.currentUser&&window.currentUser.company)||''; return '<h3 class="ob-title">What\'s your business name?</h3><input class="ob-input" id="ob-biz-name" placeholder="e.g. Green Collar Roofing" value="'+prefill+'" style="margin-bottom:14px"><button class="ob-btn" onclick="obNextStep()">Continue</button>'; }},
-    {label:'Step 3 of 4',html:function(){ return '<h3 class="ob-title">Upload your logo</h3><label class="ob-upload-box" for="ob-logo-file"><input type="file" id="ob-logo-file" accept="image/*" style="display:none" onchange="obLogoPreview(this);handleOnboardingLogo(this)"><p style="font-size:13px;font-weight:800;color:var(--muted)">Click to upload your business logo</p><img id="ob-logo-preview" style="display:none;max-height:80px;object-fit:contain;margin-top:8px"></label><button class="ob-btn" onclick="obNextStep()">Continue</button><button class="ob-skip" onclick="obNextStep()">Skip for now</button>'; }},
+    {label:'Step 3 of 4',html:function(){ return '<h3 class="ob-title">Upload your logo</h3><label class="ob-upload-box" for="ob-logo-file"><input type="file" id="ob-logo-file" accept="image/*" style="display:none" onchange="handleOnboardingLogo(this)"><p style="font-size:13px;font-weight:800;color:var(--muted)">Click to upload your business logo</p><img id="ob-logo-preview" style="display:none;max-height:80px;object-fit:contain;margin-top:8px"></label><button class="ob-btn" onclick="obNextStep()" disabled>Continue</button><button class="ob-skip" onclick="obNextStep()">Skip for now</button>'; }},
     {label:'Step 4 of 4',html:function(){ return '<h3 class="ob-title">Ready to launch?</h3><p style="text-align:center;color:var(--muted);font-size:13px;font-weight:700;line-height:1.6;margin-bottom:18px">Your desktop client portal is ready. You can customize your branding anytime from White Label.</p><button class="ob-btn" onclick="finishOnboarding()">Launch My Portal</button>'; }}
   ];
-  window.handleOnboardingLogo=function(inp){ window.handleWLLogo(inp); };
+  window.handleOnboardingLogo=function(inp){
+    if(!inp||!inp.files||!inp.files[0]) return;
+    var file=inp.files[0];
+    var mb=file.size/(1024*1024);
+    var box=inp.closest?inp.closest('.ob-upload-box'):null;
+    var hint=box?box.querySelector('p'):null;
+    var contBtn=box&&box.parentElement?box.parentElement.querySelector('.ob-btn'):null;
+    var preview=document.getElementById('ob-logo-preview');
+    if(mb>MAX_UPLOAD_MB){
+      var sizeLabel=mb.toFixed(1)+' MB';
+      if(hint){hint.textContent='Logo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.';hint.style.color='var(--danger,#e74c3c)';}
+      if(contBtn) contBtn.disabled=true;
+      if(preview){preview.src='';preview.style.display='none';}
+      showToast('Logo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.','gold');
+      inp.value='';
+      return;
+    }
+    if(hint){hint.textContent='Click to upload your business logo';hint.style.color='';}
+    if(contBtn) contBtn.disabled=false;
+    obLogoPreview(inp);
+    window.handleWLLogo(inp);
+  };
 
   function bootFixes(){
     injectDesktopFixCSS();
@@ -12318,13 +12342,133 @@ function healthBadge(score){
     });
   }
 
+  /* ---- Home Setup: new-account onboarding flow on the home screen ---- */
+  var _HSP='cal-home-setup-';
+  function _hsKey(){ try{ return _HSP+(window.acctKey?window.acctKey():'local'); }catch(e){ return _HSP+'local'; } }
+  function _hsConn(){ try{ return JSON.parse(localStorage.getItem('cal-platform-conn-'+(window.acctKey?window.acctKey():'local'))||'{}'); }catch(e){ return {}; } }
+  function _hsGet(){
+    var raw=localStorage.getItem(_hsKey());
+    if(raw){ try{ return JSON.parse(raw); }catch(e){} }
+    // First visit — detect existing vs brand-new account
+    var conn=_hsConn(); var hasConn=Object.keys(conn).some(function(k){ return conn[k]; });
+    var hasHist=false; try{ var st=JSON.parse(localStorage.getItem('cal-app-state')||'{}'); hasHist=!!(st.lastNav); }catch(e){}
+    var d={completed:hasConn||hasHist,skipped:false,steps:{}};
+    localStorage.setItem(_hsKey(),JSON.stringify(d)); return d;
+  }
+  function _hsSave(d){ localStorage.setItem(_hsKey(),JSON.stringify(d)); }
+  function _hsStepDone(id,d,conn){
+    if(id==='gbp') return !!conn['gbp'];
+    if(id==='google-ads') return !!conn['google-ads'];
+    if(id==='meta-ads') return !!conn['meta-ads'];
+    return !!(d.steps&&d.steps[id]);
+  }
+  var _HS_STEPS=[
+    {id:'gbp',title:'Connect Google Business Profile',
+     desc:'Link your GBP so we can track reviews, visibility, and local rankings.',
+     btn:'Connect GBP',
+     icon:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
+     action:"nav('settings')"},
+    {id:'google-ads',title:'Connect Google Ads',
+     desc:'Link your Google Ads account to see campaign performance and lead attribution.',
+     btn:'Connect Google Ads',
+     icon:'<circle cx="12" cy="12" r="10"/><polygon points="10,8 16,12 10,16 10,8"/>',
+     action:"nav('settings')"},
+    {id:'meta-ads',title:'Connect Meta Ads',
+     desc:'Link your Facebook and Instagram ad account for full campaign visibility.',
+     btn:'Connect Meta Ads',
+     icon:'<path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>',
+     action:"nav('settings')"},
+    {id:'billing',title:'Set Up Billing',
+     desc:'Add your payment method and confirm your monthly investment.',
+     btn:'Go to Billing',
+     icon:'<rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/>',
+     action:"markHomeSetupStep('billing');nav('billing')"},
+    {id:'team',title:'Invite Your Team',
+     desc:'Add staff members who need access to this account.',
+     btn:'Invite Team',
+     icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
+     action:"markHomeSetupStep('team');openModal('team-invite-modal')"},
+    {id:'profile',title:'Complete Your Profile',
+     desc:'Add your business name, logo, and contact details.',
+     btn:'Complete Profile',
+     icon:'<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+     action:"markHomeSetupStep('profile');nav('settings')"}
+  ];
+  window.markHomeSetupStep=function(id){
+    var d=_hsGet(); if(!d.steps) d.steps={};
+    d.steps[id]=true;
+    var conn=_hsConn();
+    if(_HS_STEPS.every(function(s){ return _hsStepDone(s.id,d,conn); })) d.completed=true;
+    _hsSave(d); renderHomeSetup();
+  };
+  window.skipHomeSetup=function(){
+    var c=document.getElementById('hs-skip-conf'); if(c) c.style.display='';
+  };
+  window.cancelSkipHomeSetup=function(){
+    var c=document.getElementById('hs-skip-conf'); if(c) c.style.display='none';
+  };
+  window.confirmSkipHomeSetup=function(){
+    var d=_hsGet(); d.skipped=true; d.completed=true; _hsSave(d);
+    if(window.applyHomeForRole) window.applyHomeForRole();
+  };
+  function _needsHomeSetup(){
+    if(window.currentRole!=='admin') return false;
+    var d=_hsGet(); return !(d.completed||d.skipped);
+  }
+  function renderHomeSetup(){
+    var wrap=document.getElementById('home-setup-view'); if(!wrap) return;
+    var d=_hsGet(); var conn=_hsConn();
+    var doneN=_HS_STEPS.filter(function(s){ return _hsStepDone(s.id,d,conn); }).length;
+    var total=_HS_STEPS.length; var pct=Math.round(doneN/total*100);
+    // Check if everything just became complete
+    if(doneN===total){ d.completed=true; _hsSave(d); if(window.applyHomeForRole) window.applyHomeForRole(); return; }
+    var cards=_HS_STEPS.map(function(s){
+      var done=_hsStepDone(s.id,d,conn);
+      var badge=done
+        ?'<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#16a34a;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);border-radius:999px;padding:3px 9px"><svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>Complete</span>'
+        :'<span style="font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.06);border:1px solid var(--border);border-radius:999px;padding:3px 9px">Pending</span>';
+      var btn=done
+        ?'<button disabled style="height:32px;padding:0 14px;border:none;border-radius:8px;background:rgba(34,197,94,.12);color:#16a34a;font-size:11px;font-weight:800;font-family:inherit;cursor:default;display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>Done</button>'
+        :'<button onclick="'+s.action+'" style="height:32px;padding:0 14px;border:none;border-radius:8px;background:var(--gold);color:#000;font-size:11px;font-weight:900;font-family:inherit;cursor:pointer">'+s.btn+'</button>';
+      var iconBg=done?'rgba(34,197,94,.12)':'var(--gold-pale,#faf4e2)';
+      var iconBorder=done?'rgba(34,197,94,.3)':'rgba(201,168,76,.3)';
+      var iconStroke=done?'#16a34a':'var(--gold)';
+      return '<div style="display:flex;align-items:flex-start;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:13px;box-shadow:var(--soft);margin-bottom:10px'+(done?';opacity:.82':'')+'"><div style="width:38px;height:38px;border-radius:10px;background:'+iconBg+';border:1.5px solid '+iconBorder+';display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="'+iconStroke+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+s.icon+'</svg></div><div style="flex:1;min-width:0"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px"><span style="font-size:13px;font-weight:900;color:var(--ink)">'+s.title+'</span>'+badge+'</div><p style="font-size:12px;color:var(--muted);font-weight:600;line-height:1.4;margin:0 0 10px">'+s.desc+'</p>'+btn+'</div></div>';
+    }).join('');
+    wrap.innerHTML=
+      '<div style="background:linear-gradient(135deg,var(--ink,#10243f),#1b3a6b);border-radius:16px;padding:22px;color:#fff;margin-bottom:14px;box-shadow:var(--soft)">'
+      +'<p style="font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--gold,#f4b942);margin:0 0 4px">Welcome to CAL OS 👋</p>'
+      +'<p style="font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:900;margin:0 0 6px;line-height:1.1">Let\'s get your account set up</p>'
+      +'<p style="font-size:13px;font-weight:600;color:rgba(255,255,255,.82);margin:0 0 14px;line-height:1.5">Complete the steps below to unlock your full dashboard and start seeing real results.</p>'
+      +'<div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:rgba(255,255,255,.9);margin-bottom:7px"><span>'+doneN+' of '+total+' steps complete</span><span>'+pct+'%</span></div>'
+      +'<div style="height:9px;border-radius:999px;background:rgba(255,255,255,.18);overflow:hidden"><div style="height:100%;width:'+pct+'%;border-radius:999px;background:linear-gradient(90deg,var(--gold,#f4b942),#22c55e);transition:width .5s ease"></div></div>'
+      +'</div>'
+      +cards
+      +'<div style="text-align:center;margin-top:4px;padding:4px 0 8px">'
+      +'<button onclick="skipHomeSetup()" style="background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;text-decoration:underline;text-underline-offset:2px">Skip setup and go to dashboard →</button>'
+      +'<div id="hs-skip-conf" style="display:none;margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:left">'
+      +'<p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 6px">Are you sure?</p>'
+      +'<p style="font-size:12px;font-weight:600;color:var(--muted);margin:0 0 12px;line-height:1.4">Your dashboard will show placeholder data until setup is complete.</p>'
+      +'<div style="display:flex;gap:8px"><button onclick="confirmSkipHomeSetup()" style="height:34px;padding:0 16px;border:none;border-radius:8px;background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer">Confirm, go to dashboard</button>'
+      +'<button onclick="cancelSkipHomeSetup()" style="height:34px;padding:0 14px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer">Cancel</button></div>'
+      +'</div></div>';
+  }
+
   /* ---- applyHomeForRole override: admin sees static admin home; onboarding lives on its own tab ---- */
   window.applyHomeForRole=function(){
     var admin=(window.currentRole==='admin');
+    var setup=admin&&_needsHomeSetup();
     var av=document.getElementById('home-admin-view');
     var fv=document.getElementById('home-full-view');
+    var sv=document.getElementById('home-setup-view');
     if(fv) fv.style.display=admin?'none':'block';
-    if(av) av.style.display=admin?'block':'none';
+    if(setup){
+      if(av) av.style.display='none';
+      if(sv){ sv.style.display='block'; renderHomeSetup(); }
+    } else {
+      if(av) av.style.display=admin?'block':'none';
+      if(sv) sv.style.display='none';
+    }
   };
 
   /* ---- nav override: render onboarding tab + admin enhancers ---- */
@@ -12459,9 +12603,34 @@ function healthBadge(score){
     document.head.appendChild(s);
   }
 
+  function _seedHomeSetupDemoAdmins(){
+    // Known demo admin accounts already have data — mark home setup completed
+    // so they always see the regular dashboard, never the new-account flow.
+    var DEMO_ADMIN_KEYS=['client@apexlegal.com','info@unitedsewerservice.com'];
+    DEMO_ADMIN_KEYS.forEach(function(email){
+      var k=_HSP+email;
+      if(!localStorage.getItem(k)){
+        localStorage.setItem(k,JSON.stringify({completed:true,skipped:false,steps:{}}));
+      }
+    });
+    // Also mark the current logged-in admin as existing if they have any nav history,
+    // guarding against a fresh browser for any other pre-existing admin email.
+    if(window.currentRole==='admin'&&window.currentUser&&window.currentUser.email){
+      var ck=_HSP+window.currentUser.email;
+      if(!localStorage.getItem(ck)){
+        var hasHist=false;
+        try{ var ast=JSON.parse(localStorage.getItem('cal-app-state')||'{}'); hasHist=!!(ast.lastNav); }catch(e){}
+        var hasConn=false;
+        try{ var cs=JSON.parse(localStorage.getItem('cal-platform-conn-'+window.currentUser.email)||'{}'); hasConn=Object.keys(cs).some(function(k){ return cs[k]; }); }catch(e){}
+        if(hasHist||hasConn) localStorage.setItem(ck,JSON.stringify({completed:true,skipped:false,steps:{}}));
+      }
+    }
+  }
+
   function onbInit(){
     injectOnbCSS();
     onbSeedDemo();
+    _seedHomeSetupDemoAdmins();
     ensureMilestoneHost();
     window.TITLES=window.TITLES||{};
     window.TITLES.onboarding='Your CAL Journey';
