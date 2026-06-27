@@ -172,7 +172,7 @@ async function handleMetaPut(req, res, qs) {
       });
       Object.keys(inPrefs).forEach(function(navKey) {
         const iv = inPrefs[navKey];
-        const normIv = (iv !== null && typeof iv === 'object') ? iv : { v: !!iv, t: 0 };
+        const normIv = (iv !== null && typeof iv === 'object') ? iv : { v: !!iv, t: 1 };
         const normEv = mergedPrefs[navKey] || { v: false, t: 0 };
         const it = normIv.t || 0;
         const et = normEv.t || 0;
