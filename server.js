@@ -40,6 +40,12 @@ const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 // Secret is sourced from the environment (set CAL_META_SECRET in production for persistence).
 // If absent, a random ephemeral secret is generated at startup — tokens will not survive a restart.
 const META_SECRET = process.env.CAL_META_SECRET || crypto.randomBytes(32).toString('hex');
+if (!process.env.CAL_META_SECRET) {
+  console.warn('[CAL] WARNING: CAL_META_SECRET is not set.');
+  console.warn('[CAL]   A random ephemeral secret was generated at startup.');
+  console.warn('[CAL]   Every server restart will invalidate all existing meta tokens.');
+  console.warn('[CAL]   Set CAL_META_SECRET as an environment secret for persistent sessions.');
+}
 
 function signMetaToken(payload) {
   const b64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
