@@ -374,6 +374,16 @@ a{text-decoration:none}
 .src-web{background:rgba(46,125,50,.1);color:var(--green)}
 .src-ghl{background:rgba(201,168,76,.15);color:#7c641a}
 [data-theme=dark] .src-ghl{color:var(--gold)}
+.src-gbp{background:rgba(52,168,83,.12);color:#1e7e34}
+.src-org{background:rgba(46,125,50,.1);color:var(--green)}
+.src-wom{background:rgba(156,39,176,.1);color:#7b1fa2}
+.src-ref{background:rgba(0,150,136,.1);color:#00695c}
+.src-other{background:rgba(120,120,120,.1);color:#666}
+[data-theme=dark] .src-other{color:#aaa}
+@keyframes liveDotPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+.live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;animation:liveDotPulse 2s ease-in-out infinite;margin-left:7px;vertical-align:middle;flex-shrink:0}
+@keyframes leadHighlight{0%{background:rgba(201,168,76,.14)}100%{background:transparent}}
+.lead-row.lead-new-anim{animation:leadHighlight 3s ease-out forwards}
 .btn-view{height:28px;padding:0 12px;border:1px solid var(--border);border-radius:999px;background:var(--surface);color:var(--blue);font-size:11px;font-weight:800;transition:all .14s;white-space:nowrap}
 .btn-view:hover{border-color:var(--gold);color:var(--gold)}
 .timer-pill{height:18px;padding:0 7px;border-radius:6px;font-size:9px;font-weight:900;display:inline-flex;align-items:center;gap:4px;margin-left:6px}
@@ -2814,69 +2824,21 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: LEADS ============ -->
 <div class="screen" id="s-leads">
-  <div class="sec-head"><div><h2>Leads</h2><p>All inbound leads from campaigns</p></div><button class="btn-view" onclick="openModal('add-lead-modal')">+ Add Lead</button></div>
-  <div class="filter-row">
-    <button class="f-btn active" onclick="setFilterActive(this)">All (28)</button><button class="f-btn" onclick="setFilterActive(this)">New (4)</button><button class="f-btn" onclick="setFilterActive(this)">Contacted (12)</button><button class="f-btn" onclick="setFilterActive(this)">Qualified (8)</button><button class="f-btn" onclick="setFilterActive(this)">Closed (4)</button>
+  <div class="sec-head">
+    <div><h2 style="display:flex;align-items:center">Leads<span class="live-dot" id="leads-live-dot"></span></h2><p>All inbound leads from campaigns</p></div>
+    <button class="btn-view" onclick="openModal('add-lead-modal')">+ Add Lead</button>
   </div>
-  <div class="card">
-    <div class="lead-row new-flash" style="border-left-color:var(--gold)">
-      <div>
-        <span class="src-badge src-google">Google</span>
-        <span class="lead-name">John Martinez</span>
-        <span class="timer-pill" style="background:rgba(217,45,32,.1);color:var(--red)">42m</span>
-        <div class="lead-meta">Personal Injury · (305) 555-0142 · john.m@email.com<span class="respond-warn">⚠ Respond fast — leads contacted in 5 min convert 8x higher</span></div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        <span class="pill pill-red">NEW</span>
-        <button class="btn-view" onclick="openLeadPanel('John Martinez','Google','Personal Injury','(305) 555-0142','john.m@email.com','new','42m ago','red')">View</button>
-      </div>
-    </div>
-    <div class="lead-row new-flash" style="border-left-color:var(--gold);animation-delay:.2s">
-      <div>
-        <span class="src-badge src-meta">Meta</span>
-        <span class="lead-name">Sarah Kim</span>
-        <span class="timer-pill" style="background:rgba(201,168,76,.15);color:#7c641a">18m</span>
-        <div class="lead-meta">Car Accident · (786) 555-0183 · skim@gmail.com</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        <span class="pill pill-red">NEW</span>
-        <button class="btn-view" onclick="openLeadPanel('Sarah Kim','Meta','Car Accident','(786) 555-0183','skim@gmail.com','new','18m ago','gold')">View</button>
-      </div>
-    </div>
-    <div class="lead-row">
-      <div>
-        <span class="src-badge src-google">Google</span>
-        <span class="lead-name">Amanda Rivera</span>
-        <div class="lead-meta">Slip &amp; Fall · (305) 555-0291 · arivera@email.com</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        <span class="pill pill-gold">CONTACTED</span>
-        <button class="btn-view" onclick="openLeadPanel('Amanda Rivera','Google','Slip and Fall','(305) 555-0291','arivera@email.com','contacted','2h ago','green')">View</button>
-      </div>
-    </div>
-    <div class="lead-row">
-      <div>
-        <span class="src-badge src-web">Organic</span>
-        <span class="lead-name">Robert Chen</span>
-        <div class="lead-meta">Wrongful Death · (786) 555-0364 · rchen@email.com</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        <span class="pill pill-blue">QUALIFIED</span>
-        <button class="btn-view" onclick="openLeadPanel('Robert Chen','Organic','Wrongful Death','(786) 555-0364','rchen@email.com','qualified','1d ago','green')">View</button>
-      </div>
-    </div>
-    <div class="lead-row">
-      <div>
-        <span class="src-badge src-ghl">GHL</span>
-        <span class="lead-name">Lisa Morales</span>
-        <div class="lead-meta">Medical Malpractice · (305) 555-0417 · lmorales@email.com</div>
-      </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        <span class="pill pill-green">CLOSED</span>
-        <button class="btn-view" onclick="openLeadPanel('Lisa Morales','GHL','Medical Malpractice','(305) 555-0417','lmorales@email.com','closed','3d ago','green')">View</button>
-      </div>
-    </div>
+  <div id="leads-summary-bar" style="margin-bottom:14px"></div>
+  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+    <div class="filter-row" id="leads-status-tabs" style="margin-bottom:0;flex-wrap:wrap"></div>
+    <select id="leads-source-filter" class="input-std" style="width:148px;padding:6px 10px;height:36px" onchange="renderLeads()">
+      <option value="">All Sources</option>
+      <option>Google Ads</option><option>Meta Ads</option><option>Google Business Profile</option>
+      <option>Organic / SEO</option><option>Website Direct</option><option>Word of Mouth</option>
+      <option>Referral</option><option>GHL</option><option>Other</option>
+    </select>
   </div>
+  <div id="leads-list"></div>
 </div>
 
 <!-- ============ SCREEN: CONTENT AI ============ -->
@@ -5049,36 +5011,35 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button class="icon-btn" onclick="closeLeadPanel()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
   </div>
   <div class="slide-body">
-    <p class="lead-detail-name" id="lp-display-name">John Martinez</p>
-    <div class="lead-detail-row"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81"/></svg><span id="lp-phone">(305) 555-0142</span></div>
-    <div class="lead-detail-row"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span id="lp-email">john.m@email.com</span></div>
-    <div class="lead-detail-row"><svg viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7 12,2"/></svg><span id="lp-source">Google Ads</span></div>
-    <div class="lead-detail-row"><svg viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg><span id="lp-case">Personal Injury</span></div>
-    <div class="lead-detail-row"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg><span id="lp-received">Received 42m ago</span></div>
+    <p class="lead-detail-name" id="lp-display-name"></p>
+    <div class="lead-detail-row"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.99 1.18 2 2 0 013 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14h.01v2.92z"/></svg><span id="lp-phone"></span></div>
+    <div class="lead-detail-row"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><span id="lp-email"></span></div>
+    <div class="lead-detail-row"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 2,7 12,12 22,7 12,2"/><polyline points="2,17 12,22 22,17"/><polyline points="2,12 12,17 22,12"/></svg><span id="lp-source"></span></div>
+    <div class="lead-detail-row"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg><span id="lp-case"></span></div>
+    <div class="lead-detail-row"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg><span id="lp-received"></span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-      <button class="btn-action"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07"/></svg>Call</button>
-      <button class="btn-action"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/></svg>Email</button>
-      <button class="btn-action"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>SMS</button>
+      <button class="btn-action"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07"/></svg>Call</button>
+      <button class="btn-action"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/></svg>Email</button>
+      <button class="btn-action"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>SMS</button>
     </div>
     <div class="panel-section">
       <div class="panel-section-label">Update Status</div>
       <div class="status-changer" id="lp-status-changer">
-        <button class="status-btn active-status" onclick="setLeadStatus(this,'new')">New</button>
-        <button class="status-btn" onclick="setLeadStatus(this,'contacted')">Contacted</button>
-        <button class="status-btn" onclick="setLeadStatus(this,'qualified')">Qualified</button>
-        <button class="status-btn" onclick="setLeadStatus(this,'closed')">Closed</button>
-        <button class="status-btn" onclick="setLeadStatus(this,'lost')">Lost</button>
+        <button class="status-btn" data-status="new" onclick="setLeadStatus(this,'new')">New</button>
+        <button class="status-btn" data-status="contacted" onclick="setLeadStatus(this,'contacted')">Contacted</button>
+        <button class="status-btn" data-status="qualified" onclick="setLeadStatus(this,'qualified')">Qualified</button>
+        <button class="status-btn" data-status="closed" onclick="setLeadStatus(this,'closed')">Closed</button>
+        <button class="status-btn" data-status="lost" onclick="setLeadStatus(this,'lost')">Lost</button>
       </div>
     </div>
     <div class="panel-section">
       <div class="panel-section-label">Notes</div>
-      <textarea class="notes-textarea" placeholder="Add notes about this lead..."></textarea>
+      <textarea id="lp-notes-ta" class="notes-textarea" placeholder="Add notes about this lead..."></textarea>
+      <button class="btn-view" style="margin-top:8px" onclick="saveLeadNotes()">Save Notes</button>
     </div>
     <div class="panel-section">
       <div class="panel-section-label">Activity</div>
-      <div class="timeline-item"><div class="tl-dot"></div><div><p class="tl-label">Lead received from Google Ads</p><p class="tl-time">42 min ago</p></div></div>
-      <div class="timeline-item"><div class="tl-dot green"></div><div><p class="tl-label">Auto-response email sent</p><p class="tl-time">42 min ago</p></div></div>
-      <div class="timeline-item"><div class="tl-dot blue"></div><div><p class="tl-label">Assigned to sales queue</p><p class="tl-time">42 min ago</p></div></div>
+      <div id="lp-activity"></div>
     </div>
   </div>
 </div>
@@ -5428,13 +5389,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div class="modal">
     <div class="modal-head"><h2>Add Lead</h2><button class="icon-btn" onclick="closeModal('add-lead-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body"><div class="form-grid">
-      <div class="form-field"><label class="form-label">Full Name</label><input class="input-std" placeholder="John Smith"></div>
-      <div class="form-field"><label class="form-label">Phone</label><input class="input-std" type="tel" placeholder="(305) 555-0000"></div>
-      <div class="form-field"><label class="form-label">Email</label><input class="input-std" type="email" placeholder="john@email.com"></div>
-      <div class="form-field"><label class="form-label">Case Type</label><select class="input-std"><option>Personal Injury</option><option>Car Accident</option><option>Slip &amp; Fall</option><option>Medical Malpractice</option><option>Wrongful Death</option><option>Other</option></select></div>
-      <div class="form-field"><label class="form-label">Source</label><select class="input-std"><option>Google Ads</option><option>Meta Ads</option><option>Organic</option><option>Referral</option><option>GHL</option></select></div>
+      <div class="form-field"><label class="form-label">Full Name *</label><input id="al-name" class="input-std" placeholder="John Smith"></div>
+      <div class="form-field"><label class="form-label">Phone</label><input id="al-phone" class="input-std" type="tel" placeholder="(305) 555-0000"></div>
+      <div class="form-field"><label class="form-label">Email</label><input id="al-email" class="input-std" type="email" placeholder="john@email.com"></div>
+      <div class="form-field"><label class="form-label">Source</label><select id="al-source" class="input-std"><option>Google Ads</option><option>Meta Ads</option><option>Google Business Profile</option><option>Organic / SEO</option><option>Website Direct</option><option>Word of Mouth</option><option>Referral</option><option>GHL</option><option>Other</option></select></div>
+      <div class="form-field"><label class="form-label">Service / Case Type</label><input id="al-case" class="input-std" placeholder="e.g. Personal Injury, Car Accident"></div>
+      <div class="form-field" style="grid-column:1/-1"><label class="form-label">Notes <span style="font-weight:600;color:var(--muted)">(optional)</span></label><textarea id="al-notes" class="notes-textarea" style="height:72px" placeholder="Any additional notes about this lead..."></textarea></div>
     </div></div>
-    <div class="modal-actions"><button class="btn-gold" onclick="closeModal('add-lead-modal');showToast('Lead added successfully!','green')">Add Lead</button><button class="btn-ghost" onclick="closeModal('add-lead-modal')">Cancel</button></div>
+    <div class="modal-actions"><button class="btn-gold" onclick="addLeadSubmit()">Add Lead</button><button class="btn-ghost" onclick="closeModal('add-lead-modal')">Cancel</button></div>
   </div>
 </div>
 
@@ -6857,6 +6819,7 @@ function nav(screen){
   closeSidebar(); closeMoreSheet();
   if(screen!=='projects') closeProject();
   if(screen==='home') initHomeScreen();
+  if(screen==='leads') initLeads();
   if(screen==='notes'){ renderNotesList(); openNote(currentNoteIndex); }
   if(screen==='plans') setTimeout(highlightCurrentPlan,50);
   if(screen==='permissions') renderPermAccounts();
@@ -7638,16 +7601,213 @@ function closeAllModals(){
 }
 
 // ============ PANELS ============
-function openLeadPanel(name,src,caseType,phone,email,status,received){
-  var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
-  set('lp-name',name); set('lp-display-name',name); set('lp-phone',phone);
-  set('lp-email',email); set('lp-source',src); set('lp-case',caseType); set('lp-received','Received '+received);
+/* ── Leads Store ── */
+var _leadsDb=[];
+var _currentLeadFilter='all';
+var _currentLeadId=null;
+var _leadSrcMap={
+  'Google Ads':{badge:'Google',cls:'src-google'},
+  'Meta Ads':{badge:'Meta',cls:'src-meta'},
+  'Google Business Profile':{badge:'GBP',cls:'src-gbp'},
+  'Organic / SEO':{badge:'Organic',cls:'src-org'},
+  'Website Direct':{badge:'Website',cls:'src-web'},
+  'Word of Mouth':{badge:'WoM',cls:'src-wom'},
+  'Referral':{badge:'Referral',cls:'src-ref'},
+  'GHL':{badge:'GHL',cls:'src-ghl'},
+  'Other':{badge:'Other',cls:'src-other'}
+};
+function _leadsKey(){ return 'cal-leads-'+(typeof acctKey==='function'?acctKey():'global'); }
+function _defaultLeads(){
+  var now=Date.now();
+  return [
+    {id:'l1',name:'John Martinez',phone:'(305) 555-0142',email:'john.m@email.com',source:'Google Ads',caseType:'Personal Injury',status:'new',notes:'',receivedAt:now-42*60*1000,activity:[{label:'Lead received from Google Ads',time:now-42*60*1000}]},
+    {id:'l2',name:'Sarah Kim',phone:'(786) 555-0183',email:'skim@gmail.com',source:'Meta Ads',caseType:'Car Accident',status:'new',notes:'',receivedAt:now-18*60*1000,activity:[{label:'Lead received from Meta Ads',time:now-18*60*1000}]},
+    {id:'l3',name:'Amanda Rivera',phone:'(305) 555-0291',email:'arivera@email.com',source:'Google Ads',caseType:'Slip & Fall',status:'contacted',notes:'',receivedAt:now-2*3600*1000,activity:[{label:'Lead received from Google Ads',time:now-2*3600*1000},{label:'Status changed to Contacted',time:now-90*60*1000}]},
+    {id:'l4',name:'Robert Chen',phone:'(786) 555-0364',email:'rchen@email.com',source:'Organic / SEO',caseType:'Wrongful Death',status:'qualified',notes:'',receivedAt:now-86400*1000,activity:[{label:'Lead received from Organic / SEO',time:now-86400*1000},{label:'Status changed to Qualified',time:now-72000*1000}]},
+    {id:'l5',name:'Lisa Morales',phone:'(305) 555-0417',email:'lmorales@email.com',source:'GHL',caseType:'Medical Malpractice',status:'closed',notes:'Signed retainer.',receivedAt:now-3*86400*1000,activity:[{label:'Lead received from GHL',time:now-3*86400*1000},{label:'Status changed to Closed',time:now-2*86400*1000}]}
+  ];
+}
+function _loadLeads(){ try{ var r=localStorage.getItem(_leadsKey()); if(r){_leadsDb=JSON.parse(r);return;} }catch(e){} _leadsDb=_defaultLeads(); _saveLeads(); }
+function _saveLeads(){ try{ localStorage.setItem(_leadsKey(),JSON.stringify(_leadsDb)); }catch(e){} }
+function _timeAgo(ts){ var d=Math.floor((Date.now()-ts)/1000); if(d<60) return d+'s'; if(d<3600) return Math.floor(d/60)+'m'; if(d<86400) return Math.floor(d/3600)+'h'; return Math.floor(d/86400)+'d'; }
+
+function initLeads(){
+  _loadLeads();
+  _currentLeadFilter='all';
+  var sf=document.getElementById('leads-source-filter'); if(sf) sf.value='';
+  renderLeads();
+}
+
+function renderLeads(){
+  var src=(document.getElementById('leads-source-filter')||{value:''}).value;
+  var filtered=_leadsDb.filter(function(l){
+    return (_currentLeadFilter==='all'||l.status===_currentLeadFilter)&&(!src||l.source===src);
+  });
+  _renderLeadSummaryBar();
+  _renderLeadStatusTabs();
+  var list=document.getElementById('leads-list');
+  if(!list) return;
+  if(filtered.length===0){
+    list.innerHTML='<div style="text-align:center;padding:52px 20px">'
+      +'<svg viewBox="0 0 64 64" width="52" height="52" fill="none" stroke="var(--border)" stroke-width="1.5" style="display:block;margin:0 auto 14px"><circle cx="32" cy="32" r="28"/><path d="M22 32h20M32 22v20" stroke-linecap="round"/></svg>'
+      +'<p style="font-size:15px;font-weight:900;color:var(--ink);margin-bottom:6px">No leads for this filter</p>'
+      +'<p style="font-size:13px;color:var(--muted);font-weight:600;max-width:300px;margin:0 auto">Leads will appear here automatically when your campaigns are live.</p>'
+      +'</div>';
+    return;
+  }
+  var _statusPill={new:'pill-red',contacted:'pill-gold',qualified:'pill-blue',closed:'pill-green',lost:'pill-muted'};
+  var _accentColor={new:'var(--gold)',contacted:'var(--gold)',qualified:'var(--blue)',closed:'var(--green)',lost:'var(--border)'};
+  var html='<div class="card">';
+  filtered.forEach(function(lead){
+    var sm=_leadSrcMap[lead.source]||{badge:lead.source,cls:'src-other'};
+    var minsOld=(Date.now()-lead.receivedAt)/60000;
+    var isNew=lead.status==='new';
+    var isRecent=minsOld<24*60;
+    html+='<div class="lead-row" style="border-left-color:'+(_accentColor[lead.status]||'transparent')+'">'
+      +'<div>'
+      +'<span class="src-badge '+sm.cls+'">'+sm.badge+'</span>'
+      +'<span class="lead-name">'+lead.name+'</span>'
+      +(isRecent?'<span class="timer-pill" style="background:rgba(217,45,32,.1);color:var(--red)">'+_timeAgo(lead.receivedAt)+'</span>':'')
+      +'<div class="lead-meta">'+lead.caseType+' · '+lead.phone+' · '+lead.email
+      +(isNew?'<span class="respond-warn" style="display:block;margin-top:2px">⚠ Respond fast — leads contacted in 5 min convert 8× higher</span>':'')
+      +'</div></div>'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">'
+      +'<span class="pill '+(_statusPill[lead.status]||'pill-muted')+'">'+lead.status.toUpperCase()+'</span>'
+      +'<button class="btn-view" onclick="openLeadPanelById(\''+lead.id+'\')">View</button>'
+      +'</div></div>';
+  });
+  html+='</div>';
+  list.innerHTML=html;
+}
+
+function _renderLeadSummaryBar(){
+  var el=document.getElementById('leads-summary-bar'); if(!el) return;
+  var now=Date.now(); var weekAgo=now-7*86400*1000;
+  var total=_leadsDb.length;
+  var newWk=_leadsDb.filter(function(l){return l.receivedAt>=weekAgo;}).length;
+  var closed=_leadsDb.filter(function(l){return l.status==='closed';}).length;
+  var conv=total>0?Math.round(closed/total*100):0;
+  var sc={}; _leadsDb.forEach(function(l){sc[l.source]=(sc[l.source]||0)+1;});
+  var top=Object.keys(sc).sort(function(a,b){return sc[b]-sc[a];})[0]||'—';
+  var topShort=(_leadSrcMap[top]||{badge:top}).badge;
+  function chip(lbl,val,col){
+    return '<div style="display:inline-flex;align-items:center;gap:6px;padding:5px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:999px">'
+      +'<span style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+lbl+'</span>'
+      +'<span style="font-size:13px;font-weight:900;color:'+col+'">'+val+'</span></div>';
+  }
+  el.innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap">'
+    +chip('Total Leads',total,'var(--ink)')
+    +chip('New This Week',newWk,'var(--green)')
+    +chip('Conversion',conv+'%','var(--gold)')
+    +chip('Top Source',topShort,'var(--blue)')
+    +'</div>';
+}
+
+function _renderLeadStatusTabs(){
+  var el=document.getElementById('leads-status-tabs'); if(!el) return;
+  var src=(document.getElementById('leads-source-filter')||{value:''}).value;
+  var base=src?_leadsDb.filter(function(l){return l.source===src;}):_leadsDb;
+  var c={all:0,new:0,contacted:0,qualified:0,closed:0};
+  base.forEach(function(l){c.all++;if(c[l.status]!==undefined)c[l.status]++;});
+  el.innerHTML=[{k:'all',lbl:'All'},{k:'new',lbl:'New'},{k:'contacted',lbl:'Contacted'},{k:'qualified',lbl:'Qualified'},{k:'closed',lbl:'Closed'}].map(function(t){
+    return '<button class="f-btn'+(_currentLeadFilter===t.k?' active':'')+'" onclick="setLeadStatusFilter(\''+t.k+'\')">'+t.lbl+' ('+(c[t.k]||0)+')</button>';
+  }).join('');
+}
+
+function setLeadStatusFilter(s){ _currentLeadFilter=s; renderLeads(); }
+
+function openLeadPanelById(id){
+  var lead=_leadsDb.find(function(l){return l.id===id;}); if(!lead) return;
+  _currentLeadId=id;
+  var set=function(eid,v){var el=document.getElementById(eid);if(el)el.textContent=v;};
+  set('lp-name',lead.name); set('lp-display-name',lead.name);
+  set('lp-phone',lead.phone); set('lp-email',lead.email);
+  set('lp-source',lead.source); set('lp-case',lead.caseType);
+  set('lp-received','Received '+_timeAgo(lead.receivedAt)+' ago');
+  var ta=document.getElementById('lp-notes-ta'); if(ta) ta.value=lead.notes||'';
+  document.querySelectorAll('#lp-status-changer .status-btn').forEach(function(b){b.classList.toggle('active-status',b.dataset.status===lead.status);});
+  _renderLeadActivity(lead);
   document.getElementById('lead-panel').classList.add('open');
   document.getElementById('lead-overlay').classList.add('show');
   document.body.classList.add('locked');
 }
-function closeLeadPanel(){ var p=document.getElementById('lead-panel'); var o=document.getElementById('lead-overlay'); if(p) p.classList.remove('open'); if(o) o.classList.remove('show'); document.body.classList.remove('locked'); }
-function setLeadStatus(btn,status){ document.querySelectorAll('#lp-status-changer .status-btn').forEach(function(b){ b.classList.remove('active-status'); }); btn.classList.add('active-status'); showToast('Status: '+status,'green'); }
+
+function _renderLeadActivity(lead){
+  var el=document.getElementById('lp-activity'); if(!el) return;
+  var acts=(lead.activity||[]).slice().reverse();
+  var dotCls=['','green','blue',''];
+  el.innerHTML=acts.map(function(a,i){
+    return '<div class="timeline-item"><div class="tl-dot'+(dotCls[i]?' '+dotCls[i]:'')+'" ></div><div><p class="tl-label">'+a.label+'</p><p class="tl-time">'+_timeAgo(a.time)+' ago</p></div></div>';
+  }).join('')||'<p style="font-size:12px;color:var(--muted)">No activity yet.</p>';
+}
+
+function openLeadPanel(name,src,caseType,phone,email,status,received){
+  var fake={id:'_tmp',name:name,phone:phone,email:email,source:src,caseType:caseType,status:status,notes:'',receivedAt:Date.now()-60000,activity:[{label:'Lead received from '+src,time:Date.now()-60000}]};
+  _currentLeadId=null;
+  var set=function(eid,v){var el=document.getElementById(eid);if(el)el.textContent=v;};
+  set('lp-name',name);set('lp-display-name',name);set('lp-phone',phone);set('lp-email',email);set('lp-source',src);set('lp-case',caseType);set('lp-received','Received '+received);
+  var ta=document.getElementById('lp-notes-ta');if(ta)ta.value='';
+  document.querySelectorAll('#lp-status-changer .status-btn').forEach(function(b){b.classList.toggle('active-status',b.dataset.status===status);});
+  _renderLeadActivity(fake);
+  document.getElementById('lead-panel').classList.add('open');
+  document.getElementById('lead-overlay').classList.add('show');
+  document.body.classList.add('locked');
+}
+
+function closeLeadPanel(){
+  var p=document.getElementById('lead-panel');var o=document.getElementById('lead-overlay');
+  if(p)p.classList.remove('open');if(o)o.classList.remove('show');
+  document.body.classList.remove('locked');
+}
+
+function setLeadStatus(btn,status){
+  document.querySelectorAll('#lp-status-changer .status-btn').forEach(function(b){b.classList.remove('active-status');});
+  btn.classList.add('active-status');
+  if(_currentLeadId){
+    var lead=_leadsDb.find(function(l){return l.id===_currentLeadId;});
+    if(lead){
+      lead.status=status;
+      lead.activity=lead.activity||[];
+      lead.activity.push({label:'Status changed to '+status.charAt(0).toUpperCase()+status.slice(1),time:Date.now()});
+      _saveLeads(); renderLeads(); _renderLeadActivity(lead);
+    }
+  }
+  showToast('Status updated: '+status,'green');
+}
+
+function saveLeadNotes(){
+  if(!_currentLeadId){showToast('Notes saved.','green');return;}
+  var ta=document.getElementById('lp-notes-ta');if(!ta)return;
+  var lead=_leadsDb.find(function(l){return l.id===_currentLeadId;});
+  if(!lead)return;
+  lead.notes=ta.value;
+  if(ta.value.trim()){lead.activity=lead.activity||[];lead.activity.push({label:'Note added',time:Date.now()});}
+  _saveLeads(); _renderLeadActivity(lead);
+  showToast('Notes saved.','green');
+}
+
+function addLeadSubmit(){
+  var name=(document.getElementById('al-name')||{value:''}).value.trim();
+  var phone=(document.getElementById('al-phone')||{value:''}).value.trim()||'—';
+  var email=(document.getElementById('al-email')||{value:''}).value.trim()||'—';
+  var source=(document.getElementById('al-source')||{value:'Other'}).value||'Other';
+  var caseType=(document.getElementById('al-case')||{value:''}).value.trim()||'General';
+  var notes=(document.getElementById('al-notes')||{value:''}).value.trim();
+  if(!name){showToast('Please enter a lead name.','gold');return;}
+  var now=Date.now();
+  var lead={id:'l'+now,name:name,phone:phone,email:email,source:source,caseType:caseType,status:'new',notes:notes,receivedAt:now,activity:[{label:'Lead received from '+source,time:now}]};
+  _leadsDb.unshift(lead);
+  _saveLeads();
+  closeModal('add-lead-modal');
+  ['al-name','al-phone','al-email','al-notes'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  renderLeads();
+  var srcShort=(_leadSrcMap[source]||{badge:source}).badge;
+  showToast('New lead received — '+name+' from '+srcShort,'gold');
+  setTimeout(function(){
+    var rows=document.querySelectorAll('#leads-list .lead-row');
+    if(rows[0]){rows[0].classList.add('lead-new-anim');setTimeout(function(){rows[0].classList.remove('lead-new-anim');},3200);}
+  },100);
+}
 function openCallPanel(initials,rep,client,date,duration,outcome,notes){
   var set=function(id,v){ var el=document.getElementById(id); if(el) el.textContent=v; };
   set('cp-avatar',initials); set('cp-rep',rep); set('cp-meta',date+' · '+duration+' · '+client);
