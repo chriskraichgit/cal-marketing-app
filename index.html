@@ -9005,6 +9005,7 @@ function gdriveSearch(e) {
   loadGDriveFiles(inp ? inp.value.trim() : '');
 }
 
+var MAX_UPLOAD_MB = 50;
 function onUploadFilePicked(input) {
   var label = document.getElementById('file-upload-label');
   var hint = document.getElementById('file-upload-hint');
@@ -9019,11 +9020,11 @@ function onUploadFilePicked(input) {
   }
   var mb = f.size / (1024 * 1024);
   var sizeLabel = mb < 0.1 ? (f.size/1024).toFixed(1)+' KB' : mb.toFixed(1)+' MB';
-  if (mb > 50) {
+  if (mb > MAX_UPLOAD_MB) {
     _pendingUploadFile = null;
     if (label) label.textContent = f.name;
     if (hint) {
-      hint.textContent = 'File too large (' + sizeLabel + '). Maximum size is 50 MB.';
+      hint.textContent = 'File too large (' + sizeLabel + '). Maximum size is ' + MAX_UPLOAD_MB + ' MB.';
       hint.style.display = '';
       hint.style.color = 'var(--danger, #e74c3c)';
     }
@@ -9159,8 +9160,8 @@ function submitDriveUpload() {
     showToast('Connect Google Drive before uploading.', 'gold');
     return;
   }
-  if (file.size > 50 * 1024 * 1024) {
-    showToast('File exceeds the 50MB limit.', 'gold');
+  if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
+    showToast('File exceeds the ' + MAX_UPLOAD_MB + 'MB limit.', 'gold');
     return;
   }
 
