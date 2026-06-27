@@ -7006,6 +7006,29 @@ function setupRoleUI(){
       var obDone=obData&&obData.completedAt;
       obLbl.textContent=obDone?'Maintenance':'Onboarding';
     }
+    // ── Filter nav-admin buttons by the user's actual permission list ──
+    var adminPerms=getPermissions('admin', currentUser&&currentUser.email?currentUser.email:'');
+    var navAdminEl=document.getElementById('nav-admin');
+    if(navAdminEl){
+      navAdminEl.querySelectorAll('.nav-btn').forEach(function(btn){
+        var oc=btn.getAttribute('onclick')||'';
+        var m=oc.match(/nav\('([^']+)'\)/);
+        var screen=m?m[1]:null;
+        // Fail-open: if we can't parse a screen name keep the button visible
+        btn.style.display=(!screen||adminPerms.indexOf(screen)>=0)?'':'none';
+      });
+      // Hide a nav-label divider if every button that follows it (until the
+      // next divider) is hidden, so empty sections leave no orphan headings
+      navAdminEl.querySelectorAll('.nav-label').forEach(function(lbl){
+        var sibling=lbl.nextElementSibling;
+        var anyVisible=false;
+        while(sibling&&!sibling.classList.contains('nav-label')){
+          if(sibling.classList.contains('nav-btn')&&sibling.style.display!=='none') anyVisible=true;
+          sibling=sibling.nextElementSibling;
+        }
+        lbl.style.display=anyVisible?'':'none';
+      });
+    }
   }
   // ── Updates feed ──
   var postRow=document.getElementById('updates-post-row');
