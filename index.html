@@ -9317,6 +9317,14 @@ function submitDriveUpload() {
     showToast('Could not reach the server. Please try again.', 'gold');
   };
 
+  xhr.timeout = 60000;
+  xhr.ontimeout = function() {
+    xhr.abort();
+    resetProgress();
+    if (input) { input.value = ''; onUploadFilePicked(input); }
+    showToast('Upload timed out. Please check your connection and try again.', 'gold');
+  };
+
   xhr.send(fd);
 }
 
