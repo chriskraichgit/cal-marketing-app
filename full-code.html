@@ -815,7 +815,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 .img-upload-btn svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 #img-preview-wrap{display:none;margin-top:10px}
 #img-preview{width:100%;max-height:150px;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
-@media(min-width:900px){.inbox-layout{display:grid;grid-template-columns:250px 1fr;gap:14px}}
+@media(min-width:900px){.inbox-layout{display:grid;grid-template-columns:280px 1fr;gap:14px;align-items:start}}
 @media(max-width:899px){.inbox-layout{display:flex;flex-direction:column;gap:14px}#inbox-msg-pane{min-height:280px}}
 .mic-ring{width:68px;height:68px;border-radius:50%;background:rgba(27,58,107,.08);border:3px solid var(--blue);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;animation:pulse 1.5s infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(27,58,107,.3)}50%{box-shadow:0 0 0 12px rgba(27,58,107,0)}}
@@ -3118,24 +3118,19 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: INBOX ============ -->
 <div class="screen" id="s-inbox">
-  <div class="sec-head"><div><h2>Inbox</h2><p>Client messages and support</p></div><button class="btn-gold" style="height:38px;padding:0 18px;flex-shrink:0" onclick="openComposeModal()">+ New Message</button></div>
+  <div class="sec-head"><div><h2>Inbox</h2><p>Client messages and support</p></div></div>
   <div class="inbox-layout">
-    <div class="card" style="overflow:hidden">
-      <div style="padding:10px"><input class="input-std" style="height:36px" placeholder="Search messages..."></div>
-      <div id="inbox-thread-list">
-        <div class="feed-row" style="padding:10px 12px;cursor:pointer;background:rgba(27,58,107,.04);border-left:3px solid var(--blue)" onclick="openThread(0)"><div class="feed-ico"><div style="width:32px;height:32px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">AT</div></div><div><strong>Alex Torres · <span style="color:var(--green)">Unread</span></strong><span>Can we discuss the ad budget?</span></div><span class="feed-time">2h</span></div>
-        <div class="feed-row" style="padding:10px 12px;cursor:pointer;border-left:3px solid var(--gold)" onclick="openThread(1)"><div class="feed-ico"><div style="width:32px;height:32px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">CK</div></div><div><strong>Chris Kraich</strong><span>Reports are ready for review</span></div><span class="feed-time">1d</span></div>
+    <div class="card" style="overflow:hidden;display:flex;flex-direction:column">
+      <div style="padding:8px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+        <input class="input-std" style="height:34px;flex:1;font-size:12px" placeholder="Search messages…" id="inbox-search" oninput="filterInboxSearch()">
+        <button class="btn-gold" style="height:34px;padding:0 14px;font-size:12px;white-space:nowrap;flex-shrink:0;border-radius:20px" onclick="openComposeModal()">+ New</button>
       </div>
+      <div id="inbox-thread-list" style="overflow-y:auto"></div>
     </div>
-    <div class="chat-wrap" id="inbox-msg-pane">
-      <div class="chat-msgs" id="chat-msgs">
-        <div class="bubble-w"><div class="bubble them">Hey, can we increase the Google Ads budget for Q3?</div><div class="bubble-meta">Alex Torres · 10:14 AM</div></div>
-        <div class="bubble-w me"><div class="bubble me">Absolutely — let me pull the data and I'll have recommendations by end of day.</div><div class="bubble-meta">10:22 AM<span class="read-r"> · ✓✓</span></div></div>
-        <div class="bubble-w"><div class="bubble them">Perfect, thanks! Also wanted to mention the last content piece was great.</div><div class="bubble-meta">Alex Torres · 10:30 AM</div></div>
-      </div>
-      <div class="chat-input-row">
-        <input placeholder="Type a message..." id="chat-input" onkeydown="if(event.key==='Enter')sendMsg()">
-        <button class="btn-send" onclick="sendMsg()">Send</button>
+    <div class="chat-wrap" id="inbox-msg-pane" style="min-height:420px;height:calc(100vh - 200px);max-height:700px">
+      <div id="inbox-empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:10px;padding:40px">
+        <svg viewBox="0 0 24 24" style="width:44px;height:44px;opacity:.25;stroke:var(--muted);fill:none;stroke-width:1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        <p style="font-size:13px;font-weight:600">Select a conversation</p>
       </div>
     </div>
   </div>
@@ -3143,29 +3138,33 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ COMPOSE MESSAGE MODAL ============ -->
 <div class="modal-overlay hidden" id="compose-msg-modal" onclick="if(event.target===this)closeModal('compose-msg-modal')">
-  <div class="modal-box" style="max-width:480px;width:100%">
+  <div class="modal-box" style="max-width:460px;width:100%">
     <div class="modal-head">
       <h2>New Message</h2>
       <button class="modal-close" onclick="closeModal('compose-msg-modal')">✕</button>
     </div>
-    <div style="display:flex;flex-direction:column;gap:16px;padding:20px 24px 24px">
-      <div class="form-field">
+    <div style="display:flex;flex-direction:column;gap:14px;padding:20px 24px 24px">
+      <div class="form-field" id="compose-biz-row">
         <label class="form-label">Business</label>
         <select class="input-std" id="compose-acct-sel" onchange="updateComposeRecipients()">
           <option value="">Select a business…</option>
         </select>
       </div>
       <div class="form-field">
-        <label class="form-label">Recipient</label>
+        <label class="form-label">To</label>
         <select class="input-std" id="compose-user-sel">
-          <option value="">Select business first…</option>
+          <option value="">Select recipient…</option>
         </select>
       </div>
       <div class="form-field">
-        <label class="form-label">Message</label>
-        <textarea class="input-std" id="compose-msg-body" rows="4" placeholder="Type your message…" style="resize:vertical;min-height:100px;padding:10px;line-height:1.5"></textarea>
+        <label class="form-label">Subject</label>
+        <input class="input-std" id="compose-subject" placeholder="Subject…" style="height:38px">
       </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+      <div class="form-field">
+        <label class="form-label">Message</label>
+        <textarea class="input-std" id="compose-msg-body" rows="4" placeholder="Type your message…" style="resize:vertical;min-height:90px;padding:10px;line-height:1.5"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
         <button class="btn-ghost" onclick="closeModal('compose-msg-modal')">Cancel</button>
         <button class="btn-gold" style="height:42px;padding:0 22px;font-size:13px" onclick="sendComposedMsg()">Send Message</button>
       </div>
@@ -7668,56 +7667,106 @@ function addComment(){ var inp=document.getElementById('proj-comment-input'); if
 
 // ============ INBOX ============
 function sendMsg(){ var inp=document.getElementById('chat-input')||document.getElementById('msg-input'); if(!inp||!inp.value.trim()) return; var msgs=document.getElementById('chat-msgs'); var bw=document.createElement('div'); bw.className='bubble-w me'; bw.innerHTML='<div class="bubble me">'+inp.value+'</div><div class="bubble-meta">Just now<span class="read-r"> · ✓</span></div>'; if(msgs){ msgs.appendChild(bw); msgs.scrollTop=msgs.scrollHeight; } inp.value=''; }
-var INBOX_DEFAULTS=[
-  {name:'Alex Torres',initials:'AT',color:'var(--gold)',colorText:'#000',msgs:[
-    {text:'Hey, can we increase the Google Ads budget for Q3?',me:false,time:'10:14 AM'},
-    {text:"Absolutely — let me pull the data and I'll have recommendations by end of day.",me:true,time:'10:22 AM'},
-    {text:'Perfect, thanks! Also, the last content piece performed really well.',me:false,time:'10:30 AM'}
-  ]},
-  {name:'Chris Kraich',initials:'CK',color:'var(--blue)',colorText:'#fff',msgs:[
-    {text:'Reports are ready for your review.',me:true,time:'Yesterday'},
-    {text:'Thanks! Looking great. See you on the call Thursday.',me:false,time:'Yesterday'}
-  ]}
-];
+// ============ INBOX — ROLE-BASED MESSAGING ============
 var _inboxCache=null;
 var _inboxCacheKey=null;
 function inboxKey(){
-  var role=window.currentRole||'';
-  if(role==='agency'||role==='test') return 'cal-inbox-threads-agency';
-  return 'cal-inbox-threads-'+(window.currentAcctId||'a1');
+  var me=window.currentUser||{};
+  var email=me.email||'';
+  if(!email) return 'cal-inbox-anon';
+  var acctId=window.currentAcctId||window.currentCompanyId||'default';
+  return 'cal-inbox-'+email+'-'+acctId;
 }
 function inboxLoad(){
   var key=inboxKey();
-  if(_inboxCache && _inboxCacheKey===key) return _inboxCache;
+  if(_inboxCache&&_inboxCacheKey===key) return _inboxCache;
   try{
     var raw=localStorage.getItem(key);
-    if(raw){ var d=JSON.parse(raw); if(Array.isArray(d)&&d.length){ _inboxCache=d; _inboxCacheKey=key; return d; } }
+    if(raw){ var d=JSON.parse(raw); if(Array.isArray(d)){ _inboxCache=d; _inboxCacheKey=key; return d; } }
   }catch(e){}
-  var seed=JSON.parse(JSON.stringify(INBOX_DEFAULTS));
-  try{ localStorage.setItem(key,JSON.stringify(seed)); }catch(e){}
-  _inboxCache=seed; _inboxCacheKey=key;
-  return seed;
+  _inboxCache=[]; _inboxCacheKey=key;
+  return [];
 }
 function inboxSave(threads){
   var key=inboxKey();
   _inboxCache=threads; _inboxCacheKey=key;
   try{ localStorage.setItem(key,JSON.stringify(threads)); }catch(e){}
 }
+function inboxInvalidateCache(){ _inboxCache=null; _inboxCacheKey=null; }
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function formatInboxTime(ts){
+  if(!ts) return '';
+  var now=Date.now(); var diff=now-ts;
+  if(diff<60000) return 'Just now';
+  if(diff<3600000) return Math.floor(diff/60000)+'m';
+  if(diff<86400000) return Math.floor(diff/3600000)+'h';
+  var d=new Date(ts);
+  return (d.getMonth()+1)+'/'+(d.getDate());
+}
+var INBOX_EMPTY_PANE='<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:10px;padding:40px"><svg viewBox="0 0 24 24" style="width:44px;height:44px;opacity:.25;stroke:var(--muted);fill:none;stroke-width:1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg><p style="font-size:13px;font-weight:600">Select a conversation</p></div>';
+function renderInboxThreadList(searchTerm){
+  var threads=inboxLoad();
+  var list=document.getElementById('inbox-thread-list'); if(!list) return;
+  var term=(searchTerm||'').toLowerCase().trim();
+  var items=threads.map(function(t,i){ return {t:t,idx:i}; });
+  if(term) items=items.filter(function(it){
+    var t=it.t;
+    return (t.name||'').toLowerCase().indexOf(term)>=0
+      ||(t.subject||'').toLowerCase().indexOf(term)>=0
+      ||(t.msgs&&t.msgs.length&&t.msgs[t.msgs.length-1].text.toLowerCase().indexOf(term)>=0);
+  });
+  if(!items.length){
+    list.innerHTML='<div style="padding:28px 16px;text-align:center;color:var(--muted);font-size:12px;font-weight:600;line-height:1.8">'+(threads.length?'No results found.':'No conversations yet.<br>Tap <strong>+ New</strong> to start one.')+'</div>';
+    return;
+  }
+  var html='';
+  items.forEach(function(it){
+    var t=it.t; var i=it.idx;
+    var lastMsg=t.msgs&&t.msgs.length?t.msgs[t.msgs.length-1]:null;
+    var preview=lastMsg?lastMsg.text.slice(0,44)+(lastMsg.text.length>44?'\u2026':''):'';
+    var isActive=i===window._inboxThreadIdx;
+    var unread=t.unread?'<span style="width:7px;height:7px;border-radius:50%;background:var(--gold);display:inline-block;margin-left:5px;flex-shrink:0;vertical-align:middle"></span>':'';
+    html+='<div style="display:flex;align-items:flex-start;gap:10px;padding:11px 12px;cursor:pointer;border-bottom:1px solid var(--border);border-left:3px solid '+(isActive?'var(--gold)':'transparent')+';background:'+(isActive?'rgba(27,58,107,.07)':'transparent')+';transition:background .15s" onclick="openThread('+i+')">';
+    html+='<div style="width:36px;height:36px;border-radius:50%;background:'+t.color+';color:'+(t.colorText||'#fff')+';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">'+escHtml(t.initials)+'</div>';
+    html+='<div style="flex:1;min-width:0">';
+    html+='<div style="display:flex;align-items:center"><strong style="font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1">'+escHtml(t.name)+'</strong>'+unread+'</div>';
+    if(t.subject) html+='<span style="display:block;font-size:11px;color:var(--ink);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(t.subject)+'</span>';
+    html+='<span style="display:block;font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+escHtml(preview)+'</span>';
+    html+='</div>';
+    html+='<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">';
+    html+='<span style="font-size:10px;color:var(--muted);font-weight:600">'+formatInboxTime(t.ts||0)+'</span>';
+    html+='<button onclick="event.stopPropagation();deleteInboxThread('+i+')" title="Delete" style="background:none;border:none;cursor:pointer;padding:2px;line-height:0;color:var(--muted)" onmouseover="this.style.color=\'var(--red)\'" onmouseout="this.style.color=\'var(--muted)\'">';
+    html+='<svg viewBox="0 0 24 24" style="width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M9,6V4h6v2"/></svg></button>';
+    html+='</div></div>';
+  });
+  list.innerHTML=html;
+}
+function filterInboxSearch(){
+  var inp=document.getElementById('inbox-search');
+  renderInboxThreadList(inp?inp.value:'');
+}
 window._inboxThreadIdx=-1;
 function openThread(idx){
   var threads=inboxLoad();
   var t=threads[idx]; if(!t) return;
   window._inboxThreadIdx=idx;
+  if(t.unread){ t.unread=false; inboxSave(threads); }
   var pane=document.getElementById('inbox-msg-pane'); if(!pane) return;
+  var me=window.currentUser||{};
   function buildHtml(th){
     var h='<div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--border)">';
-    h+='<div style="width:36px;height:36px;border-radius:50%;background:'+th.color+';color:'+(th.colorText||'#fff')+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900">'+th.initials+'</div>';
-    h+='<strong style="font-size:14px">'+th.name+'</strong></div>';
+    h+='<div style="width:36px;height:36px;border-radius:50%;background:'+th.color+';color:'+(th.colorText||'#fff')+';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;flex-shrink:0">'+escHtml(th.initials)+'</div>';
+    h+='<div style="flex:1"><strong style="font-size:14px;font-weight:800;display:block">'+escHtml(th.name)+'</strong>';
+    if(th.subject) h+='<span style="font-size:11px;color:var(--muted);font-weight:600">'+escHtml(th.subject)+'</span>';
+    h+='</div>';
+    h+='<button onclick="deleteInboxThread('+idx+')" title="Delete conversation" style="background:none;border:none;cursor:pointer;padding:6px;color:var(--muted)" onmouseover="this.style.color=\'var(--red)\'" onmouseout="this.style.color=\'var(--muted)\'"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M9,6V4h6v2"/></svg></button>';
+    h+='</div>';
     h+='<div id="inbox-msg-area" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px">';
     th.msgs.forEach(function(m){
-      h+='<div style="display:flex;flex-direction:column;align-items:'+(m.me?'flex-end':'flex-start')+'">';
-      h+='<div style="max-width:80%;padding:10px 13px;border-radius:'+(m.me?'14px 14px 4px 14px':'14px 14px 14px 4px')+';background:'+(m.me?'var(--blue)':'var(--surface)')+';color:'+(m.me?'#fff':'var(--ink)')+';font-size:13px;font-weight:600;border:1px solid var(--border)">'+m.text+'</div>';
-      h+='<span style="font-size:10px;color:var(--muted);margin-top:3px">'+m.time+'</span></div>';
+      var isMe=m.me;
+      h+='<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+'">';
+      h+='<div style="max-width:80%;padding:10px 13px;border-radius:'+(isMe?'14px 14px 4px 14px':'14px 14px 14px 4px')+';background:'+(isMe?'var(--blue)':'var(--surface)')+';color:'+(isMe?'#fff':'var(--ink)')+';font-size:13px;font-weight:600;border:1px solid var(--border)">'+escHtml(m.text)+'</div>';
+      h+='<span style="font-size:10px;color:var(--muted);margin-top:3px">'+(isMe?m.time:escHtml(th.name)+' \u00b7 '+m.time)+'</span></div>';
     });
     h+='</div>';
     h+='<div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px">';
@@ -7729,9 +7778,19 @@ function openThread(idx){
   var ma=document.getElementById('inbox-msg-area'); if(ma) ma.scrollTop=ma.scrollHeight;
   var ri=document.getElementById('inbox-reply-input');
   if(ri) ri.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendInboxReply(); } });
-  document.querySelectorAll('#inbox-thread-list .feed-row').forEach(function(r,i){
-    r.style.background=i===idx?'rgba(27,58,107,.07)':'';
-  });
+  renderInboxThreadList();
+}
+function deleteInboxThread(idx){
+  var threads=inboxLoad();
+  threads.splice(idx,1);
+  inboxSave(threads);
+  if(window._inboxThreadIdx===idx){
+    window._inboxThreadIdx=-1;
+    var pane=document.getElementById('inbox-msg-pane');
+    if(pane) pane.innerHTML=INBOX_EMPTY_PANE;
+  } else if(window._inboxThreadIdx>idx){ window._inboxThreadIdx--; }
+  renderInboxThreadList();
+  showToast('Conversation deleted','green');
 }
 function sendInboxReply(){
   var input=document.getElementById('inbox-reply-input'); if(!input||!input.value.trim()) return;
@@ -7741,93 +7800,127 @@ function sendInboxReply(){
   var now=new Date(); var h=now.getHours(); var m=now.getMinutes();
   var timeStr=(h%12||12)+':'+(m<10?'0':'')+m+' '+(h<12?'AM':'PM');
   var msg={text:input.value.trim(),me:true,time:timeStr};
-  t.msgs.push(msg);
+  t.msgs.push(msg); t.ts=Date.now();
   inboxSave(threads);
-  // Append bubble to DOM without full re-render
   var area=document.getElementById('inbox-msg-area');
   if(area){
     var bubble=document.createElement('div');
     bubble.style.cssText='display:flex;flex-direction:column;align-items:flex-end';
-    bubble.innerHTML='<div style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border)">'+msg.text+'</div><span style="font-size:10px;color:var(--muted);margin-top:3px">'+timeStr+'</span>';
-    area.appendChild(bubble);
-    area.scrollTop=area.scrollHeight;
+    bubble.innerHTML='<div style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border)">'+escHtml(msg.text)+'</div><span style="font-size:10px;color:var(--muted);margin-top:3px">'+timeStr+'</span>';
+    area.appendChild(bubble); area.scrollTop=area.scrollHeight;
   }
   input.value='';
+  renderInboxThreadList();
   showToast('Reply sent!','green');
 }
 
 // ============ INBOX COMPOSE ============
-var INBOX_USERS=[
-  {name:'Alex Torres',  initials:'AT',color:'#e5a100',acct:'a1'},
-  {name:'Maria Santos', initials:'MS',color:'#1b3a6b',acct:'a1'},
-  {name:'David Kim',    initials:'DK',color:'#2e7d32',acct:'a2'},
-  {name:'Priya Patel',  initials:'PP',color:'#c9a84c',acct:'a3'},
-  {name:'Willy Diamond',initials:'WD',color:'#7c3aed',acct:'a3'},
-  {name:'Tony Houses',  initials:'TH',color:'#7c3aed',acct:'a4'},
-  {name:'Sam Sewer',    initials:'SS',color:'#0052cc',acct:'a5'}
-];
+var INBOX_USERS=[];
+function _inboxInitials(name){ return String(name||'?').split(/\s+/).map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2)||'??'; }
+function getComposableContacts(acctIdFilter){
+  var role=window.currentRole||'';
+  var me=window.currentUser||{};
+  var myAcctId=window.currentAcctId||window.currentCompanyId||'';
+  var contacts=[];
+  Object.keys(window.USERS||{}).forEach(function(email){
+    if(email===(me.email||'')) return;
+    var u=window.USERS[email]; if(!u||!u.name) return;
+    var uAcct=u.companyId||localStorage.getItem('cal-user-account-'+email)||'';
+    var isAgencyMember=(u.role==='agency');
+    if(role==='agency'||role==='test'){
+      if(u.role==='admin'||u.role==='user'){
+        if(!acctIdFilter||uAcct===acctIdFilter)
+          contacts.push({email:email,name:u.name,initials:u.initials||_inboxInitials(u.name),color:u.color||'var(--blue)',colorText:'#fff',role:u.role,acctId:uAcct});
+      }
+    } else if(role==='admin'){
+      if(isAgencyMember)
+        contacts.push({email:email,name:u.name,initials:u.initials||_inboxInitials(u.name),color:'var(--blue)',colorText:'#fff',role:'agency',acctId:'cal'});
+      else if(u.role==='user'&&uAcct===myAcctId)
+        contacts.push({email:email,name:u.name,initials:u.initials||_inboxInitials(u.name),color:u.color||'var(--gold)',colorText:'#000',role:'user',acctId:myAcctId});
+    } else if(role==='user'){
+      if(u.role==='admin'&&uAcct===myAcctId)
+        contacts.push({email:email,name:u.name,initials:u.initials||_inboxInitials(u.name),color:'var(--blue)',colorText:'#fff',role:'admin',acctId:myAcctId});
+    }
+  });
+  return contacts;
+}
 function openComposeModal(){
+  var role=window.currentRole||'';
+  var isAgency=role==='agency'||role==='test';
+  var bizRow=document.getElementById('compose-biz-row');
+  if(bizRow) bizRow.style.display=isAgency?'':'none';
   var sel=document.getElementById('compose-acct-sel');
-  if(sel){
-    var accts=window.accounts||DEFAULT_ACCOUNTS||[];
+  if(sel&&isAgency){
+    var accts=window.accounts||window.DEFAULT_ACCOUNTS||[];
     sel.innerHTML='<option value="">Select a business\u2026</option>'+accts.map(function(a){
-      return '<option value="'+a.id+'">'+a.name+'</option>';
+      return '<option value="'+escHtml(a.id)+'">'+escHtml(a.name)+'</option>';
     }).join('');
   }
   var usel=document.getElementById('compose-user-sel');
-  if(usel) usel.innerHTML='<option value="">Select business first\u2026</option>';
-  var body=document.getElementById('compose-msg-body');
-  if(body) body.value='';
+  if(usel){
+    if(isAgency){
+      usel.innerHTML='<option value="">Select business first\u2026</option>';
+    } else {
+      var contacts=getComposableContacts('');
+      usel.innerHTML=contacts.length
+        ?'<option value="">Select recipient\u2026</option>'+contacts.map(function(c){
+            var label=c.name+(c.role==='agency'?' (Agency)':c.role==='user'?' (Staff)':'');
+            return '<option value="'+escHtml(c.email)+'">'+escHtml(label)+'</option>';
+          }).join('')
+        :'<option value="">No contacts available</option>';
+    }
+  }
+  var subj=document.getElementById('compose-subject'); if(subj) subj.value='';
+  var body=document.getElementById('compose-msg-body'); if(body) body.value='';
   openModal('compose-msg-modal');
 }
 function updateComposeRecipients(){
-  var acctId=document.getElementById('compose-acct-sel').value;
+  var acctId=((document.getElementById('compose-acct-sel')||{}).value)||'';
   var usel=document.getElementById('compose-user-sel');
   if(!usel) return;
   if(!acctId){ usel.innerHTML='<option value="">Select business first\u2026</option>'; return; }
-  var users=INBOX_USERS.filter(function(u){ return u.acct===acctId; });
-  if(!users.length){ usel.innerHTML='<option value="">No users on this account yet</option>'; return; }
-  usel.innerHTML='<option value="">Select recipient\u2026</option>'+users.map(function(u){
-    return '<option value="'+u.name+'">'+u.name+'</option>';
-  }).join('');
+  var contacts=getComposableContacts(acctId);
+  usel.innerHTML=contacts.length
+    ?'<option value="">Select recipient\u2026</option>'+contacts.map(function(c){
+        var label=c.name+(c.role==='user'?' (Staff)':'');
+        return '<option value="'+escHtml(c.email)+'">'+escHtml(label)+'</option>';
+      }).join('')
+    :'<option value="">No users on this account yet</option>';
 }
 function sendComposedMsg(){
+  var role=window.currentRole||'';
+  var isAgency=role==='agency'||role==='test';
   var acctSel=document.getElementById('compose-acct-sel');
   var usel=document.getElementById('compose-user-sel');
   var body=document.getElementById('compose-msg-body');
-  if(!acctSel||!acctSel.value){ showToast('Please select a business','gold'); return; }
-  if(!usel||!usel.value){ showToast('Please select a recipient','gold'); return; }
+  var subjEl=document.getElementById('compose-subject');
+  if(isAgency&&acctSel&&!acctSel.value){ showToast('Please select a business','gold'); return; }
+  var recipEmail=(usel&&usel.value)||'';
+  if(!recipEmail){ showToast('Please select a recipient','gold'); return; }
   if(!body||!body.value.trim()){ showToast('Please enter a message','gold'); return; }
-  var recipName=usel.value;
-  var inits=recipName.split(' ').map(function(w){ return w[0]; }).join('').toUpperCase().slice(0,2);
-  var user=INBOX_USERS.find(function(u){ return u.name===recipName; })||{color:'var(--blue)',initials:inits};
+  var recipUser=(window.USERS||{})[recipEmail]||{};
+  var recipName=recipUser.name||recipEmail;
+  var inits=recipUser.initials||_inboxInitials(recipName);
+  var color=recipUser.color||'var(--blue)';
+  var colorText=recipUser.colorText||'#fff';
   var now=new Date(); var h=now.getHours(); var mn=now.getMinutes();
   var timeStr=(h%12||12)+':'+(mn<10?'0':'')+mn+' '+(h<12?'AM':'PM');
+  var acctId=isAgency&&acctSel?acctSel.value:(window.currentAcctId||window.currentCompanyId||'');
   var newThread={
-    name:recipName,initials:inits,
-    color:user.color||'var(--blue)',colorText:'#fff',
-    msgs:[{text:body.value.trim(),me:true,time:timeStr}]
+    id:'t'+Date.now().toString(36),
+    name:recipName, initials:inits, color:color, colorText:colorText,
+    contactEmail:recipEmail, contactRole:recipUser.role||'',
+    senderRole:role, accountId:acctId,
+    subject:(subjEl&&subjEl.value.trim())||'',
+    msgs:[{text:body.value.trim(),me:true,time:timeStr}],
+    unread:false, ts:Date.now()
   };
   var threads=inboxLoad();
   threads.unshift(newThread);
   inboxSave(threads);
-  // Rebuild thread list row
-  var list=document.getElementById('inbox-thread-list');
-  if(list){
-    var row=document.createElement('div');
-    row.className='feed-row';
-    row.style.cssText='padding:10px 12px;cursor:pointer;border-left:3px solid var(--green)';
-    row.innerHTML='<div class="feed-ico"><div style="width:32px;height:32px;border-radius:50%;background:'+newThread.color+';color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+inits+'</div></div>'
-      +'<div><strong>'+recipName+'</strong><span>'+newThread.msgs[0].text.slice(0,40)+(newThread.msgs[0].text.length>40?'\u2026':'')+'</span></div>'
-      +'<span class="feed-time">Just now</span>';
-    row.onclick=function(){ openThread(0); };
-    list.insertBefore(row,list.firstChild);
-    // Re-index all static thread rows to match new array positions
-    var allRows=list.querySelectorAll('.feed-row');
-    allRows.forEach(function(r,i){ if(r!==row) r.onclick=function(){ openThread(i+1); }; });
-  }
   closeModal('compose-msg-modal');
   showToast('Message sent to '+recipName+'!','green');
+  renderInboxThreadList();
   setTimeout(function(){ openThread(0); },80);
 }
 
@@ -11739,6 +11832,31 @@ function healthBadge(score){
     });
     return {merged:merged,overridden:overridden};
   }
+  function _showConflictToast(msg,undoFn){
+    var wrap=document.getElementById('toasts');
+    if(!wrap) return;
+    var el=document.createElement('div');
+    el.className='toast gold';
+    el.style.cssText='display:flex;align-items:flex-start;gap:10px;max-width:320px;padding:11px 14px';
+    var txt=document.createElement('span');
+    txt.style.cssText='flex:1;line-height:1.4';
+    txt.textContent=msg;
+    el.appendChild(txt);
+    if(typeof undoFn==='function'){
+      var btn=document.createElement('button');
+      btn.textContent='Undo';
+      btn.style.cssText='flex-shrink:0;border:1.5px solid rgba(0,0,0,.25);border-radius:6px;background:rgba(0,0,0,.08);color:#000;font-size:11px;font-weight:900;padding:3px 9px;cursor:pointer;white-space:nowrap;font-family:inherit';
+      btn.onclick=function(){
+        if(timer) clearTimeout(timer);
+        el.parentNode&&el.parentNode.removeChild(el);
+        undoFn();
+      };
+      el.appendChild(btn);
+    }
+    wrap.appendChild(el);
+    var timer=setTimeout(function(){ el.parentNode&&el.parentNode.removeChild(el); },typeof undoFn==='function'?8000:3500);
+  }
+
   function syncMetaFromServer(key,cb){
     try{
       var t=_getMetaToken(); if(!t){ if(typeof cb==='function') cb(); return; }
@@ -11747,10 +11865,19 @@ function healthBadge(score){
           var all=_safeJSON('cal-account-meta',{});
           var local=all[key]||{}; var server=data.meta; var merged=Object.assign({},local);
           var allOverridden=[];
+          var undoData={};
           Object.keys(server).forEach(function(k){
             if(k.indexOf('layoutPrefs_')===0){
-              var result=_mergeLayoutPrefs(local[k]||{},server[k]||{});
+              var localRolePrefs=local[k]||{};
+              var result=_mergeLayoutPrefs(localRolePrefs,server[k]||{});
               merged[k]=result.merged;
+              if(result.overridden.length){
+                undoData[k]={};
+                result.overridden.forEach(function(itemKey){
+                  var lv=localRolePrefs[itemKey];
+                  undoData[k][itemKey]=(lv&&typeof lv==='object'&&lv.hasOwnProperty('v'))?lv.v:lv;
+                });
+              }
               allOverridden=allOverridden.concat(result.overridden);
             } else {
               merged[k]=server[k];
@@ -11765,7 +11892,24 @@ function healthBadge(score){
             });
             var unique=allOverridden.filter(function(k,i){ return allOverridden.indexOf(k)===i; });
             var names=unique.map(function(k){ return labelMap[k]||k; });
-            showToastSafe('Layout updated by another admin \u2014 '+names.join(', ')+(names.length===1?' was':' were')+' overridden','gold');
+            var undoDataSnap=undoData; var acctKeySnap=key;
+            _showConflictToast('Layout updated by another admin \u2014 '+names.join(', ')+(names.length===1?' was':' were')+' overridden',function(){
+              var now=Date.now();
+              var allMeta=_safeJSON('cal-account-meta',{});
+              var acctMeta=allMeta[acctKeySnap]||{};
+              Object.keys(undoDataSnap).forEach(function(lk){
+                var raw=Object.assign({},acctMeta[lk]||{});
+                Object.keys(undoDataSnap[lk]).forEach(function(itemKey){
+                  raw[itemKey]={v:undoDataSnap[lk][itemKey],t:now};
+                });
+                acctMeta[lk]=raw;
+              });
+              allMeta[acctKeySnap]=acctMeta;
+              _saveJSON('cal-account-meta',allMeta);
+              _pushMetaToServer(acctKeySnap,acctMeta);
+              if(typeof applyLayoutPrefs==='function') applyLayoutPrefs();
+              _showConflictToast('Layout restored',null);
+            });
           }
         }
         if(typeof cb==='function') cb();
@@ -11941,6 +12085,7 @@ function healthBadge(score){
     var r=_nav?_nav(s):undefined;
     try{ applyCalLayout(); }catch(e){}
     if(window.currentScreen==='settings'){ try{ renderLayoutPrefs(); }catch(e){} }
+    if(s==='inbox'){ try{ inboxInvalidateCache(); renderInboxThreadList(); }catch(e){} }
     return r;
   };
   var _launch=window.launchApp;
