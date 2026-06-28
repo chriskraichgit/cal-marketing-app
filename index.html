@@ -10818,7 +10818,7 @@ function healthBadge(score){
       var sizeLabel=mb.toFixed(1)+' MB';
       showToastSafe('Logo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.','gold');
       var saveBtn=document.querySelector('#s-whitelabel .btn-primary,[onclick="saveWhitelabel()"]');
-      if(saveBtn) saveBtn.disabled=true;
+      if(saveBtn) saveBtn.disabled=false;
       inp.value='';
       var savedMetaWl=getMeta(acctKey());
       var prevLogoWl=document.getElementById('wl-preview-logo');
