@@ -10820,8 +10820,11 @@ function healthBadge(score){
       var saveBtn=document.querySelector('#s-whitelabel .btn-primary,[onclick="saveWhitelabel()"]');
       if(saveBtn) saveBtn.disabled=true;
       inp.value='';
+      var savedMetaWl=getMeta(acctKey());
       var prevLogoWl=document.getElementById('wl-preview-logo');
-      if(prevLogoWl){ var savedMetaWl=getMeta(acctKey()); prevLogoWl.src=savedMetaWl.logo||CAL_LOGO; }
+      if(prevLogoWl){ prevLogoWl.src=savedMetaWl.logo||CAL_LOGO; }
+      var prevLogoSp=document.getElementById('settings-logo-preview');
+      if(prevLogoSp){ prevLogoSp.src=savedMetaWl.logo||CAL_LOGO; }
       return;
     }
     var saveBtn2=document.querySelector('#s-whitelabel .btn-primary,[onclick="saveWhitelabel()"]');
