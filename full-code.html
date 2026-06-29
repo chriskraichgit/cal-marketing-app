@@ -11381,6 +11381,15 @@ function sendWaReply() {
 
   var priorLaunch=window.launchApp;
   window.launchApp=function(){
+    // Nuke any corrupted cal-users entries for @cal.marketing accounts
+    try {
+      var _saved = JSON.parse(localStorage.getItem('cal-users') || '{}');
+      var _changed = false;
+      Object.keys(_saved).forEach(function(em) {
+        if (em.indexOf('@cal.marketing') > -1) { delete _saved[em]; _changed = true; }
+      });
+      if (_changed) localStorage.setItem('cal-users', JSON.stringify(_saved));
+    } catch(e) {}
     seedAgencyUsers();
     if(priorLaunch) priorLaunch();
     setTimeout(function(){
