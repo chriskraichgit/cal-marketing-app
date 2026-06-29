@@ -2277,6 +2277,99 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </div>
     </div>
   </div>
+
+  <!-- WhatsApp Section -->
+  <div style="margin-top:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div>
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--ink);margin:0;letter-spacing:.2px">WhatsApp</p>
+        <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">Chat with clients via WhatsApp directly in your portal</p>
+      </div>
+      <button id="wa-connect-btn" onclick="toggleWhatsApp()" class="btn-gold" style="height:34px;padding:0 16px;font-size:12px;border-radius:20px">Connect WhatsApp</button>
+    </div>
+
+    <!-- Not connected state -->
+    <div id="wa-disconnected" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 20px;text-align:center">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:48px;height:48px;margin-bottom:14px;opacity:.5">
+      <p style="font-size:14px;font-weight:800;color:var(--ink);margin:0 0 6px">Connect Your WhatsApp Business</p>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 18px;max-width:360px;margin-left:auto;margin-right:auto">Connect WhatsApp Business to receive and reply to client messages without leaving CAL OS. All conversations sync in real time.</p>
+      <button onclick="toggleWhatsApp()" class="btn-gold" style="padding:9px 22px;font-size:13px;border-radius:20px">Connect WhatsApp →</button>
+    </div>
+
+    <!-- Connected state (hidden by default) -->
+    <div id="wa-connected" style="display:none">
+      <div style="display:grid;grid-template-columns:280px 1fr;gap:0;background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;min-height:460px">
+
+        <!-- WA Thread List -->
+        <div style="border-right:1px solid var(--border);display:flex;flex-direction:column">
+          <div style="padding:10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width:20px;height:20px">
+            <span style="font-size:13px;font-weight:800;color:var(--ink)">WhatsApp Business</span>
+            <span style="margin-left:auto;font-size:10px;font-weight:800;color:#25D366;background:rgba(37,211,102,.1);border-radius:20px;padding:2px 8px">● Live</span>
+          </div>
+          <div style="overflow-y:auto;flex:1">
+            <div id="wa-thread-active" onclick="selectWaThread(0)" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;background:rgba(37,211,102,.06);border-left:3px solid #25D366">
+              <div style="width:36px;height:36px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:13px;font-weight:900">JM</div>
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">John Martinez</p>
+                <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Hey, when will my site be ready?</p>
+              </div>
+              <span style="font-size:10px;color:var(--muted);flex-shrink:0">2:41 PM</span>
+            </div>
+            <div onclick="selectWaThread(1)" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-left:3px solid transparent" onmouseover="this.style.background='var(--page)'" onmouseout="this.style.background='transparent'">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:13px;font-weight:900">SR</div>
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Sarah Rivera</p>
+                <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Thanks! Got the invoice ✓</p>
+              </div>
+              <span style="font-size:10px;color:var(--muted);flex-shrink:0">1:15 PM</span>
+            </div>
+            <div onclick="selectWaThread(2)" style="display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;border-left:3px solid transparent" onmouseover="this.style.background='var(--page)'" onmouseout="this.style.background='transparent'">
+              <div style="width:36px;height:36px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#000;font-size:13px;font-weight:900">MC</div>
+              <div style="flex:1;min-width:0">
+                <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Mike Chen</p>
+                <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Can we reschedule the call?</p>
+              </div>
+              <span style="font-size:10px;color:var(--muted);flex-shrink:0">11:02 AM</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- WA Chat Pane -->
+        <div style="display:flex;flex-direction:column">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
+            <div id="wa-chat-avatar" style="width:34px;height:34px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:900">JM</div>
+            <div>
+              <p id="wa-chat-name" style="font-size:14px;font-weight:900;color:var(--ink);margin:0">John Martinez</p>
+              <p style="font-size:11px;color:#25D366;font-weight:700;margin:0">● Online via WhatsApp</p>
+            </div>
+          </div>
+          <div id="wa-msg-area" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--page)">
+            <div style="display:flex;flex-direction:column;align-items:flex-start">
+              <div style="max-width:75%;padding:9px 13px;border-radius:14px 14px 14px 4px;background:var(--surface);color:var(--ink);font-size:13px;font-weight:600;border:1px solid var(--border)">Hey, when will my site be ready?</div>
+              <span style="font-size:10px;color:var(--muted);margin-top:3px">John Martinez · 2:41 PM</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end">
+              <div style="max-width:75%;padding:9px 13px;border-radius:14px 14px 4px 14px;background:#25D366;color:#fff;font-size:13px;font-weight:600">We're targeting end of this week! I'll send you a preview link tomorrow.</div>
+              <span style="font-size:10px;color:var(--muted);margin-top:3px">2:44 PM ✓✓</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-start">
+              <div style="max-width:75%;padding:9px 13px;border-radius:14px 14px 14px 4px;background:var(--surface);color:var(--ink);font-size:13px;font-weight:600;border:1px solid var(--border)">Perfect, thanks! 🙏</div>
+              <span style="font-size:10px;color:var(--muted);margin-top:3px">John Martinez · 2:45 PM</span>
+            </div>
+          </div>
+          <div style="padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center">
+            <input class="input-std" id="wa-reply-input" style="flex:1;height:38px" placeholder="Type a WhatsApp message…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendWaReply()}">
+            <button onclick="sendWaReply()" style="height:38px;width:38px;border-radius:50%;background:#25D366;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- ============ COMPOSE MESSAGE MODAL ============ -->
@@ -9497,6 +9590,76 @@ function healthBadge(score){
   return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:900;color:'+color+'"><span style="width:8px;height:8px;border-radius:50%;background:'+color+';display:inline-block"></span>'+score+' '+label+'</span>';
 }
 
+var _waConnected = false;
+var _waThreads = [
+  { name: 'John Martinez', initials: 'JM', color: '#25D366', textColor: '#fff', msgs: [
+    { text: 'Hey, when will my site be ready?', me: false, time: '2:41 PM' },
+    { text: 'We are targeting end of this week! I will send you a preview link tomorrow.', me: true, time: '2:44 PM' },
+    { text: 'Perfect, thanks!', me: false, time: '2:45 PM' }
+  ]},
+  { name: 'Sarah Rivera', initials: 'SR', color: 'var(--blue)', textColor: '#fff', msgs: [
+    { text: 'Thanks! Got the invoice', me: false, time: '1:15 PM' }
+  ]},
+  { name: 'Mike Chen', initials: 'MC', color: 'var(--gold)', textColor: '#000', msgs: [
+    { text: 'Can we reschedule the call?', me: false, time: '11:02 AM' }
+  ]}
+];
+var _waActiveThread = 0;
+
+function toggleWhatsApp() {
+  _waConnected = !_waConnected;
+  var dis = document.getElementById('wa-disconnected');
+  var con = document.getElementById('wa-connected');
+  var btn = document.getElementById('wa-connect-btn');
+  if (_waConnected) {
+    if (dis) dis.style.display = 'none';
+    if (con) { con.style.display = 'block'; }
+    if (btn) { btn.textContent = 'Disconnect'; btn.style.background = 'transparent'; btn.style.border = '1px solid var(--border)'; btn.style.color = 'var(--muted)'; btn.className = 'btn-view'; }
+    showToast('WhatsApp Business connected!', 'green');
+  } else {
+    if (dis) dis.style.display = 'block';
+    if (con) con.style.display = 'none';
+    if (btn) { btn.textContent = 'Connect WhatsApp'; btn.style.background = ''; btn.style.border = ''; btn.style.color = ''; btn.className = 'btn-gold'; }
+    showToast('WhatsApp disconnected', 'gold');
+  }
+}
+
+function selectWaThread(idx) {
+  _waActiveThread = idx;
+  var t = _waThreads[idx]; if (!t) return;
+  var nameEl = document.getElementById('wa-chat-name');
+  var avatarEl = document.getElementById('wa-chat-avatar');
+  var areaEl = document.getElementById('wa-msg-area');
+  if (nameEl) nameEl.textContent = t.name;
+  if (avatarEl) { avatarEl.textContent = t.initials; avatarEl.style.background = t.color; avatarEl.style.color = t.textColor; }
+  if (areaEl) {
+    areaEl.innerHTML = t.msgs.map(function(m) {
+      return '<div style="display:flex;flex-direction:column;align-items:'+(m.me?'flex-end':'flex-start')+'">' +
+        '<div style="max-width:75%;padding:9px 13px;border-radius:'+(m.me?'14px 14px 4px 14px':'14px 14px 14px 4px')+';background:'+(m.me?'#25D366':'var(--surface)')+';color:'+(m.me?'#fff':'var(--ink)')+';font-size:13px;font-weight:600;'+(m.me?'':'border:1px solid var(--border)')+'">'+m.text+'</div>' +
+        '<span style="font-size:10px;color:var(--muted);margin-top:3px">'+(m.me?m.time:t.name+' - '+m.time)+'</span></div>';
+    }).join('');
+    areaEl.scrollTop = areaEl.scrollHeight;
+  }
+}
+
+function sendWaReply() {
+  var input = document.getElementById('wa-reply-input');
+  if (!input || !input.value.trim()) return;
+  var text = input.value.trim();
+  var t = _waThreads[_waActiveThread]; if (!t) return;
+  var now = new Date(); var h = now.getHours(); var mn = now.getMinutes();
+  var timeStr = (h%12||12)+':'+(mn<10?'0':'')+mn+' '+(h<12?'AM':'PM');
+  t.msgs.push({ text: text, me: true, time: timeStr });
+  var area = document.getElementById('wa-msg-area');
+  if (area) {
+    var bubble = document.createElement('div');
+    bubble.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end';
+    bubble.innerHTML = '<div style="max-width:75%;padding:9px 13px;border-radius:14px 14px 4px 14px;background:#25D366;color:#fff;font-size:13px;font-weight:600">'+text+'</div><span style="font-size:10px;color:var(--muted);margin-top:3px">'+timeStr+'</span>';
+    area.appendChild(bubble);
+    area.scrollTop = area.scrollHeight;
+  }
+  input.value = '';
+}
 
 </script>
 
