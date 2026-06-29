@@ -7456,7 +7456,7 @@ function openThread(idx){
     th.msgs.forEach(function(m){
       var isMe=m.me;
       h+='<div style="display:flex;flex-direction:column;align-items:'+(isMe?'flex-end':'flex-start')+'">';
-      h+='<div style="max-width:80%;padding:10px 13px;border-radius:'+(isMe?'14px 14px 4px 14px':'14px 14px 14px 4px')+';background:'+(isMe?'var(--blue)':'var(--surface)')+';color:'+(isMe?'#fff':'var(--ink)')+';font-size:13px;font-weight:600;border:1px solid var(--border);display:flex;align-items:center;gap:6px">'+(m.isFile?'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>':'')+escHtml(m.text)+'</div>';
+      h+='<div onclick="'+(m.isFile?'inboxPreviewFile(\''+escHtml(m.text)+'\')':'')+'" style="max-width:80%;padding:10px 13px;border-radius:'+(isMe?'14px 14px 4px 14px':'14px 14px 14px 4px')+';background:'+(isMe?'var(--blue)':'var(--surface)')+';color:'+(isMe?'#fff':'var(--ink)')+';font-size:13px;font-weight:600;border:1px solid var(--border);display:flex;align-items:center;gap:6px;'+(m.isFile?'cursor:pointer;':'')+'\">'+(m.isFile?'<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>':'')+escHtml(m.text)+'</div>';
       h+='<span style="font-size:10px;color:var(--muted);margin-top:3px">'+(isMe?m.time:escHtml(th.name)+' \u00b7 '+m.time)+'</span></div>';
     });
     h+='</div>';
@@ -7494,6 +7494,48 @@ function deleteInboxThread(idx){
   } else if(window._inboxThreadIdx>idx){ window._inboxThreadIdx--; }
   renderInboxThreadList();
   showToast('Conversation deleted','green');
+}
+function inboxPreviewFile(text) {
+  var existing = document.getElementById('inbox-preview-modal');
+  if (existing) existing.remove();
+  var clean = text.replace(/^📎\s*/, '');
+  var match = clean.match(/^(.*?)\s*\(([^)]+)\)$/);
+  var fileName = match ? match[1].trim() : clean;
+  var fileSize = match ? match[2] : '';
+  var ext = fileName.split('.').pop().toLowerCase();
+  var isImage = ['jpg','jpeg','png','gif','webp','svg'].indexOf(ext) > -1;
+  var isPdf = ext === 'pdf';
+  var isDoc = ['doc','docx'].indexOf(ext) > -1;
+  var isSheet = ['xls','xlsx','csv'].indexOf(ext) > -1;
+  var isVideo = ['mp4','mov','avi'].indexOf(ext) > -1;
+  var icon = isImage ? '🖼' : isPdf ? '📄' : isDoc ? '📝' : isSheet ? '📊' : isVideo ? '🎬' : '📎';
+  var previewArea = '<div style="background:var(--page);border-radius:12px;padding:30px;text-align:center;margin-bottom:16px"><div style="font-size:64px;margin-bottom:12px">'+icon+'</div><p style="font-size:13px;color:var(--muted);font-weight:600">'+(isImage?'Image':isPdf?'PDF':isVideo?'Video':'Preview')+' available after platform connection</p></div>';
+  var modal = document.createElement('div');
+  modal.id = 'inbox-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+  modal.innerHTML =
+    '<div style="background:var(--surface);border-radius:18px;width:100%;max-width:500px;box-shadow:0 8px 40px rgba(0,0,0,.22);overflow:hidden">' +
+      '<div style="padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<span style="font-size:24px">'+icon+'</span>' +
+          '<div><p style="font-size:14px;font-weight:900;color:var(--ink);margin:0;max-width:320px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+fileName+'</p>' +
+          (fileSize ? '<p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">'+fileSize+'</p>' : '') +
+          '</div>' +
+        '</div>' +
+        '<button onclick="document.getElementById(\'inbox-preview-modal\').remove()" style="background:transparent;border:none;cursor:pointer;padding:4px;color:var(--muted)">' +
+          '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+        '</button>' +
+      '</div>' +
+      '<div style="padding:20px">' +
+        previewArea +
+        '<div style="display:flex;gap:8px;justify-content:flex-end">' +
+          '<button onclick="document.getElementById(\'inbox-preview-modal\').remove()" style="background:transparent;border:1px solid var(--border);border-radius:10px;padding:9px 18px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer">Close</button>' +
+          '<button onclick="showToast(\'Download will be available once platforms are connected.\',\'gold\');document.getElementById(\'inbox-preview-modal\').remove()" class="btn-gold" style="padding:9px 20px;font-size:13px;border-radius:10px">⬇ Download</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(modal);
 }
 var _INBOX_PORTAL_FILES = [
   { name: 'Monthly Report — June 2026.pdf', size: '2.4 MB', icon: '📄' },
@@ -7543,7 +7585,7 @@ function sendInboxPortalFile() {
   if (area) {
     var bubble = document.createElement('div');
     bubble.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end';
-    bubble.innerHTML = '<div style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border);display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'+f.name+' <span style="opacity:.7;font-size:11px">('+f.size+')</span></div><span style="font-size:10px;color:var(--muted);margin-top:3px">'+timeStr+'</span>';
+    bubble.innerHTML = '<div onclick="inboxPreviewFile(\'📎 '+f.name.replace(/'/g,"\\'")+" ("+f.size+")'+\'\')" style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border);display:flex;align-items:center;gap:8px;cursor:pointer"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'+f.name+' <span style="opacity:.7;font-size:11px">('+f.size+')</span></div><span style="font-size:10px;color:var(--muted);margin-top:3px">'+timeStr+'</span>';
     area.appendChild(bubble); area.scrollTop = area.scrollHeight;
   }
   renderInboxThreadList();
@@ -7568,7 +7610,8 @@ function inboxHandleFileUpload(input) {
   if (area) {
     var bubble = document.createElement('div');
     bubble.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end';
-    bubble.innerHTML = '<div style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border);display:flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'+escHtml(fileName)+' <span style="opacity:.7;font-size:11px">('+fileSize+')</span></div><span style="font-size:10px;color:var(--muted);margin-top:3px">'+timeStr+'</span>';
+    var previewText = '📎 '+fileName+' ('+fileSize+')';
+    bubble.innerHTML = '<div onclick="inboxPreviewFile(\''+previewText.replace(/\\/g,'\\\\').replace(/'/g,"\\'")+'\\')" style="max-width:80%;padding:10px 13px;border-radius:14px 14px 4px 14px;background:var(--blue);color:#fff;font-size:13px;font-weight:600;border:1px solid var(--border);display:flex;align-items:center;gap:8px;cursor:pointer"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>'+escHtml(fileName)+' <span style="opacity:.7;font-size:11px">('+fileSize+')</span></div><span style="font-size:10px;color:var(--muted);margin-top:3px">'+timeStr+'</span>';
     area.appendChild(bubble); area.scrollTop = area.scrollHeight;
   }
   renderInboxThreadList();
