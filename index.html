@@ -1878,14 +1878,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <div class="screen" id="s-reviews">
 
   <!-- ── SECTION 1: Connect Platforms ── -->
-  <div style="max-width:480px;margin:0 auto">
+  <div style="max-width:520px;margin:0 auto">
     <div style="margin-bottom:6px">
       <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--ink);margin:0 0 4px">Reviews &amp; NFC</h2>
       <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin:0">Connect your review platforms to start tracking your reviews in one place.</p>
     </div>
 
     <!-- Google -->
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:14px;cursor:pointer" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:14px">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
           <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:24px;height:24px;object-fit:contain">
@@ -1895,11 +1895,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Reviews, ratings, local visibility</p>
         </div>
       </div>
-      <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap;flex-shrink:0">Not connected</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
+        <button class="btn-connect" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">Connect</button>
+      </div>
     </div>
 
     <!-- Facebook -->
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px;cursor:pointer" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:40px;height:40px;border-radius:10px;background:#1877f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png" alt="Facebook" style="width:24px;height:24px;object-fit:contain">
@@ -1909,21 +1912,27 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Page reviews and recommendations</p>
         </div>
       </div>
-      <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap;flex-shrink:0">Not connected</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
+        <button class="btn-connect" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">Connect</button>
+      </div>
     </div>
 
     <!-- Yelp -->
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px;cursor:pointer" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:40px;height:40px;border-radius:10px;background:#d32323;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Yelp_Logo.svg/320px-Yelp_Logo.svg.png" alt="Yelp" style="width:32px;object-fit:contain;filter:brightness(10)">
+          <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a428d992fa97cb75437dc89.jpg" alt="Yelp" style="width:40px;height:40px;object-fit:cover">
         </div>
         <div>
           <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Yelp Business</p>
           <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Yelp reviews and ratings</p>
         </div>
       </div>
-      <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap;flex-shrink:0">Not connected</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
+        <button class="btn-connect" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">Connect</button>
+      </div>
     </div>
 
     <p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;margin-top:14px;line-height:1.6">
@@ -1976,11 +1985,44 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <!-- Review Leaderboard -->
       <div class="card">
         <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0 0 4px">Review Leaderboard</p>
-        <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0 0 14px">Team members ranked by reviews generated this month</p>
-        <div style="padding:32px 16px;text-align:center">
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" style="margin-bottom:10px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-          <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin:0">No data yet — connect your platforms above.</p>
+        <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0 0 16px">Team members ranked by reviews this month</p>
+
+        <!-- Rank rows -->
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:18px">
+
+          <!-- 1st -->
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2)">
+            <span style="font-size:15px;font-weight:900;color:var(--gold);width:20px;flex-shrink:0;text-align:center">1</span>
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+              <p style="font-size:13px;font-weight:900;color:var(--ink);margin:0">— <span style="font-size:10px;font-weight:700;color:var(--gold);background:rgba(201,168,76,.12);border-radius:99px;padding:1px 7px;margin-left:4px">Lead</span></p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews &nbsp;·&nbsp; — pts</p>
+            </div>
+          </div>
+
+          <!-- 2nd -->
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--page)">
+            <span style="font-size:14px;font-weight:900;color:var(--muted);width:20px;flex-shrink:0;text-align:center">2</span>
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">—</p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews &nbsp;·&nbsp; — pts</p>
+            </div>
+          </div>
+
+          <!-- 3rd -->
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;background:var(--page)">
+            <span style="font-size:14px;font-weight:900;color:var(--muted);width:20px;flex-shrink:0;text-align:center">3</span>
+            <div style="width:34px;height:34px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
+            <div style="flex:1;min-width:0">
+              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">—</p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews &nbsp;·&nbsp; — pts</p>
+            </div>
+          </div>
+
         </div>
+
+        <button class="btn-primary" style="width:100%;font-size:13px" onclick="nav('leaderboard')">View Leaderboard</button>
       </div>
 
     </div>
