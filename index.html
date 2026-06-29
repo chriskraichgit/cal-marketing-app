@@ -10637,18 +10637,28 @@ function sendWaReply() {
   }
 
   function seedAgencyUsers(){
-    window.USERS=window.USERS||{};
-    Object.keys(AGENCY_USERS).forEach(function(email){ window.USERS[email]=Object.assign({},AGENCY_USERS[email]); });
-    window.USERS['chris@cal.marketing'] = {pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'};
-    window.USERS['matt@cal.marketing'] = {pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
-    window.USERS['james@cal.marketing'] = {pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
-    var saved=safeJSON('cal-users',{});
-    /* Overwrite any stale agency records in localStorage with fresh canonical data */
-    Object.keys(AGENCY_USERS).forEach(function(email){ saved[email]=Object.assign({},AGENCY_USERS[email]); });
-    saved['chris@cal.marketing'] = window.USERS['chris@cal.marketing'];
-    saved['matt@cal.marketing'] = window.USERS['matt@cal.marketing'];
-    saved['james@cal.marketing'] = window.USERS['james@cal.marketing'];
-    saveJSON('cal-users',saved);
+    // Always force-write agency users — never let localStorage override them
+    var AGENCY_PW = 'CAL_D1gital$2026!';
+    window.USERS['chris@cal.marketing']  = {pw:AGENCY_PW,role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'};
+    window.USERS['matt@cal.marketing']   = {pw:AGENCY_PW,role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
+    window.USERS['james@cal.marketing']  = {pw:AGENCY_PW,role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
+    window.USERS['test@cal.marketing']   = {pw:AGENCY_PW,role:'test',name:'Test User',initials:'TU',username:'testuser',phone:'',title:'Owner / Tester',companyId:'cal'};
+    window.USERS['client@apexlegal.com'] = {pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director',companyId:'apexlegal'};
+    window.USERS['staff@apexlegal.com']  = {pw:'StaffUser2025!',role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member',companyId:'apexlegal'};
+    // Sync to localStorage but never let localStorage ghost entries override agency accounts
+    try {
+      var saved = JSON.parse(localStorage.getItem('cal-users') || '{}');
+      // Remove any corrupted entries for agency/test domains
+      Object.keys(saved).forEach(function(email){
+        if(email.indexOf('@cal.marketing') > -1) delete saved[email];
+      });
+      // Write fresh agency entries
+      saved['chris@cal.marketing']  = window.USERS['chris@cal.marketing'];
+      saved['matt@cal.marketing']   = window.USERS['matt@cal.marketing'];
+      saved['james@cal.marketing']  = window.USERS['james@cal.marketing'];
+      saved['test@cal.marketing']   = window.USERS['test@cal.marketing'];
+      localStorage.setItem('cal-users', JSON.stringify(saved));
+    } catch(e) {}
   }
 
   function ensureScreensAndNav(){
