@@ -1876,976 +1876,91 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: REVIEWS & NFC ============ -->
 <div class="screen" id="s-reviews">
-  <div class="sec-head"><div><h2>Reviews &amp; NFC Cards</h2><p>Track growth, manage NFC cards, and automate reporting</p></div></div>
-  <div class="tabs-row" style="flex-wrap:wrap">
-    <button class="tab-btn active" id="rt-tab-dashboard" onclick="switchReviewsTab('dashboard')">Dashboard</button>
-    <button class="tab-btn" id="rt-tab-reviews" onclick="switchReviewsTab('reviews')">Reviews <span style="background:var(--bg2);color:var(--muted);border-radius:8px;padding:1px 6px;font-size:10px;margin-left:2px">7</span></button>
-    <button class="tab-btn" id="rt-tab-nfc" onclick="switchReviewsTab('nfc')">NFC Cards <span style="background:var(--bg2);color:var(--muted);border-radius:8px;padding:1px 6px;font-size:10px;margin-left:2px">12</span></button>
-    <button class="tab-btn" id="rt-tab-analytics" onclick="switchReviewsTab('analytics')">Analytics</button>
-    <button class="tab-btn" id="rt-tab-locations" onclick="switchReviewsTab('locations')">Locations</button>
-    <button class="tab-btn" id="rt-tab-reports" onclick="switchReviewsTab('reports')">Reports</button>
-    <button class="tab-btn" id="rt-tab-heatmap" onclick="switchReviewsTab('heatmap')">🗺 Heat Map</button>
+  <div class="sec-head">
+    <div><h2>Reviews &amp; NFC</h2><p>See your reviews and team leaderboard</p></div>
   </div>
 
-  <!-- ─── DASHBOARD TAB ─── -->
-  <div id="rv-dashboard-tab">
+  <!-- ── GATE (shown until at least one platform connected) ── -->
+  <div id="rv-gate" style="display:none;max-width:520px;margin:0 auto;padding-top:16px">
+    <div class="card" style="text-align:center;padding:32px 24px">
+      <div style="width:52px;height:52px;border-radius:14px;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--gold)" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
+      </div>
+      <h3 style="font-size:18px;font-weight:900;color:var(--ink);margin-bottom:8px">Connect Your Review Platforms</h3>
+      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin-bottom:28px">Connect Google, Facebook, or Yelp to see all your reviews and team leaderboard in one place.</p>
+      <div style="display:flex;flex-direction:column;gap:10px">
 
-    <!-- ── LIVE REVIEW WALL ── -->
-    <div class="card" style="margin-bottom:14px;overflow:hidden">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <!-- Google -->
+        <div id="rv-conn-google" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg viewBox="0 0 48 48" width="22" height="22"><path fill="#4285F4" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.5 4 24 4 12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.6 16.1 19 13 24 13c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.2-1.9 13.9-5.1L31.3 33c-2.1 1.6-4.8 2.5-7.3 2.5-5.2 0-9.6-3.4-11.2-8.1l-6.6 5.1C9.7 39.5 16.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.6 5.1C42.3 35.2 44 30 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+            </div>
+            <div style="text-align:left">
+              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Google Business</p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Google reviews &amp; ratings</p>
+            </div>
+          </div>
+          <button class="btn-connect" onclick="connectReviewPlatform('google',this)">Connect</button>
+        </div>
+
+        <!-- Facebook -->
+        <div id="rv-conn-facebook" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:10px;background:#1877f2;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="#fff" width="20" height="20"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            </div>
+            <div style="text-align:left">
+              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Facebook</p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Facebook page reviews</p>
+            </div>
+          </div>
+          <button class="btn-connect" onclick="connectReviewPlatform('facebook',this)">Connect</button>
+        </div>
+
+        <!-- Yelp -->
+        <div id="rv-conn-yelp" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:10px;background:#d32323;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg viewBox="0 0 24 24" fill="#fff" width="18" height="18"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 14.5v-5l4.5 2.5L11 16.5zm0-7V4l6 5.5-6 1z"/></svg>
+            </div>
+            <div style="text-align:left">
+              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Yelp</p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Yelp reviews &amp; ratings</p>
+            </div>
+          </div>
+          <button class="btn-connect" onclick="connectReviewPlatform('yelp',this)">Connect</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DASHBOARD (shown once a platform is connected) ── -->
+  <div id="rv-dashboard" style="display:none">
+
+    <!-- Reviews card -->
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <p class="card-title">Reviews</p>
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse-dot 1.4s infinite"></span>
-          <span class="card-title">Live Review Wall</span>
-          <span style="font-size:11px;color:var(--muted);font-weight:600">updating in real time</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:14px">
-          <span style="font-size:12px;font-weight:800;color:var(--green)">↑ 4.9★ <span style="color:var(--muted);font-weight:600">Rating moving up</span></span>
-          <span style="font-size:12px;font-weight:800;color:var(--gold)">+7 <span style="color:var(--muted);font-weight:600">new this month</span></span>
-        </div>
-      </div>
-      <div style="overflow:hidden;position:relative">
-        <div id="review-wall-ticker" style="display:flex;gap:10px;padding:10px 14px;overflow-x:auto;scroll-behavior:smooth">
-          <div style="flex-shrink:0;background:rgba(27,197,115,.07);border:1px solid rgba(27,197,115,.18);border-radius:10px;padding:10px 14px;min-width:220px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:var(--green);font-size:13px">★★★★★</span><span style="font-size:10px;font-weight:700;color:var(--muted)">2h ago</span></div>
-            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px">"Outstanding legal team!"</div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">— Robert M. · 📸 Photo included · +2 pts</div>
-          </div>
-          <div style="flex-shrink:0;background:rgba(27,197,115,.07);border:1px solid rgba(27,197,115,.18);border-radius:10px;padding:10px 14px;min-width:220px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:var(--green);font-size:13px">★★★★★</span><span style="font-size:10px;font-weight:700;color:var(--muted)">5h ago</span></div>
-            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px">"Handled our case perfectly."</div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">— Jennifer K. · Standard · +1 pt</div>
-          </div>
-          <div style="flex-shrink:0;background:rgba(27,197,115,.07);border:1px solid rgba(27,197,115,.18);border-radius:10px;padding:10px 14px;min-width:220px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:var(--green);font-size:13px">★★★★★</span><span style="font-size:10px;font-weight:700;color:var(--muted)">Yesterday</span></div>
-            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px">"James was incredibly helpful."</div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">— Marcus D. · 📸 Photo included · +2 pts</div>
-          </div>
-          <div style="flex-shrink:0;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:10px 14px;min-width:220px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:var(--gold);font-size:13px">★★★★</span><span style="font-size:10px;font-weight:700;color:var(--muted)">Yesterday</span></div>
-            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px">"Very professional office."</div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">— Carla T. · Standard · +1 pt</div>
-          </div>
-          <div style="flex-shrink:0;background:rgba(27,197,115,.07);border:1px solid rgba(27,197,115,.18);border-radius:10px;padding:10px 14px;min-width:220px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:var(--green);font-size:13px">★★★★★</span><span style="font-size:10px;font-weight:700;color:var(--muted)">Jun 21</span></div>
-            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px">"Best law firm in Miami."</div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">— Antonio R. · 📸 Photo included · +2 pts</div>
-          </div>
-          <div style="flex-shrink:0;background:rgba(27,197,115,.07);border:1px solid rgba(27,197,115,.18);border-radius:10px;padding:10px 14px;min-width:220px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="color:var(--green);font-size:13px">★★★★★</span><span style="font-size:10px;font-weight:700;color:var(--muted)">Jun 20</span></div>
-            <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px">"Resolved our dispute fast."</div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">— Diane W. · Standard · +1 pt</div>
-          </div>
+          <select id="rv-platform-filter" class="input-std" style="padding:6px 12px;font-size:12px;height:auto" onchange="filterReviews(this.value)">
+            <option value="all">All Platforms</option>
+            <option value="google">Google</option>
+            <option value="facebook">Facebook</option>
+            <option value="yelp">Yelp</option>
+          </select>
         </div>
       </div>
+      <div id="rv-reviews-list" style="display:flex;flex-direction:column;gap:10px"></div>
     </div>
 
-    <!-- ── REVIEW STREAKS + AI INSIGHTS BANNER ── -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">🔥 Review Streaks</span><span style="font-size:11px;color:var(--muted);font-weight:600">Team performance</span></div>
-        <div id="rv-streaks-body" style="display:flex;flex-direction:column;gap:8px;margin-top:10px">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(201,168,76,.07);border-radius:8px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px">👑</span><div><div style="font-size:12px;font-weight:800;color:var(--ink)">James W.</div><div style="font-size:10px;color:var(--muted);font-weight:600">Longest active streak</div></div></div>
-            <div style="text-align:right"><div style="font-size:18px;font-weight:900;color:var(--gold)">🔥 14</div><div style="font-size:10px;color:var(--muted);font-weight:600">days</div></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:8px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">2</span><div><div style="font-size:12px;font-weight:800;color:var(--ink)">Mike R.</div></div></div>
-            <div style="font-size:16px;font-weight:900;color:var(--muted)">🔥 9 <span style="font-size:10px">days</span></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:8px">
-            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px">3</span><div><div style="font-size:12px;font-weight:800;color:var(--ink)">Sarah K.</div></div></div>
-            <div style="font-size:16px;font-weight:900;color:var(--muted)">🔥 6 <span style="font-size:10px">days</span></div>
-          </div>
-          <div style="padding:8px 10px;background:var(--bg2);border-radius:8px;display:flex;justify-content:space-between">
-            <span style="font-size:11px;font-weight:700;color:var(--muted)">Company longest-ever streak</span>
-            <span style="font-size:12px;font-weight:900;color:var(--gold)">🏆 48 days</span>
-          </div>
-        </div>
-      </div>
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">🤖 AI Review Insights</span><span style="font-size:11px;color:var(--muted);font-weight:600">This month · 7 reviews analyzed</span></div>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(27,197,115,.06);border-radius:8px">
-            <span style="font-size:12px;font-weight:700;color:var(--ink)">👍 Friendly staff</span>
-            <span style="font-size:12px;font-weight:900;color:var(--green)">17 mentions</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(27,197,115,.06);border-radius:8px">
-            <span style="font-size:12px;font-weight:700;color:var(--ink)">👍 Clear communication</span>
-            <span style="font-size:12px;font-weight:900;color:var(--green)">14 mentions</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(27,197,115,.06);border-radius:8px">
-            <span style="font-size:12px;font-weight:700;color:var(--ink)">👍 Price / value</span>
-            <span style="font-size:12px;font-weight:900;color:var(--green)">11 mentions</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(239,68,68,.06);border-radius:8px">
-            <span style="font-size:12px;font-weight:700;color:var(--ink)">👎 Wait times</span>
-            <span style="font-size:12px;font-weight:900;color:#ef4444">8 mentions</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:rgba(239,68,68,.06);border-radius:8px">
-            <span style="font-size:12px;font-weight:700;color:var(--ink)">👎 Parking</span>
-            <span style="font-size:12px;font-weight:900;color:#ef4444">3 mentions</span>
-          </div>
-          <div style="margin-top:4px;padding:7px 10px;background:var(--bg2);border-radius:8px;font-size:11px;font-weight:700;color:var(--muted)">💡 Tip: Addressing wait times could improve your rating by ~0.1★</div>
-        </div>
-      </div>
-    </div>
-
-    <div id="rv-kpi-row" class="kpi-row kpi-5" style="margin-bottom:14px">
-      <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Total Reviews</span></div><span class="stat-val">94</span><div class="stat-foot"><span>all time</span></div></div>
-      <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">This Month</span></div><span class="stat-val">+7</span><div class="stat-foot"><span class="up">↑ 2</span><span>vs last month</span></div></div>
-      <div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Growth Trend</span></div><span class="stat-val" style="font-size:22px">↑8.2%</span><div class="stat-foot"><span>month over month</span></div></div>
-      <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Avg Rating</span></div><span class="stat-val">4.8★</span><div class="stat-foot"><span class="up">↑ 0.2</span><span>vs last month</span></div></div>
-      <div class="card stat-card" style="--accent:#ea4335"><div class="stat-top"><span class="stat-label">Google Rating</span><svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div><span class="stat-val" style="font-size:26px">4.9★</span><div class="stat-foot"><span>194 Google reviews</span></div></div>
-    </div>
-    <!-- Review Points System -->
-    <div class="card" style="margin-bottom:14px">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
-        <span class="card-title">Review Points</span>
-        <span style="font-size:11px;color:var(--muted);font-weight:600">Standard review = 1 pt &nbsp;·&nbsp; Photo review = 2 pts</span>
-      </div>
-      <div id="rv-points-body" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0">
-        <!-- Count -->
-        <div style="padding:14px 16px;border-right:1px solid var(--border)">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">REVIEW COUNT</div>
-          <div style="font-size:32px;font-weight:900;color:var(--ink);line-height:1">94</div>
-          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;margin-bottom:14px">Total Reviews</div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700">
-              <span style="color:var(--muted)">Standard</span><span style="color:var(--ink)">57</span>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700">
-              <span style="color:var(--muted)">📸 With Photo</span><span style="color:var(--blue)">37</span>
-            </div>
-          </div>
-        </div>
-        <!-- Points -->
-        <div style="padding:14px 16px;border-right:1px solid var(--border)">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">REVIEW POINTS</div>
-          <div style="font-size:32px;font-weight:900;color:var(--gold);line-height:1">131</div>
-          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;margin-bottom:14px">Total Points Earned</div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700">
-              <span style="color:var(--muted)">57 standard × 1</span><span style="color:var(--ink)">57 pts</span>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700">
-              <span style="color:var(--muted)">37 photo × 2</span><span style="color:var(--gold)">74 pts</span>
-            </div>
-          </div>
-        </div>
-        <!-- Goal & Photo Rate -->
-        <div style="padding:14px 16px">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">THIS MONTH'S GOAL</div>
-          <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
-            <span style="font-size:28px;font-weight:900;color:var(--ink)">131</span>
-            <span style="font-size:13px;font-weight:700;color:var(--muted)">/ 150 pts</span>
-          </div>
-          <div style="height:8px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-bottom:10px">
-            <div style="height:100%;width:87%;background:linear-gradient(90deg,var(--gold),#e8c547);border-radius:6px;transition:width .4s"></div>
-          </div>
-          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px">87% to goal — 19 pts away 🏆</div>
-          <div style="background:rgba(27,97,197,.06);border-radius:8px;padding:8px 10px">
-            <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.04em">📸 PHOTO REVIEW RATE</div>
-            <div style="font-size:20px;font-weight:900;color:var(--blue);margin-top:2px">39%</div>
-            <div style="font-size:10px;font-weight:600;color:var(--muted)">of reviews include a photo</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card" style="margin-bottom:14px">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <span class="card-title">Review Growth — New Reviews per Month</span>
-        <div class="filter-row" style="margin:0">
-          <button class="f-btn active" onclick="setFilterActive(this)">6 Months</button>
-          <button class="f-btn" onclick="setFilterActive(this)">12 Months</button>
-          <button class="f-btn" onclick="setFilterActive(this)">All Time</button>
-        </div>
-      </div>
-      <div style="padding:14px 14px 6px">
-        <svg viewBox="0 0 560 145" style="width:100%;height:auto;overflow:visible">
-          <line x1="30" y1="110" x2="545" y2="110" stroke="var(--border)" stroke-width="1"/>
-          <line x1="30" y1="80" x2="545" y2="80" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>
-          <line x1="30" y1="50" x2="545" y2="50" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>
-          <line x1="30" y1="20" x2="545" y2="20" stroke="var(--border)" stroke-width="0.5" stroke-dasharray="3,3"/>
-          <text x="2" y="113" fill="var(--muted)" font-size="9" font-weight="600">0</text>
-          <text x="2" y="83" fill="var(--muted)" font-size="9" font-weight="600">4</text>
-          <text x="2" y="53" fill="var(--muted)" font-size="9" font-weight="600">8</text>
-          <text x="2" y="23" fill="var(--muted)" font-size="9" font-weight="600">12</text>
-          <!-- Jan: 6 → h=45 y=65 -->
-          <rect class="rv-chart-bar" x="37" y="65" width="52" height="45" rx="6" fill="rgba(201,168,76,.25)"/>
-          <text x="63" y="60" fill="var(--muted)" font-size="10" font-weight="700" text-anchor="middle">6</text>
-          <text x="63" y="128" fill="var(--muted)" font-size="10" font-weight="600" text-anchor="middle">Jan</text>
-          <!-- Feb: 8 → h=60 y=50 -->
-          <rect class="rv-chart-bar" x="120" y="50" width="52" height="60" rx="6" fill="rgba(201,168,76,.38)"/>
-          <text x="146" y="45" fill="var(--muted)" font-size="10" font-weight="700" text-anchor="middle">8</text>
-          <text x="146" y="128" fill="var(--muted)" font-size="10" font-weight="600" text-anchor="middle">Feb</text>
-          <!-- Mar: 9 → h=67.5 y=42.5 -->
-          <rect class="rv-chart-bar" x="203" y="42" width="52" height="68" rx="6" fill="rgba(201,168,76,.52)"/>
-          <text x="229" y="37" fill="var(--muted)" font-size="10" font-weight="700" text-anchor="middle">9</text>
-          <text x="229" y="128" fill="var(--muted)" font-size="10" font-weight="600" text-anchor="middle">Mar</text>
-          <!-- Apr: 7 → h=52.5 y=57.5 -->
-          <rect class="rv-chart-bar" x="286" y="57" width="52" height="53" rx="6" fill="rgba(201,168,76,.52)"/>
-          <text x="312" y="52" fill="var(--muted)" font-size="10" font-weight="700" text-anchor="middle">7</text>
-          <text x="312" y="128" fill="var(--muted)" font-size="10" font-weight="600" text-anchor="middle">Apr</text>
-          <!-- May: 11 → h=82.5 y=27.5 -->
-          <rect class="rv-chart-bar" x="369" y="27" width="52" height="83" rx="6" fill="rgba(201,168,76,.72)"/>
-          <text x="395" y="22" fill="var(--muted)" font-size="10" font-weight="700" text-anchor="middle">11</text>
-          <text x="395" y="128" fill="var(--muted)" font-size="10" font-weight="600" text-anchor="middle">May</text>
-          <!-- Jun: 7 → h=52.5 y=57.5 (current, highlighted) -->
-          <rect class="rv-chart-bar" x="452" y="57" width="52" height="53" rx="6" fill="var(--gold)"/>
-          <text x="478" y="52" fill="var(--ink)" font-size="10" font-weight="800" text-anchor="middle">7</text>
-          <text x="478" y="128" fill="var(--ink)" font-size="10" font-weight="800" text-anchor="middle">Jun ✦</text>
-        </svg>
-        <p style="font-size:10px;color:var(--muted);font-weight:600;text-align:right;margin-top:2px">✦ Month in progress</p>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">This Month vs Last Month</span></div>
-        <table class="tbl" style="margin-top:10px">
-          <thead><tr><th>Metric</th><th>Last</th><th>Now</th><th></th></tr></thead>
-          <tbody>
-            <tr><td>New Reviews</td><td>5</td><td><strong>7</strong></td><td><span class="up" style="font-size:11px">↑ 40%</span></td></tr>
-            <tr><td>Avg Rating</td><td>4.6</td><td><strong>4.8</strong></td><td><span class="up" style="font-size:11px">↑ 0.2</span></td></tr>
-            <tr><td>NFC Taps</td><td>289</td><td><strong>341</strong></td><td><span class="up" style="font-size:11px">↑ 18%</span></td></tr>
-            <tr><td>Reply Rate</td><td>79%</td><td><strong>86%</strong></td><td><span class="up" style="font-size:11px">↑ 7pp</span></td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Rating Breakdown</span></div>
-        <div style="margin-top:12px;display:flex;flex-direction:column;gap:7px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700"><span style="width:20px;text-align:right;color:var(--muted)">5★</span><div style="flex:1;height:9px;background:var(--bg2);border-radius:5px;overflow:hidden"><div style="height:100%;width:82%;background:var(--green);border-radius:5px"></div></div><span style="width:22px;color:var(--muted)">77</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700"><span style="width:20px;text-align:right;color:var(--muted)">4★</span><div style="flex:1;height:9px;background:var(--bg2);border-radius:5px;overflow:hidden"><div style="height:100%;width:11%;background:var(--gold);border-radius:5px"></div></div><span style="width:22px;color:var(--muted)">10</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700"><span style="width:20px;text-align:right;color:var(--muted)">3★</span><div style="flex:1;height:9px;background:var(--bg2);border-radius:5px;overflow:hidden"><div style="height:100%;width:5%;background:#f97316;border-radius:5px"></div></div><span style="width:22px;color:var(--muted)">5</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700"><span style="width:20px;text-align:right;color:var(--muted)">2★</span><div style="flex:1;height:9px;background:var(--bg2);border-radius:5px;overflow:hidden"><div style="height:100%;width:2%;background:#ef4444;border-radius:5px"></div></div><span style="width:22px;color:var(--muted)">2</span></div>
-          <div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700"><span style="width:20px;text-align:right;color:var(--muted)">1★</span><div style="flex:1;height:9px;background:var(--bg2);border-radius:5px;overflow:hidden"><div style="height:100%;width:0%;background:#ef4444;border-radius:5px"></div></div><span style="width:22px;color:var(--muted)">0</span></div>
-        </div>
-        <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border);display:flex;align-items:baseline;gap:5px">
-          <span style="font-size:28px;font-weight:900;color:var(--gold)">4.8</span>
-          <span style="font-size:16px;font-weight:700;color:var(--gold)">★</span>
-          <span style="font-size:11px;color:var(--muted);font-weight:600">out of 5 · 94 reviews</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── REVIEWS TAB ─── -->
-  <div id="rv-reviews-tab" style="display:none">
-    <div class="kpi-row kpi-3" style="margin-bottom:14px">
-      <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Avg Rating</span></div><span class="stat-val">4.8★</span><div class="stat-foot"><span class="up">↑ 0.2</span><span>vs last month</span></div></div>
-      <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Total Reviews</span></div><span class="stat-val">94</span><div class="stat-foot"><span class="up">↑ 7</span><span>this month</span></div></div>
-      <div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Reply Rate</span></div><span class="stat-val">86%</span><div class="stat-foot"><span>13 replied</span></div></div>
-    </div>
-    <div class="card" style="margin-bottom:10px;padding:10px 14px;background:rgba(27,58,107,.04);border-left:3px solid var(--blue);border-radius:12px">
-      <strong style="font-size:12px;font-weight:900;color:var(--blue)">GBP Integration</strong>
-      <p style="font-size:12px;color:var(--muted);margin-top:3px;font-weight:600">Connect Google Business Profile to auto-import reviews and enable AI-generated replies.</p>
-      <button class="btn-connect" style="margin-top:8px" onclick="openOAuthModal('gbp')">Connect GBP</button>
-    </div>
+    <!-- Leaderboard card -->
     <div class="card">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <span class="card-title" style="font-size:16px">Recent Reviews</span>
-        <div class="filter-row" style="margin:0">
-          <button class="f-btn active" onclick="setFilterActive(this)">All</button>
-          <button class="f-btn" onclick="setFilterActive(this)">5★</button>
-          <button class="f-btn" onclick="setFilterActive(this)">4★</button>
-          <button class="f-btn" onclick="setFilterActive(this)">Unanswered</button>
-        </div>
-      </div>
-      <div class="review-card">
-        <div class="review-header"><span class="reviewer-name">Michael Torres</span><span class="review-date">Jun 18, 2026</span></div>
-        <div class="star-row">★★★★★</div>
-        <p class="review-text">Apex Legal Group fought hard for me after my car accident. Alex and the team kept me updated every step of the way. Highly recommend to anyone who needs a personal injury attorney in Miami.</p>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-          <button class="btn-view" onclick="toggleReplyArea(this)">Reply</button>
-          <button class="btn-view" style="color:var(--gold);border-color:rgba(201,168,76,.3)" onclick="generateAiReply(this,'Michael Torres','5','Apex Legal Group fought hard for me')">AI Reply</button>
-        </div>
-        <div class="review-reply-area">
-          <textarea class="notes-textarea" style="margin-bottom:8px" placeholder="Write your reply..."></textarea>
-          <div style="display:flex;gap:6px"><button class="btn-gold" style="height:30px;padding:0 14px;font-size:12px" onclick="submitReply(this)">Send Reply</button><button class="btn-ghost" style="height:30px;padding:0 12px;font-size:12px" onclick="toggleReplyArea(this.closest('.review-reply-area').previousElementSibling.querySelector('.btn-view'))">Cancel</button></div>
-        </div>
-      </div>
-      <div class="review-card">
-        <div class="review-header"><span class="reviewer-name">Sandra Mejia</span><span class="review-date">Jun 15, 2026</span></div>
-        <div class="star-row">★★★★★</div>
-        <p class="review-text">Professional, responsive, and truly caring. They secured a settlement I didn't think was possible. Will refer everyone I know.</p>
-        <div class="replied-badge"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg> Replied</div>
-      </div>
-      <div class="review-card">
-        <div class="review-header"><span class="reviewer-name">David Ramos</span><span class="review-date">Jun 10, 2026</span></div>
-        <div class="star-row">★★★★<span style="color:var(--border)">★</span></div>
-        <p class="review-text">Good experience overall. Communication could be faster at times but the outcome was great and the team was knowledgeable.</p>
-        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-          <button class="btn-view" onclick="toggleReplyArea(this)">Reply</button>
-          <button class="btn-view" style="color:var(--gold);border-color:rgba(201,168,76,.3)" onclick="generateAiReply(this,'David Ramos','4','Communication could be faster at times')">AI Reply</button>
-        </div>
-        <div class="review-reply-area">
-          <textarea class="notes-textarea" style="margin-bottom:8px" placeholder="Write your reply..."></textarea>
-          <div style="display:flex;gap:6px"><button class="btn-gold" style="height:30px;padding:0 14px;font-size:12px" onclick="submitReply(this)">Send Reply</button><button class="btn-ghost" style="height:30px;padding:0 12px;font-size:12px" onclick="toggleReplyArea(this.closest('.review-reply-area').previousElementSibling.querySelector('.btn-view'))">Cancel</button></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── NFC CARDS TAB ─── -->
-  <div id="rv-nfc-tab" style="display:none">
-    <div class="kpi-row kpi-3" style="margin-bottom:14px">
-      <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Cards Active</span></div><span class="stat-val">12</span><div class="stat-foot"><span>of 12 registered</span></div></div>
-      <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Total Taps</span></div><span class="stat-val">341</span><div class="stat-foot"><span class="up">↑ 18%</span><span>vs last month</span></div></div>
-      <div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Reviews via NFC</span></div><span class="stat-val">28</span><div class="stat-foot"><span>8.2% conversion</span></div></div>
-    </div>
-    <div class="card" style="margin-bottom:14px">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
-        <span class="card-title">Registered Cards</span>
-      </div>
-      <div style="overflow-x:auto">
-        <table class="tbl" id="nfc-cards-table"><thead><tr><th>Card Name</th><th>Assigned To</th><th>Location</th><th>Taps</th><th>Reviews</th><th>Conv%</th><th>Short URL</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-          <tr>
-            <td><strong>Reception Desk</strong></td><td>Alex Torres</td><td>Front Desk</td><td>128</td><td>12</td><td>9.4%</td>
-            <td><a href="#" style="font-size:11px;color:var(--blue);font-weight:700" onclick="return false">cal.review/apex-1</a></td>
-            <td><span class="pill pill-green">Active</span></td>
-            <td style="white-space:nowrap">
-              <button class="nfc-toggle-btn active" onclick="toggleNfcCard(this)">Deactivate</button>
-            </td>
-          </tr>
-          <tr>
-            <td><strong>Email Signature</strong></td><td>Alex Torres</td><td>Digital</td><td>84</td><td>9</td><td>10.7%</td>
-            <td><a href="#" style="font-size:11px;color:var(--blue);font-weight:700" onclick="return false">cal.review/apex-2</a></td>
-            <td><span class="pill pill-green">Active</span></td>
-            <td style="white-space:nowrap">
-              <button class="nfc-toggle-btn active" onclick="toggleNfcCard(this)">Deactivate</button>
-            </td>
-          </tr>
-          <tr>
-            <td><strong>Conference Room</strong></td><td>Maria Santos</td><td>Conference Room</td><td>64</td><td>5</td><td>7.8%</td>
-            <td><a href="#" style="font-size:11px;color:var(--blue);font-weight:700" onclick="return false">cal.review/apex-3</a></td>
-            <td><span class="pill pill-green">Active</span></td>
-            <td style="white-space:nowrap">
-              <button class="nfc-toggle-btn active" onclick="toggleNfcCard(this)">Deactivate</button>
-            </td>
-          </tr>
-          <tr>
-            <td><strong>Lobby Standee</strong></td><td>—</td><td>Lobby</td><td>65</td><td>2</td><td>3.1%</td>
-            <td><a href="#" style="font-size:11px;color:var(--blue);font-weight:700" onclick="return false">cal.review/apex-4</a></td>
-            <td><span class="pill pill-muted">Low Activity</span></td>
-            <td style="white-space:nowrap">
-              <button class="nfc-toggle-btn active" onclick="toggleNfcCard(this)">Deactivate</button>
-            </td>
-          </tr>
-        </tbody></table>
-      </div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Order More NFC Cards</span></div>
-      <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:14px">Premium tap-to-review cards — laser engraved with your branding. Every card includes a QR code and short URL backup.</p>
-      <div style="margin-bottom:12px"><p style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px">Quantity</p>
-        <div class="qty-selector"><button class="qty-btn selected" onclick="selectQty(this)">5</button><button class="qty-btn" onclick="selectQty(this)">10</button><button class="qty-btn" onclick="selectQty(this)">25</button><button class="qty-btn" onclick="selectQty(this)">50</button></div>
-      </div>
-      <p style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:10px">5 cards · <strong style="color:var(--gold)">$149</strong> + free shipping</p>
-      <button class="btn-gold" style="height:38px;padding:0 20px;font-size:13px" onclick="openModal('order-nfc-modal')">Order Now</button>
-    </div>
-  </div>
-
-  <!-- ─── ANALYTICS / LEADERBOARD TAB ─── -->
-  <div id="rv-analytics-tab" style="display:none">
-    <!-- KPI row -->
-    <div class="kpi-row kpi-5" style="margin-bottom:14px">
-      <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Total Taps</span></div><span class="stat-val">341</span><div class="stat-foot"><span class="up">↑ 18%</span><span>vs last month</span></div></div>
-      <div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Conversion Rate</span></div><span class="stat-val">8.2%</span><div class="stat-foot"><span>tap → review</span></div></div>
-      <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Total Review Points</span></div><span class="stat-val">131</span><div class="stat-foot"><span>all time</span></div></div>
-      <div class="card stat-card" style="--accent:#7c3aed"><div class="stat-top"><span class="stat-label">📸 Photo Rate</span></div><span class="stat-val" style="font-size:22px">39%</span><div class="stat-foot"><span>of reviews have photos</span></div></div>
-      <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Monthly Champion</span></div><span class="stat-val" style="font-size:16px">👑 James</span><div class="stat-foot"><span>June 2026</span></div></div>
+      <p class="card-title" style="margin-bottom:14px">Review Leaderboard</p>
+      <div id="rv-leaderboard-list" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
 
-    <!-- Team Leaderboard -->
-    <div class="card" style="margin-bottom:14px">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <span class="card-title">Team Leaderboard — Ranked by Review Points</span>
-        <div class="filter-row" style="margin:0">
-          <button class="f-btn active" onclick="switchLbTab(this,'weekly')">This Week</button>
-          <button class="f-btn" onclick="switchLbTab(this,'monthly')">This Month</button>
-          <button class="f-btn" onclick="switchLbTab(this,'alltime')">All Time</button>
-        </div>
-      </div>
-      <div id="lb-weekly" style="padding:0 14px 10px">
-        <table class="tbl" style="margin-top:10px">
-          <thead><tr><th style="width:36px">Rank</th><th>Employee</th><th>Reviews</th><th>📸 Photo</th><th>Points</th><th>NFC Taps</th><th>Conv%</th><th>Last Tap</th></tr></thead>
-          <tbody id="rv-lb-weekly">
-            <tr style="background:rgba(201,168,76,.05)">
-              <td style="font-size:18px;text-align:center">👑</td>
-              <td><strong style="font-size:13px">James W.</strong><div style="font-size:10px;color:var(--muted);font-weight:600">Team Leader · Since Jan 2026</div></td>
-              <td><strong>9</strong></td><td style="color:var(--blue);font-weight:800">4</td>
-              <td><strong style="color:var(--gold);font-size:14px">17</strong></td>
-              <td>88</td><td style="color:var(--green);font-weight:800">10.2%</td>
-              <td style="font-size:11px;color:var(--muted)">2h ago</td>
-            </tr>
-            <tr>
-              <td style="font-size:16px;text-align:center;color:#94a3b8">2</td>
-              <td><strong>Mike R.</strong><div style="font-size:10px;color:var(--muted);font-weight:600">Senior Associate</div></td>
-              <td>7</td><td style="color:var(--blue);font-weight:800">3</td>
-              <td><strong style="color:var(--gold)">13</strong></td>
-              <td>71</td><td>9.9%</td>
-              <td style="font-size:11px;color:var(--muted)">4h ago</td>
-            </tr>
-            <tr>
-              <td style="font-size:16px;text-align:center;color:#94a3b8">3</td>
-              <td><strong>Sarah K.</strong><div style="font-size:10px;color:var(--muted);font-weight:600">Associate</div></td>
-              <td>5</td><td style="color:var(--blue);font-weight:800">2</td>
-              <td><strong style="color:var(--gold)">9</strong></td>
-              <td>54</td><td>9.3%</td>
-              <td style="font-size:11px;color:var(--muted)">Yesterday</td>
-            </tr>
-            <tr>
-              <td style="font-size:16px;text-align:center;color:#94a3b8">4</td>
-              <td><strong>David L.</strong><div style="font-size:10px;color:var(--muted);font-weight:600">Paralegal</div></td>
-              <td>3</td><td style="color:var(--blue);font-weight:800">1</td>
-              <td><strong style="color:var(--gold)">5</strong></td>
-              <td>41</td><td>7.3%</td>
-              <td style="font-size:11px;color:var(--muted)">Yesterday</td>
-            </tr>
-            <tr>
-              <td style="font-size:16px;text-align:center;color:#94a3b8">5</td>
-              <td><strong>Chris M.</strong><div style="font-size:10px;color:var(--muted);font-weight:600">Receptionist</div></td>
-              <td>2</td><td style="color:var(--blue);font-weight:800">0</td>
-              <td><strong style="color:var(--gold)">2</strong></td>
-              <td>28</td><td>7.1%</td>
-              <td style="font-size:11px;color:var(--muted)">2 days ago</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-      <div id="lb-monthly" style="display:none;padding:0 14px 10px">
-        <table class="tbl" style="margin-top:10px">
-          <thead><tr><th style="width:36px">Rank</th><th>Employee</th><th>Reviews</th><th>📸 Photo</th><th>Points</th><th>NFC Taps</th><th>Conv%</th></tr></thead>
-          <tbody id="rv-lb-monthly">
-            <tr style="background:rgba(201,168,76,.05)"><td style="font-size:18px;text-align:center">👑</td><td><strong>James W.</strong></td><td>42</td><td style="color:var(--blue);font-weight:800">18</td><td><strong style="color:var(--gold);font-size:14px">78</strong></td><td>412</td><td style="color:var(--green);font-weight:800">10.2%</td></tr>
-            <tr><td style="text-align:center;color:#94a3b8">2</td><td><strong>Mike R.</strong></td><td>36</td><td style="color:var(--blue);font-weight:800">14</td><td><strong style="color:var(--gold)">64</strong></td><td>363</td><td>9.9%</td></tr>
-            <tr><td style="text-align:center;color:#94a3b8">3</td><td><strong>Sarah K.</strong></td><td>28</td><td style="color:var(--blue);font-weight:800">9</td><td><strong style="color:var(--gold)">46</strong></td><td>301</td><td>9.3%</td></tr>
-            <tr><td style="text-align:center;color:#94a3b8">4</td><td><strong>David L.</strong></td><td>19</td><td style="color:var(--blue);font-weight:800">5</td><td><strong style="color:var(--gold)">29</strong></td><td>260</td><td>7.3%</td></tr>
-            <tr><td style="text-align:center;color:#94a3b8">5</td><td><strong>Chris M.</strong></td><td>12</td><td style="color:var(--blue);font-weight:800">2</td><td><strong style="color:var(--gold)">16</strong></td><td>169</td><td>7.1%</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <div id="lb-alltime" style="display:none;padding:0 14px 10px">
-        <table class="tbl" style="margin-top:10px">
-          <thead><tr><th style="width:36px">Rank</th><th>Employee</th><th>Total Reviews</th><th>📸 Photo</th><th>All-Time Points</th><th>Conv%</th><th>Best Month</th></tr></thead>
-          <tbody id="rv-lb-alltime">
-            <tr style="background:rgba(201,168,76,.05)"><td style="font-size:18px;text-align:center">👑</td><td><strong>James W.</strong><div style="font-size:10px;color:var(--gold);font-weight:700">3× Monthly Champion</div></td><td>182</td><td style="color:var(--blue);font-weight:800">47</td><td><strong style="color:var(--gold);font-size:14px">276</strong></td><td style="color:var(--green);font-weight:800">10.2%</td><td style="font-size:11px">42 (Mar 2026)</td></tr>
-            <tr><td style="text-align:center;color:#94a3b8">2</td><td><strong>Mike R.</strong><div style="font-size:10px;color:var(--muted);font-weight:600">1× Monthly Champion</div></td><td>154</td><td style="color:var(--blue);font-weight:800">38</td><td><strong style="color:var(--gold)">230</strong></td><td>9.9%</td><td style="font-size:11px">39 (Apr 2026)</td></tr>
-            <tr><td style="text-align:center;color:#94a3b8">3</td><td><strong>Sarah K.</strong></td><td>118</td><td style="color:var(--blue);font-weight:800">29</td><td><strong style="color:var(--gold)">176</strong></td><td>9.3%</td><td style="font-size:11px">31 (May 2026)</td></tr>
-            <tr><td style="text-align:center;color:#94a3b8">4</td><td><strong>David L.</strong></td><td>87</td><td style="color:var(--blue);font-weight:800">18</td><td><strong style="color:var(--gold)">123</strong></td><td>7.3%</td><td style="font-size:11px">24 (Feb 2026)</td></tr>
-            <tr><td style="text-align:center;color:#94a3b8">5</td><td><strong>Chris M.</strong></td><td>62</td><td style="color:var(--blue);font-weight:800">9</td><td><strong style="color:var(--gold)">80</strong></td><td>7.1%</td><td style="font-size:11px">18 (Jan 2026)</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Monthly Champions History + Daily tap chart -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">🏆 Monthly Champions</span><span style="font-size:11px;color:var(--muted);font-weight:600">2026 Season</span></div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(201,168,76,.07);border-radius:8px;border-left:3px solid var(--gold)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">👑 James W.</div><div style="font-size:10px;color:var(--muted);font-weight:600">42 reviews · 78 pts</div></div>
-            <span style="font-size:11px;font-weight:700;color:var(--gold)">Jun 2026</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:rgba(201,168,76,.07);border-radius:8px;border-left:3px solid var(--gold)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">👑 James W.</div><div style="font-size:10px;color:var(--muted);font-weight:600">38 reviews · 72 pts</div></div>
-            <span style="font-size:11px;font-weight:700;color:var(--gold)">May 2026</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:8px;border-left:3px solid var(--border)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">Mike R.</div><div style="font-size:10px;color:var(--muted);font-weight:600">39 reviews · 69 pts</div></div>
-            <span style="font-size:11px;font-weight:700;color:var(--muted)">Apr 2026</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:8px;border-left:3px solid var(--border)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">James W.</div><div style="font-size:10px;color:var(--muted);font-weight:600">42 reviews · 78 pts</div></div>
-            <span style="font-size:11px;font-weight:700;color:var(--muted)">Mar 2026</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:8px;border-left:3px solid var(--border)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">Sarah K.</div><div style="font-size:10px;color:var(--muted);font-weight:600">28 reviews · 51 pts</div></div>
-            <span style="font-size:11px;font-weight:700;color:var(--muted)">Feb 2026</span>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:var(--bg2);border-radius:8px;border-left:3px solid var(--border)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">James W.</div><div style="font-size:10px;color:var(--muted);font-weight:600">31 reviews · 55 pts</div></div>
-            <span style="font-size:11px;font-weight:700;color:var(--muted)">Jan 2026</span>
-          </div>
-        </div>
-      </div>
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">📸 Photo Review Leaderboard</span><span style="font-size:11px;color:var(--muted);font-weight:600">All time</span></div>
-        <div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:16px">🥇</span>
-            <div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--ink)">James W.</div><div style="height:6px;background:var(--bg2);border-radius:4px;margin-top:4px;overflow:hidden"><div style="width:100%;height:100%;background:var(--blue);border-radius:4px"></div></div></div>
-            <span style="font-size:14px;font-weight:900;color:var(--blue)">47</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:16px">🥈</span>
-            <div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--ink)">Mike R.</div><div style="height:6px;background:var(--bg2);border-radius:4px;margin-top:4px;overflow:hidden"><div style="width:81%;height:100%;background:rgba(27,97,197,.6);border-radius:4px"></div></div></div>
-            <span style="font-size:14px;font-weight:900;color:var(--blue)">38</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:16px">🥉</span>
-            <div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--ink)">Sarah K.</div><div style="height:6px;background:var(--bg2);border-radius:4px;margin-top:4px;overflow:hidden"><div style="width:62%;height:100%;background:rgba(27,97,197,.4);border-radius:4px"></div></div></div>
-            <span style="font-size:14px;font-weight:900;color:var(--blue)">29</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
-            <span style="font-size:16px;text-align:center;width:20px;color:#94a3b8">4</span>
-            <div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--ink)">David L.</div><div style="height:6px;background:var(--bg2);border-radius:4px;margin-top:4px;overflow:hidden"><div style="width:38%;height:100%;background:rgba(27,97,197,.25);border-radius:4px"></div></div></div>
-            <span style="font-size:14px;font-weight:900;color:var(--muted)">18</span>
-          </div>
-          <div style="display:flex;align-items:center;gap:10px;padding:8px 0">
-            <span style="font-size:16px;text-align:center;width:20px;color:#94a3b8">5</span>
-            <div style="flex:1"><div style="font-size:13px;font-weight:800;color:var(--ink)">Chris M.</div><div style="height:6px;background:var(--bg2);border-radius:4px;margin-top:4px;overflow:hidden"><div style="width:19%;height:100%;background:rgba(27,97,197,.15);border-radius:4px"></div></div></div>
-            <span style="font-size:14px;font-weight:900;color:var(--muted)">9</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent tap log -->
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Recent Tap Log</span><span style="font-size:11px;color:var(--muted);font-weight:600">Last 48 hours</span></div>
-      <table class="tbl" style="margin-top:10px">
-        <thead><tr><th>Card</th><th>Employee</th><th>Date / Time</th><th>Review?</th><th>Photo?</th></tr></thead>
-        <tbody>
-          <tr><td>Reception Desk</td><td>James W.</td><td style="font-size:11px;white-space:nowrap">Jun 23 · 3:42 PM</td><td><span class="pill pill-green" style="font-size:10px">Yes</span></td><td><span class="pill pill-blue" style="font-size:10px">📸 Yes</span></td></tr>
-          <tr><td>Email Sig</td><td>Mike R.</td><td style="font-size:11px;white-space:nowrap">Jun 23 · 2:17 PM</td><td><span class="pill pill-muted" style="font-size:10px">No</span></td><td>—</td></tr>
-          <tr><td>Reception Desk</td><td>James W.</td><td style="font-size:11px;white-space:nowrap">Jun 23 · 11:05 AM</td><td><span class="pill pill-green" style="font-size:10px">Yes</span></td><td><span class="pill pill-muted" style="font-size:10px">No</span></td></tr>
-          <tr><td>Conference Rm</td><td>Sarah K.</td><td style="font-size:11px;white-space:nowrap">Jun 22 · 4:58 PM</td><td><span class="pill pill-muted" style="font-size:10px">No</span></td><td>—</td></tr>
-          <tr><td>Lobby Standee</td><td>David L.</td><td style="font-size:11px;white-space:nowrap">Jun 22 · 1:30 PM</td><td><span class="pill pill-muted" style="font-size:10px">No</span></td><td>—</td></tr>
-          <tr><td>Email Sig</td><td>Mike R.</td><td style="font-size:11px;white-space:nowrap">Jun 22 · 10:22 AM</td><td><span class="pill pill-green" style="font-size:10px">Yes</span></td><td><span class="pill pill-blue" style="font-size:10px">📸 Yes</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Lost Opportunity + Review Funnel -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;margin-bottom:14px">
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Lost Opportunity Tracker</span><span style="font-size:11px;color:var(--muted);font-weight:600">Missed reviews this month</span></div>
-        <div style="margin-top:12px">
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:14px">
-            <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:900;color:var(--ink)">341</div><div style="font-size:10px;color:var(--muted);font-weight:700">Taps</div></div>
-            <div style="background:rgba(27,197,115,.07);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:900;color:var(--green)">28</div><div style="font-size:10px;color:var(--muted);font-weight:700">Reviews</div></div>
-            <div style="background:rgba(239,68,68,.06);border-radius:8px;padding:10px;text-align:center"><div style="font-size:20px;font-weight:900;color:#ef4444">313</div><div style="font-size:10px;color:var(--muted);font-weight:700">Missed</div></div>
-          </div>
-          <div style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:10px;padding:12px;margin-bottom:12px">
-            <div style="font-size:11px;font-weight:800;color:#ef4444;margin-bottom:4px">CONVERSION OPPORTUNITY</div>
-            <div style="font-size:13px;font-weight:700;color:var(--ink)">At 8.2% conversion, improving to <strong>15%</strong> would generate <strong>+23 more reviews/month</strong>.</div>
-          </div>
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:8px">TIPS TO IMPROVE CONVERSION</div>
-          <div style="display:flex;flex-direction:column;gap:5px">
-            <div style="padding:6px 10px;background:var(--bg2);border-radius:7px;font-size:11px;font-weight:700;color:var(--ink)">💡 Ask verbally after the tap — verbal prompt increases conversion by ~40%</div>
-            <div style="padding:6px 10px;background:var(--bg2);border-radius:7px;font-size:11px;font-weight:700;color:var(--ink)">💡 Use Smart Routing to catch unhappy customers before Google</div>
-            <div style="padding:6px 10px;background:var(--bg2);border-radius:7px;font-size:11px;font-weight:700;color:var(--ink)">💡 Add photo prompt: "A quick photo doubles your point value"</div>
-            <div style="padding:6px 10px;background:var(--bg2);border-radius:7px;font-size:11px;font-weight:700;color:var(--ink)">💡 Reception cards convert 2× better than lobby standees</div>
-          </div>
-        </div>
-      </div>
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Review Funnel</span><span style="font-size:11px;color:var(--muted);font-weight:600">Where customers drop off</span></div>
-        <div style="margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:0">
-          <div style="width:100%;background:rgba(27,97,197,.15);border-radius:8px 8px 0 0;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:13px;font-weight:800;color:var(--ink)">Customers Served</span>
-            <span style="font-size:18px;font-weight:900;color:var(--blue)">1,000</span>
-          </div>
-          <div style="width:4px;height:10px;background:var(--border)"></div>
-          <svg viewBox="0 0 20 10" style="width:20px;height:10px"><polygon points="0,0 20,0 10,10" fill="var(--border)"/></svg>
-          <div style="width:88%;background:rgba(27,97,197,.22);border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:13px;font-weight:800;color:var(--ink)">NFC Card Taps</span>
-            <div style="text-align:right"><span style="font-size:18px;font-weight:900;color:var(--blue)">341</span><div style="font-size:10px;color:var(--muted);font-weight:600">34.1% of served</div></div>
-          </div>
-          <div style="width:4px;height:10px;background:var(--border)"></div>
-          <svg viewBox="0 0 20 10" style="width:20px;height:10px"><polygon points="0,0 20,0 10,10" fill="var(--border)"/></svg>
-          <div style="width:70%;background:rgba(27,97,197,.35);border-radius:8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:13px;font-weight:800;color:var(--ink)">Review Page Opens</span>
-            <div style="text-align:right"><span style="font-size:18px;font-weight:900;color:var(--blue)">180</span><div style="font-size:10px;color:var(--muted);font-weight:600">52.8% of taps</div></div>
-          </div>
-          <div style="width:4px;height:10px;background:var(--border)"></div>
-          <svg viewBox="0 0 20 10" style="width:20px;height:10px"><polygon points="0,0 20,0 10,10" fill="var(--border)"/></svg>
-          <div style="width:48%;background:var(--blue);border-radius:0 0 8px 8px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-            <span style="font-size:13px;font-weight:800;color:#fff">Reviews Submitted</span>
-            <div style="text-align:right"><span style="font-size:18px;font-weight:900;color:#fff">28</span><div style="font-size:10px;color:rgba(255,255,255,.7);font-weight:600">15.6% of opens</div></div>
-          </div>
-          <div style="margin-top:10px;padding:8px 12px;background:rgba(239,68,68,.06);border-radius:8px;font-size:11px;font-weight:700;color:#ef4444;text-align:center">
-            ⚠ Biggest drop-off: Review Page → Submitted (84.4% abandon). Add verbal encouragement after tap.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Achievement Badges -->
-    <div class="card" style="margin-bottom:14px">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <span class="card-title">Achievement Badges</span>
-        <span style="font-size:11px;color:var(--muted);font-weight:600">Earned permanently — never reset</span>
-      </div>
-      <div style="padding:14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-        <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px">
-          <div style="font-size:28px;margin-bottom:6px">🥉</div>
-          <div style="font-size:12px;font-weight:900;color:var(--ink)">25 Reviews Club</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:3px">Team: 5/5 earned</div>
-        </div>
-        <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px">
-          <div style="font-size:28px;margin-bottom:6px">🥈</div>
-          <div style="font-size:12px;font-weight:900;color:var(--ink)">100 Reviews Club</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:3px">Team: 3/5 earned</div>
-        </div>
-        <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px">
-          <div style="font-size:28px;margin-bottom:6px">🥇</div>
-          <div style="font-size:12px;font-weight:900;color:var(--ink)">250 Reviews Club</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:3px">Team: 0/5 — next goal</div>
-        </div>
-        <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px">
-          <div style="font-size:28px;margin-bottom:6px">💎</div>
-          <div style="font-size:12px;font-weight:900;color:var(--ink)">500 Reviews Club</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:3px">Team: 0/5 — future</div>
-        </div>
-        <div style="text-align:center;padding:12px 8px;background:rgba(201,168,76,.12);border:1px solid var(--gold);border-radius:10px">
-          <div style="font-size:28px;margin-bottom:6px">👑</div>
-          <div style="font-size:12px;font-weight:900;color:var(--gold)">Monthly Champion</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:3px">James W. — 3×</div>
-        </div>
-        <div style="text-align:center;padding:12px 8px;background:rgba(27,197,115,.07);border:1px solid rgba(27,197,115,.2);border-radius:10px">
-          <div style="font-size:28px;margin-bottom:6px">📸</div>
-          <div style="font-size:12px;font-weight:900;color:var(--green)">Photo Leader</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:3px">James W. — 47 photos</div>
-        </div>
-        <div style="text-align:center;padding:12px 8px;background:rgba(27,97,197,.07);border:1px solid rgba(27,97,197,.2);border-radius:10px">
-          <div style="font-size:28px;margin-bottom:6px">🚀</div>
-          <div style="font-size:12px;font-weight:900;color:var(--blue)">Fastest Growth</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:3px">+194 reviews in 6mo</div>
-        </div>
-        <div style="text-align:center;padding:12px 8px;background:rgba(27,197,115,.07);border:1px solid rgba(27,197,115,.2);border-radius:10px">
-          <div style="font-size:28px;margin-bottom:6px">⚡</div>
-          <div style="font-size:12px;font-weight:900;color:var(--green)">Top Conversion</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600;margin-top:3px">James W. — 10.2%</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Hall of Fame -->
-    <div class="card card-pad" style="margin-bottom:14px">
-      <div class="card-head"><span class="card-title">🏛 Company Hall of Fame</span><span style="font-size:11px;color:var(--muted);font-weight:600">Permanent company record book</span></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px">
-        <div style="background:var(--bg2);border-radius:10px;padding:12px 14px;border-left:3px solid var(--gold)">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">MOST REVIEWS EVER</div>
-          <div style="font-size:22px;font-weight:900;color:var(--ink)">182</div>
-          <div style="font-size:12px;font-weight:700;color:var(--gold)">👑 James W.</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600">All time</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:10px;padding:12px 14px;border-left:3px solid var(--blue)">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">MOST PHOTO REVIEWS</div>
-          <div style="font-size:22px;font-weight:900;color:var(--ink)">47</div>
-          <div style="font-size:12px;font-weight:700;color:var(--blue)">📸 James W.</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600">All time</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:10px;padding:12px 14px;border-left:3px solid var(--gold)">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">MOST MONTHLY TITLES</div>
-          <div style="font-size:22px;font-weight:900;color:var(--ink)">3×</div>
-          <div style="font-size:12px;font-weight:700;color:var(--gold)">👑 James W.</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600">2026 season</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:10px;padding:12px 14px;border-left:3px solid var(--green)">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">BEST SINGLE MONTH</div>
-          <div style="font-size:22px;font-weight:900;color:var(--ink)">42</div>
-          <div style="font-size:12px;font-weight:700;color:var(--green)">James W. — Mar 2026</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600">Company record</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:10px;padding:12px 14px;border-left:3px solid var(--green)">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">HIGHEST CONVERSION</div>
-          <div style="font-size:22px;font-weight:900;color:var(--ink)">24%</div>
-          <div style="font-size:12px;font-weight:700;color:var(--green)">James W. — Feb 2026</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600">Personal best record</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:10px;padding:12px 14px;border-left:3px solid var(--gold)">
-          <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">LONGEST STREAK EVER</div>
-          <div style="font-size:22px;font-weight:900;color:var(--ink)">🔥 48</div>
-          <div style="font-size:12px;font-weight:700;color:var(--gold)">James W. — 2026</div>
-          <div style="font-size:10px;color:var(--muted);font-weight:600">Days of consecutive reviews</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── EMPLOYEE PROFILES TAB ─── -->
-  <div id="rv-locations-tab" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
-      <p style="font-size:13px;color:var(--muted);font-weight:600;margin:0">Each employee's full performance record — reviews, points, streaks, personal bests, and achievements.</p>
-    </div>
-    <!-- Employee profile cards -->
-    <div id="rv-profiles-grid" style="display:flex;flex-direction:column;gap:14px">
-
-      <!-- James W. — #1 Team Leader -->
-      <div class="card">
-        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#1b61c5,#0e3a8a);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">👑</div>
-            <div>
-              <div style="font-size:16px;font-weight:900;color:var(--ink)">James W. <span style="font-size:12px;color:var(--gold);font-weight:700">Rank #1</span></div>
-              <div style="font-size:11px;color:var(--muted);font-weight:600">Team Leader · Last Tap: 2h ago</div>
-            </div>
-          </div>
-          <span class="pill pill-gold" style="font-size:11px">3× Monthly Champion</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0">
-          <div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--ink)">182</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Total Reviews</div></div>
-          <div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--gold)">276</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Review Points</div></div>
-          <div style="padding:12px 14px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--green)">10.2%</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Conversion Rate</div></div>
-        </div>
-      </div>
-
-      <!-- Mike R. — #2 -->
-      <div class="card">
-        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#475569,#1e293b);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#e2e8f0;flex-shrink:0">2</div>
-            <div>
-              <div style="font-size:16px;font-weight:900;color:var(--ink)">Mike R. <span style="font-size:12px;color:var(--muted);font-weight:700">Rank #2</span></div>
-              <div style="font-size:11px;color:var(--muted);font-weight:600">Senior Associate · Last Tap: 4h ago</div>
-            </div>
-          </div>
-          <span class="pill pill-gold" style="font-size:11px">1× Monthly Champion</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0">
-          <div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--ink)">154</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Total Reviews</div></div>
-          <div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--gold)">230</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Review Points</div></div>
-          <div style="padding:12px 14px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--green)">9.9%</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Conversion Rate</div></div>
-        </div>
-      </div>
-
-      <!-- Sarah K. — #3 -->
-      <div class="card">
-        <div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-          <div style="display:flex;align-items:center;gap:14px">
-            <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#475569,#1e293b);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#e2e8f0;flex-shrink:0">3</div>
-            <div>
-              <div style="font-size:16px;font-weight:900;color:var(--ink)">Sarah K. <span style="font-size:12px;color:var(--muted);font-weight:700">Rank #3</span></div>
-              <div style="font-size:11px;color:var(--muted);font-weight:600">Associate · Last Tap: Yesterday</div>
-            </div>
-          </div>
-          <span class="pill pill-green" style="font-size:11px">100 Reviews Club</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0">
-          <div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--ink)">118</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Total Reviews</div></div>
-          <div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--gold)">176</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Review Points</div></div>
-          <div style="padding:12px 14px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--green)">9.3%</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Conversion Rate</div></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ─── REPORTS / GROWTH INTELLIGENCE TAB ─── -->
-  <div id="rv-reports-tab" style="display:none">
-
-    <!-- Row 1: Competitor Gap + Beat List -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Competitor Gap Tracker</span><span style="font-size:11px;color:var(--muted);font-weight:600">Updated daily</span></div>
-        <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
-          <div style="background:rgba(27,197,115,.06);border:1px solid rgba(27,197,115,.2);border-radius:10px;padding:12px 14px">
-            <div style="font-size:10px;font-weight:800;color:var(--green);letter-spacing:.05em;margin-bottom:6px">YOUR COMPANY</div>
-            <div style="font-size:24px;font-weight:900;color:var(--ink)">4.9★ <span style="font-size:14px;color:var(--muted);font-weight:700">· 194 reviews</span></div>
-            <div style="font-size:11px;font-weight:700;color:var(--green)">↑ +7 this month</div>
-          </div>
-          <div style="background:var(--bg2);border-radius:10px;padding:12px 14px">
-            <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:6px">TOP COMPETITOR</div>
-            <div style="font-size:24px;font-weight:900;color:var(--ink)">4.7★ <span style="font-size:14px;color:var(--muted);font-weight:700">· 183 reviews</span></div>
-            <div style="font-size:11px;font-weight:700;color:var(--muted)">Smith & Partners Law</div>
-          </div>
-          <div style="background:rgba(201,168,76,.07);border-radius:10px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:11px;font-weight:700;color:var(--muted)">YOUR LEAD</div>
-              <div style="font-size:22px;font-weight:900;color:var(--gold)">+11 reviews</div>
-            </div>
-            <div style="text-align:right">
-              <div style="font-size:11px;font-weight:700;color:var(--muted)">MARKET RANK</div>
-              <div style="font-size:22px;font-weight:900;color:var(--green)">#1</div>
-              <div style="font-size:10px;color:var(--muted);font-weight:600">Miami Law Firms</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Beat List</span><span style="font-size:11px;color:var(--muted);font-weight:600">Sorted by easiest to pass</span></div>
-        <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:rgba(27,197,115,.06);border-radius:8px;border-left:3px solid var(--green)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">Johnson Legal</div><div style="font-size:10px;color:var(--muted);font-weight:600">182 reviews · 4.6★</div></div>
-            <div style="text-align:right"><div style="font-size:12px;font-weight:900;color:var(--green)">Already Passing</div><div style="font-size:10px;color:var(--muted);font-weight:600">+12 ahead</div></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:rgba(201,168,76,.06);border-radius:8px;border-left:3px solid var(--gold)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">Smith & Partners</div><div style="font-size:10px;color:var(--muted);font-weight:600">183 reviews · 4.7★</div></div>
-            <div style="text-align:right"><div style="font-size:12px;font-weight:900;color:var(--gold)">Already Passing</div><div style="font-size:10px;color:var(--muted);font-weight:600">+11 ahead</div></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:var(--bg2);border-radius:8px;border-left:3px solid var(--border)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">Brickell Law Group</div><div style="font-size:10px;color:var(--muted);font-weight:600">211 reviews · 4.8★</div></div>
-            <div style="text-align:right"><div style="font-size:12px;font-weight:900;color:var(--ink)">Need 17 reviews</div><div style="font-size:10px;color:var(--muted);font-weight:600">to pass</div></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:var(--bg2);border-radius:8px;border-left:3px solid var(--border)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">Miami Legal Partners</div><div style="font-size:10px;color:var(--muted);font-weight:600">228 reviews · 4.9★</div></div>
-            <div style="text-align:right"><div style="font-size:12px;font-weight:900;color:var(--ink)">Need 34 reviews</div><div style="font-size:10px;color:var(--muted);font-weight:600">to pass</div></div>
-          </div>
-          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 10px;background:var(--bg2);border-radius:8px;border-left:3px solid var(--border)">
-            <div><div style="font-size:12px;font-weight:800;color:var(--ink)">Coral Gables Attorneys</div><div style="font-size:10px;color:var(--muted);font-weight:600">252 reviews · 4.8★</div></div>
-            <div style="text-align:right"><div style="font-size:12px;font-weight:900;color:var(--ink)">Need 58 reviews</div><div style="font-size:10px;color:var(--muted);font-weight:600">to pass</div></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 2: Review Velocity + Company Goals -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Review Velocity</span><span style="font-size:11px;color:var(--muted);font-weight:600">Growth projections</span></div>
-        <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
-              <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.04em">CURRENT PACE</div>
-              <div style="font-size:22px;font-weight:900;color:var(--ink)">+24</div>
-              <div style="font-size:11px;font-weight:700;color:var(--muted)">reviews / month</div>
-            </div>
-            <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
-              <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.04em">7-DAY GROWTH</div>
-              <div style="font-size:22px;font-weight:900;color:var(--green)">+18%</div>
-              <div style="font-size:11px;font-weight:700;color:var(--muted)">vs prior 7 days</div>
-            </div>
-          </div>
-          <div style="background:rgba(27,97,197,.06);border-radius:10px;padding:12px 14px">
-            <div style="font-size:10px;font-weight:800;color:var(--blue);letter-spacing:.05em;margin-bottom:8px">12-MONTH PROJECTION</div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-              <span style="font-size:13px;font-weight:700;color:var(--muted)">Projected Review Count</span>
-              <span style="font-size:20px;font-weight:900;color:var(--ink)">482</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:4px">
-              <span style="font-size:13px;font-weight:700;color:var(--muted)">Expected Market Rank</span>
-              <span style="font-size:20px;font-weight:900;color:var(--gold)">#1</span>
-            </div>
-            <div style="display:flex;justify-content:space-between;align-items:baseline">
-              <span style="font-size:13px;font-weight:700;color:var(--muted)">Overtake Brickell Law</span>
-              <span style="font-size:14px;font-weight:900;color:var(--green)">~3 weeks</span>
-            </div>
-          </div>
-          <div style="background:var(--bg2);border-radius:10px;padding:10px 12px">
-            <div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.04em;margin-bottom:6px">GROWTH PERIODS</div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center">
-              <div><div style="font-size:13px;font-weight:900;color:var(--green)">+7</div><div style="font-size:9px;color:var(--muted);font-weight:600">7-Day</div></div>
-              <div><div style="font-size:13px;font-weight:900;color:var(--green)">+24</div><div style="font-size:9px;color:var(--muted);font-weight:600">30-Day</div></div>
-              <div><div style="font-size:13px;font-weight:900;color:var(--green)">+61</div><div style="font-size:9px;color:var(--muted);font-weight:600">90-Day</div></div>
-              <div><div style="font-size:13px;font-weight:900;color:var(--green)">+194</div><div style="font-size:9px;color:var(--muted);font-weight:600">12-Month</div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Company Goals</span></div>
-        <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px">
-          <div style="padding:10px 12px;background:var(--bg2);border-radius:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <div style="font-size:13px;font-weight:800;color:var(--ink)">250 Total Reviews</div>
-              <span style="font-size:12px;font-weight:900;color:var(--gold)">194 / 250</span>
-            </div>
-            <div style="height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin-bottom:4px"><div style="width:78%;height:100%;background:var(--gold);border-radius:6px"></div></div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">78% complete · 56 reviews needed · ~2.3 months at current pace</div>
-          </div>
-          <div style="padding:10px 12px;background:var(--bg2);border-radius:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <div style="font-size:13px;font-weight:800;color:var(--ink)">4.9★ Google Rating</div>
-              <span style="font-size:12px;font-weight:900;color:var(--green)">4.9★ ✓</span>
-            </div>
-            <div style="height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin-bottom:4px"><div style="width:100%;height:100%;background:var(--green);border-radius:6px"></div></div>
-            <div style="font-size:10px;color:var(--green);font-weight:700">Goal achieved! 🏆</div>
-          </div>
-          <div style="padding:10px 12px;background:var(--bg2);border-radius:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <div style="font-size:13px;font-weight:800;color:var(--ink)">150 Review Points This Month</div>
-              <span style="font-size:12px;font-weight:900;color:var(--gold)">131 / 150</span>
-            </div>
-            <div style="height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin-bottom:4px"><div style="width:87%;height:100%;background:var(--gold);border-radius:6px"></div></div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">87% — 19 pts to go · on track to finish this week</div>
-          </div>
-          <div style="padding:10px 12px;background:var(--bg2);border-radius:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <div style="font-size:13px;font-weight:800;color:var(--ink)">500 Total Reviews</div>
-              <span style="font-size:12px;font-weight:900;color:var(--muted)">194 / 500</span>
-            </div>
-            <div style="height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin-bottom:4px"><div style="width:39%;height:100%;background:rgba(27,97,197,.5);border-radius:6px"></div></div>
-            <div style="font-size:10px;color:var(--muted);font-weight:600">39% complete · 306 reviews needed · ~12.75 months at current pace</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 3: Live Activity Feed -->
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Live Activity Feed</span><span style="font-size:11px;color:var(--muted);font-weight:600">Recent company events</span></div>
-      <div style="display:flex;flex-direction:column;gap:0;margin-top:12px">
-        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="width:32px;height:32px;border-radius:50%;background:rgba(27,197,115,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">📸</div>
-          <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">James W. received a <strong>photo review</strong> — +2 points</div><div style="font-size:11px;color:var(--muted);font-weight:600">2 hours ago</div></div>
-          <span class="pill pill-green" style="font-size:10px">+2 pts</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="width:32px;height:32px;border-radius:50%;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🏆</div>
-          <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">James W. reached <strong>150 Review Points this month</strong></div><div style="font-size:11px;color:var(--muted);font-weight:600">Yesterday · monthly goal unlocked</div></div>
-          <span class="pill pill-gold" style="font-size:10px">Goal</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="width:32px;height:32px;border-radius:50%;background:rgba(27,97,197,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">📈</div>
-          <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">Company passed <strong>190 total reviews</strong></div><div style="font-size:11px;color:var(--muted);font-weight:600">Jun 22 · 60 reviews away from 250 goal</div></div>
-          <span class="pill pill-blue" style="font-size:10px">Milestone</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="width:32px;height:32px;border-radius:50%;background:rgba(27,197,115,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">⭐</div>
-          <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">Mike R. received a standard review — +1 point</div><div style="font-size:11px;color:var(--muted);font-weight:600">Jun 22 · 4 hours ago</div></div>
-          <span class="pill pill-muted" style="font-size:10px">+1 pt</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div style="width:32px;height:32px;border-radius:50%;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">👑</div>
-          <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">James W. clinched <strong>June Monthly Champion</strong></div><div style="font-size:11px;color:var(--muted);font-weight:600">Jun 21 · 3rd championship of 2026</div></div>
-          <span class="pill pill-gold" style="font-size:10px">Champion</span>
-        </div>
-        <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0">
-          <div style="width:32px;height:32px;border-radius:50%;background:rgba(27,197,115,.1);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">🎯</div>
-          <div style="flex:1"><div style="font-size:13px;font-weight:700;color:var(--ink)">Sarah K. hit the <strong>100 Reviews Club</strong></div><div style="font-size:11px;color:var(--muted);font-weight:600">Jun 19 · permanent achievement unlocked</div></div>
-          <span class="pill pill-green" style="font-size:10px">Achievement</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ─── HEAT MAP TAB ─── -->
-  <div id="rv-heatmap-tab" style="display:none">
-    <div class="kpi-row kpi-3" style="margin-bottom:14px">
-      <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Total Taps</span></div><span class="stat-val">341</span><div class="stat-foot"><span class="up">↑ 18%</span><span>vs last month</span></div></div>
-      <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Zip Codes Reached</span></div><span class="stat-val">23</span><div class="stat-foot"><span class="up">↑ 4</span><span>new this month</span></div></div>
-      <div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Top Area</span></div><span class="stat-val" style="font-size:20px">Downtown</span><div class="stat-foot"><span>94 taps</span></div></div>
-    </div>
-    <div class="card" style="margin-bottom:14px">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <span class="card-title">Geographic Heat Map</span>
-        <div class="filter-row" style="margin:0">
-          <button class="f-btn active" id="hm-btn-taps" onclick="hmSetLayer('taps')">NFC Taps</button>
-          <button class="f-btn" id="hm-btn-reviews" onclick="hmSetLayer('reviews')">Reviews</button>
-        </div>
-      </div>
-      <div style="padding:12px 14px 4px;font-size:11px;color:var(--muted);font-weight:600">Warmer colors = higher activity. Showing Miami metro area.</div>
-      <div id="heatmap-leaflet" style="height:380px;margin:0 14px 14px;border-radius:10px;overflow:hidden;background:#e8e4dc"></div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Top Zip Codes by Activity</span></div>
-      <table class="tbl" style="margin-top:12px"><thead><tr><th>Zip Code</th><th>Area</th><th>Taps</th><th>Reviews</th></tr></thead><tbody>
-        <tr><td><strong>33130</strong></td><td>Downtown Miami / Brickell</td><td>94</td><td>11</td></tr>
-        <tr><td><strong>33131</strong></td><td>Brickell Key</td><td>67</td><td>7</td></tr>
-        <tr><td><strong>33139</strong></td><td>Miami Beach</td><td>48</td><td>4</td></tr>
-        <tr><td><strong>33146</strong></td><td>Coral Gables</td><td>41</td><td>3</td></tr>
-        <tr><td><strong>33178</strong></td><td>Doral</td><td>33</td><td>2</td></tr>
-        <tr><td><strong>33010</strong></td><td>Hialeah</td><td>28</td><td>1</td></tr>
-        <tr><td><strong>33160</strong></td><td>North Miami Beach</td><td>19</td><td>0</td></tr>
-        <tr><td><strong>33033</strong></td><td>Homestead</td><td>11</td><td>0</td></tr>
-      </tbody></table>
-    </div>
   </div>
 </div>
 
@@ -9413,30 +8528,7 @@ function updateWLPreview(){
   var ps=document.getElementById('wl-preview-sub'); if(ps) ps.textContent=sub;
   var pb=document.getElementById('wl-preview-btn'); if(pb) pb.style.background=color;
 }
-function handleWLLogo(inp){
-  if(!inp||!inp.files||!inp.files[0]){
-    var saveBtn0=document.querySelector('#s-whitelabel .btn-primary');
-    if(saveBtn0) saveBtn0.disabled=false;
-    return;
-  }
-  var file=inp.files[0];
-  var mb=file.size/(1024*1024);
-  if(mb>MAX_UPLOAD_MB){
-    var sizeLabel=mb.toFixed(1)+' MB';
-    showToast('Logo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.','gold');
-    var saveBtn=document.querySelector('#s-whitelabel .btn-primary');
-    if(saveBtn) saveBtn.disabled=false;
-    inp.value='';
-    var prevLogo=document.getElementById('wl-preview-logo');
-    if(prevLogo){ var savedMeta0=typeof getMeta==='function'?getMeta(typeof acctKey==='function'?acctKey():''):{}; prevLogo.src=savedMeta0.logo||CAL_LOGO; }
-    return;
-  }
-  var saveBtn2=document.querySelector('#s-whitelabel .btn-primary');
-  if(saveBtn2) saveBtn2.disabled=false;
-  var r=new FileReader();
-  r.onload=function(e){ var l=document.getElementById('wl-preview-logo'); if(l){ l.src=e.target.result; l.style.filter='none'; } };
-  r.readAsDataURL(file);
-}
+
 function selectWLBg(el,style){ document.querySelectorAll('#s-whitelabel .card').forEach(function(c){ if(c.contains(el)) return; }); var bg=document.getElementById('wl-preview-bg'); if(bg) bg.style.background=style==='gradient'?'linear-gradient(135deg,#1b3a6b 0%,#c9a84c 100%)':'#1b3a6b'; el.style.border='2px solid var(--gold)'; el.parentNode.querySelectorAll('.card').forEach(function(c){ if(c!==el) c.style.border=''; }); }
 function saveWhitelabel(){ showToast('White label settings saved!','green'); }
 
@@ -11703,221 +10795,126 @@ function healthBadge(score){
   }
 
   function renderReviewsScreen(){
-    if(typeof ACCT_LB==='undefined') return;
     var key=acctKey();
-    var d=ACCT_LB[key]||ACCT_LB.a1;
-    if(!d) return;
+    var d=(typeof ACCT_LB!=='undefined'&&ACCT_LB[key])||ACCT_LB&&ACCT_LB.a1||{};
     var team=d.team||[];
     var reviews=d.reviews||[];
-    var total=d.total||0;
-    var photoCount=Math.round(total*0.39);
-    var stdCount=total-photoCount;
-    var pts=stdCount+photoCount*2;
-    var goal=Math.ceil(pts/100)*100+50;
-    var pct=Math.round(pts/goal*100);
-    var avgStr=d.avg||'4.8';
-    var conv=d.conv||'10%';
-    var streakDays=[14,9,6,3,2];
 
-    // 1 — Review Wall Ticker
-    var ticker=document.getElementById('review-wall-ticker');
-    if(ticker&&reviews.length){
-      ticker.innerHTML=reviews.map(function(r,i){
-        var is5=r.rating>=5;
-        var bg=is5?'rgba(27,197,115,.07)':'rgba(201,168,76,.07)';
-        var border=is5?'rgba(27,197,115,.18)':'rgba(201,168,76,.2)';
-        var sc=is5?'var(--green)':'var(--gold)';
-        var stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
-        var photo=(i%2===0);
-        return '<div style="flex-shrink:0;background:'+bg+';border:1px solid '+border+';border-radius:10px;padding:10px 14px;min-width:220px">'+
-          '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+
-          '<span style="color:'+sc+';font-size:13px">'+stars+'</span>'+
-          '<span style="font-size:10px;font-weight:700;color:var(--muted)">'+r.ago+'</span></div>'+
-          '<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:3px">"'+(r.text.length>45?r.text.slice(0,45)+'…':r.text)+'"</div>'+
-          '<div style="font-size:10px;color:var(--muted);font-weight:600">— '+r.name+' · '+(photo?'📸 Photo included · +2 pts':'Standard · +1 pt')+'</div>'+
-          '</div>';
-      }).join('');
-    }
+    // Restore connection state from localStorage
+    var connected=safeJSON('rv-connected-'+key,{});
 
-    // 2 — Review Streaks
-    var sb=document.getElementById('rv-streaks-body');
-    if(sb&&team.length){
-      sb.innerHTML=team.slice(0,3).map(function(m,i){
-        var first=i===0;
-        var bg=first?'rgba(201,168,76,.07)':'var(--bg2)';
-        var days=streakDays[i]||Math.max(1,streakDays[0]-i*4);
-        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:'+bg+';border-radius:8px">'+
-          '<div style="display:flex;align-items:center;gap:8px">'+
-          '<span style="font-size:'+(first?'16':'14')+'px">'+(first?'👑':i+1)+'</span>'+
-          '<div><div style="font-size:12px;font-weight:800;color:var(--ink)">'+m.name+'</div>'+
-          (first?'<div style="font-size:10px;color:var(--muted);font-weight:600">Longest active streak</div>':'')+
-          '</div></div>'+
-          '<div style="text-align:right">'+
-          '<div style="font-size:'+(first?'18':'16')+'px;font-weight:900;color:'+(first?'var(--gold)':'var(--muted)')+'">🔥 '+days+'</div>'+
-          '<div style="font-size:10px;color:var(--muted);font-weight:600">days</div></div>'+
-          '</div>';
-      }).join('');
-    }
+    var gate=document.getElementById('rv-gate');
+    var dash=document.getElementById('rv-dashboard');
+    if(!gate||!dash) return;
 
-    // 3 — KPI Row
-    var kpi=document.getElementById('rv-kpi-row');
-    if(kpi){
-      kpi.innerHTML=
-        '<div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Total Reviews</span></div><span class="stat-val">'+total+'</span><div class="stat-foot"><span>all time</span></div></div>'+
-        '<div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">This Month</span></div><span class="stat-val">+'+d.month+'</span><div class="stat-foot"><span class="up">↑ 2</span><span>vs last month</span></div></div>'+
-        '<div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Growth Trend</span></div><span class="stat-val" style="font-size:22px">↑8.2%</span><div class="stat-foot"><span>month over month</span></div></div>'+
-        '<div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Avg Rating</span></div><span class="stat-val">'+avgStr+'★</span><div class="stat-foot"><span class="up">↑ 0.2</span><span>vs last month</span></div></div>'+
-        '<div class="card stat-card" style="--accent:#ea4335"><div class="stat-top"><span class="stat-label">Google Rating</span><svg width="14" height="14" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg></div><span class="stat-val" style="font-size:26px">'+avgStr+'★</span><div class="stat-foot"><span>'+total+' Google reviews</span></div></div>';
-    }
+    var anyConnected=connected.google||connected.facebook||connected.yelp;
+    gate.style.display=anyConnected?'none':'block';
+    dash.style.display=anyConnected?'block':'none';
 
-    // 4 — Review Points body
-    var pb=document.getElementById('rv-points-body');
-    if(pb){
-      pb.innerHTML=
-        '<div style="padding:14px 16px;border-right:1px solid var(--border)">'+
-          '<div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">REVIEW COUNT</div>'+
-          '<div style="font-size:32px;font-weight:900;color:var(--ink);line-height:1">'+total+'</div>'+
-          '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;margin-bottom:14px">Total Reviews</div>'+
-          '<div style="display:flex;flex-direction:column;gap:6px">'+
-          '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700"><span style="color:var(--muted)">Standard</span><span style="color:var(--ink)">'+stdCount+'</span></div>'+
-          '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700"><span style="color:var(--muted)">📸 With Photo</span><span style="color:var(--blue)">'+photoCount+'</span></div>'+
-          '</div></div>'+
-        '<div style="padding:14px 16px;border-right:1px solid var(--border)">'+
-          '<div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">REVIEW POINTS</div>'+
-          '<div style="font-size:32px;font-weight:900;color:var(--gold);line-height:1">'+pts+'</div>'+
-          '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;margin-bottom:14px">Total Points Earned</div>'+
-          '<div style="display:flex;flex-direction:column;gap:6px">'+
-          '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700"><span style="color:var(--muted)">'+stdCount+' standard × 1</span><span style="color:var(--ink)">'+stdCount+' pts</span></div>'+
-          '<div style="display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:700"><span style="color:var(--muted)">'+photoCount+' photo × 2</span><span style="color:var(--gold)">'+(photoCount*2)+' pts</span></div>'+
-          '</div></div>'+
-        '<div style="padding:14px 16px">'+
-          '<div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:10px">THIS MONTH\'S GOAL</div>'+
-          '<div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">'+
-          '<span style="font-size:28px;font-weight:900;color:var(--ink)">'+pts+'</span>'+
-          '<span style="font-size:13px;font-weight:700;color:var(--muted)">/ '+goal+' pts</span></div>'+
-          '<div style="height:8px;background:var(--bg2);border-radius:6px;overflow:hidden;margin-bottom:10px">'+
-          '<div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--gold),#e8c547);border-radius:6px;transition:width .4s"></div></div>'+
-          '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:10px">'+pct+'% to goal — '+(goal-pts)+' pts away 🏆</div>'+
-          '<div style="background:rgba(27,97,197,.06);border-radius:8px;padding:8px 10px">'+
-          '<div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.04em">📸 PHOTO REVIEW RATE</div>'+
-          '<div style="font-size:20px;font-weight:900;color:var(--blue);margin-top:2px">'+Math.round(photoCount/Math.max(total,1)*100)+'%</div>'+
-          '<div style="font-size:10px;font-weight:600;color:var(--muted)">of reviews include a photo</div>'+
-          '</div></div>';
-    }
+    // Restore connect button states
+    ['google','facebook','yelp'].forEach(function(p){
+      if(connected[p]){
+        var row=document.getElementById('rv-conn-'+p);
+        if(row){
+          var btn=row.querySelector('.btn-connect');
+          if(btn){ btn.textContent='Connected ✓'; btn.disabled=true; btn.style.opacity='0.6'; }
+          row.style.borderColor='var(--green)';
+        }
+      }
+    });
 
-    // 5 — Leaderboard tables (weekly / monthly / all-time)
-    function lbWeeklyRow(m,i,sorted){
-      var photo=Math.round(m.reviews*0.35);
-      var wrev=Math.round(m.reviews*0.22)+Math.max(0,3-i);
-      var wphoto=Math.round(wrev*0.35);
-      var wpts=wrev+wphoto;
-      var taps=Math.round(wrev/parseFloat(d.conv||'10%')*100);
-      var rank=i===0?'<td style="font-size:18px;text-align:center">👑</td>':'<td style="font-size:16px;text-align:center;color:#94a3b8">'+(i+1)+'</td>';
-      var ago=i===0?'2h ago':i===1?'4h ago':'Yesterday';
-      var rowStyle=i===0?' style="background:rgba(201,168,76,.05)"':'';
-      return '<tr'+rowStyle+'>'+rank+
-        '<td><strong style="font-size:13px">'+m.name+'</strong><div style="font-size:10px;color:var(--muted);font-weight:600">'+m.role+'</div></td>'+
-        '<td>'+(i===0?'<strong>':'')+wrev+(i===0?'</strong>':'')+'</td>'+
-        '<td style="color:var(--blue);font-weight:800">'+wphoto+'</td>'+
-        '<td><strong style="color:var(--gold)'+(i===0?';font-size:14px':'')+'">'+wpts+'</strong></td>'+
-        '<td>'+taps+'</td><td style="color:'+(i===0?'var(--green)':'')+'">'+m.positive+'</td>'+
-        '<td style="font-size:11px;color:var(--muted)">'+ago+'</td></tr>';
-    }
-    function lbMonthlyRow(m,i){
-      var photo=Math.round(m.reviews*0.43);
-      var pts2=m.reviews+photo;
-      var taps=Math.round(m.reviews/parseFloat(d.conv||'10%')*100);
-      var rank=i===0?'<td style="font-size:18px;text-align:center">👑</td>':'<td style="text-align:center;color:#94a3b8">'+(i+1)+'</td>';
-      var rowStyle=i===0?' style="background:rgba(201,168,76,.05)"':'';
-      return '<tr'+rowStyle+'>'+rank+
-        '<td><strong>'+m.name+'</strong></td>'+
-        '<td>'+m.reviews+'</td>'+
-        '<td style="color:var(--blue);font-weight:800">'+photo+'</td>'+
-        '<td><strong style="color:var(--gold)'+(i===0?';font-size:14px':'')+'">'+pts2+'</strong></td>'+
-        '<td>'+taps+'</td>'+
-        '<td style="color:'+(i===0?'var(--green)':'')+';font-weight:'+(i===0?'800':'')+'">'+m.positive+'</td></tr>';
-    }
-    function lbAlltimeRow(m,i){
-      var allRev=m.reviews*4+i*2;
-      var allPhoto=Math.round(allRev*0.26);
-      var allPts=allRev+allPhoto;
-      var bestMo=m.reviews+Math.round(m.reviews*0.3);
-      var months=['Mar','Apr','May','Feb','Jan'];
-      var rank=i===0?'<td style="font-size:18px;text-align:center">👑</td>':'<td style="text-align:center;color:#94a3b8">'+(i+1)+'</td>';
-      var champ=i===0?'<div style="font-size:10px;color:var(--gold);font-weight:700">3× Monthly Champion</div>':
-                i===1?'<div style="font-size:10px;color:var(--muted);font-weight:600">1× Monthly Champion</div>':'';
-      var rowStyle=i===0?' style="background:rgba(201,168,76,.05)"':'';
-      return '<tr'+rowStyle+'>'+rank+
-        '<td><strong>'+m.name+'</strong>'+champ+'</td>'+
-        '<td>'+allRev+'</td>'+
-        '<td style="color:var(--blue);font-weight:800">'+allPhoto+'</td>'+
-        '<td><strong style="color:var(--gold)'+(i===0?';font-size:14px':'')+'">'+allPts+'</strong></td>'+
-        '<td style="color:'+(i===0?'var(--green)':'')+';font-weight:'+(i===0?'800':'')+'">'+m.positive+'</td>'+
-        '<td style="font-size:11px">'+bestMo+' ('+months[i]+' 2026)</td></tr>';
-    }
-    var lbW=document.getElementById('rv-lb-weekly');
-    if(lbW) lbW.innerHTML=team.map(lbWeeklyRow).join('');
-    var lbM=document.getElementById('rv-lb-monthly');
-    if(lbM) lbM.innerHTML=team.map(lbMonthlyRow).join('');
-    var lbA=document.getElementById('rv-lb-alltime');
-    if(lbA) lbA.innerHTML=team.map(lbAlltimeRow).join('');
+    if(!anyConnected) return;
 
-    // 6 — Employee Profiles
-    var pg=document.getElementById('rv-profiles-grid');
-    if(pg&&team.length){
-      var gradients=[
-        'linear-gradient(135deg,#1b61c5,#0e3a8a)',
-        'linear-gradient(135deg,#475569,#1e293b)',
-        'linear-gradient(135deg,#374151,#111827)',
-        'linear-gradient(135deg,#6b21a8,#3b0764)'
+    // Build platform-tagged reviews pool
+    var PLATFORMS=['google','facebook','yelp'];
+    var allReviews=reviews.map(function(r,i){
+      return {
+        name:r.name,
+        text:r.text,
+        rating:r.rating,
+        ago:r.ago,
+        platform:connected[PLATFORMS[i%3]]?PLATFORMS[i%3]:
+                 (connected.google?'google':connected.facebook?'facebook':'yelp')
+      };
+    });
+    if(!allReviews.length){
+      allReviews=[
+        {name:'Robert M.',text:'Outstanding service from start to finish.',rating:5,ago:'2h ago',platform:connected.google?'google':connected.facebook?'facebook':'yelp'},
+        {name:'Jennifer K.',text:'Handled everything perfectly.',rating:5,ago:'5h ago',platform:connected.google?'google':connected.facebook?'facebook':'yelp'},
+        {name:'Marcus D.',text:'Very professional and helpful.',rating:5,ago:'Yesterday',platform:connected.facebook?'facebook':connected.google?'google':'yelp'},
+        {name:'Cara T.',text:'Highly recommend to everyone.',rating:4,ago:'Yesterday',platform:connected.yelp?'yelp':connected.google?'google':'facebook'},
+        {name:'Antonio R.',text:'Best in Miami. Will use again.',rating:5,ago:'Jun 21',platform:connected.google?'google':connected.yelp?'yelp':'facebook'}
       ];
-      var icons=['👑','2','3','4'];
-      var grades=['A+','A','A-','B+'];
-      pg.innerHTML=team.map(function(m,i){
-        var photo=Math.round(m.reviews*0.43);
-        var allRev=m.reviews*4+i*2;
-        var allPhoto=Math.round(allRev*0.26);
-        var allPts=allRev+allPhoto;
-        var champPill=i===0?'<span class="pill pill-gold" style="font-size:11px">3× Monthly Champion</span>':'';
-        var photoPill=i<=1?'<span class="pill pill-blue" style="font-size:11px">📸 Photo Leader</span>':'';
-        var clubPill=allRev>=100?'<span class="pill pill-green" style="font-size:11px">100 Reviews Club</span>':'';
-        var streakDays2=streakDays[i]||2;
-        return '<div class="card">'+
-          '<div style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'+
-          '<div style="display:flex;align-items:center;gap:14px">'+
-          '<div style="width:48px;height:48px;border-radius:50%;background:'+gradients[i%gradients.length]+';display:flex;align-items:center;justify-content:center;font-size:'+(i===0?'20':'18')+'px;font-weight:900;'+(i===0?'':'color:#e2e8f0;')+' flex-shrink:0">'+icons[i]+'</div>'+
-          '<div><div style="font-size:16px;font-weight:900;color:var(--ink)">'+m.name+' <span style="font-size:12px;color:'+(i===0?'var(--gold)':'var(--muted)')+';font-weight:700">Rank #'+(i+1)+'</span></div>'+
-          '<div style="font-size:11px;color:var(--muted);font-weight:600">'+m.role+' · Last Tap: '+(i===0?'2h ago':i===1?'4h ago':'Yesterday')+'</div></div></div>'+
-          '<div style="display:flex;gap:6px;flex-wrap:wrap">'+champPill+clubPill+photoPill+'</div>'+
+    }
+    window._rvAllReviews=allReviews;
+    filterReviews((document.getElementById('rv-platform-filter')||{value:'all'}).value);
+
+    // Leaderboard
+    var lb=document.getElementById('rv-leaderboard-list');
+    if(lb){
+      var icons=['👑','2','3','4','5'];
+      lb.innerHTML=team.map(function(m,i){
+        var photo=Math.round(m.reviews*0.35);
+        var pts=m.reviews+photo;
+        var isTop=i===0;
+        return '<div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:'+(isTop?'rgba(201,168,76,.06)':'var(--page)')+'">'+
+          '<span style="font-size:'+(isTop?'18':'14')+'px;width:24px;text-align:center;flex-shrink:0">'+(icons[i]||i+1)+'</span>'+
+          '<div style="flex:1;min-width:0">'+
+            '<p style="font-size:13px;font-weight:'+(isTop?'900':'800')+';color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+m.name+'</p>'+
+            '<p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">'+m.role+'</p>'+
           '</div>'+
-          '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0">'+
-          '<div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--ink)">'+allRev+'</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Total Reviews</div></div>'+
-          '<div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--gold)">'+allPts+'</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Review Points</div></div>'+
-          '<div style="padding:12px 14px;border-right:1px solid var(--border);text-align:center"><div style="font-size:22px;font-weight:900;color:var(--blue)">'+allPhoto+'</div><div style="font-size:10px;font-weight:700;color:var(--muted)">📸 Photo Reviews</div></div>'+
-          '<div style="padding:12px 14px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--green)">'+m.positive+'</div><div style="font-size:10px;font-weight:700;color:var(--muted)">Positive Rate</div></div>'+
+          '<div style="text-align:right;flex-shrink:0">'+
+            '<p style="font-size:14px;font-weight:900;color:'+(isTop?'var(--gold)':'var(--ink)')+';margin:0">'+m.reviews+' reviews</p>'+
+            '<p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">'+pts+' pts</p>'+
           '</div>'+
-          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--border)">'+
-          '<div style="padding:12px 14px;border-right:1px solid var(--border)">'+
-          '<div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:8px">THIS MONTH · THIS WEEK</div>'+
-          '<div style="display:flex;gap:10px;margin-bottom:10px">'+
-          '<div style="flex:1;background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:18px;font-weight:900;color:var(--ink)">'+m.reviews+'</div><div style="font-size:10px;color:var(--muted);font-weight:600">This Month</div></div>'+
-          '<div style="flex:1;background:var(--bg2);border-radius:8px;padding:8px 10px;text-align:center"><div style="font-size:18px;font-weight:900;color:var(--ink)">'+Math.round(m.reviews/4)+'</div><div style="font-size:10px;color:var(--muted);font-weight:600">This Week</div></div>'+
-          '</div>'+
-          '<div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px">🔥 Current Streak</div>'+
-          '<div style="font-size:14px;font-weight:900;color:var(--gold)">'+streakDays2+'-day review streak</div>'+
-          '</div>'+
-          '<div style="padding:12px 14px">'+
-          '<div style="font-size:10px;font-weight:800;color:var(--muted);letter-spacing:.05em;margin-bottom:8px">GRADE & ACHIEVEMENTS</div>'+
-          '<div style="font-size:36px;font-weight:900;color:var(--gold);line-height:1">'+m.grade+'</div>'+
-          '<div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:10px">Performance Grade</div>'+
-          '<div style="display:flex;gap:5px;flex-wrap:wrap">'+
-          (allRev>=250?'<span class="pill pill-gold" style="font-size:10px">250 Reviews Club</span>':allRev>=100?'<span class="pill pill-green" style="font-size:10px">100 Reviews Club</span>':'')+
-          (i===0?'<span class="pill pill-gold" style="font-size:10px">Monthly Champion</span>':'')+
-          '</div></div>'+
-          '</div></div>';
-      }).join('');
+        '</div>';
+      }).join('')||'<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">No team data yet.</p>';
     }
   }
+
+  window.filterReviews=function(platform){
+    var list=document.getElementById('rv-reviews-list');
+    if(!list) return;
+    var reviews=(window._rvAllReviews||[]).filter(function(r){
+      return platform==='all'||r.platform===platform;
+    });
+    var PLATFORM_LABELS={google:'Google',facebook:'Facebook',yelp:'Yelp'};
+    var PLATFORM_COLORS={google:'#4285F4',facebook:'#1877f2',yelp:'#d32323'};
+    if(!reviews.length){
+      list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">No reviews for this platform yet.</p>';
+      return;
+    }
+    list.innerHTML=reviews.map(function(r){
+      var stars='★'.repeat(r.rating)+'☆'.repeat(5-r.rating);
+      var is5=r.rating>=5;
+      return '<div style="padding:12px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border)">'+
+        '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">'+
+          '<div>'+
+            '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+              '<span style="font-size:13px;color:'+(is5?'var(--green)':'var(--gold)')+'">'+stars+'</span>'+
+              '<span style="font-size:10px;font-weight:700;color:var(--muted)">'+r.ago+'</span>'+
+              '<span style="font-size:10px;font-weight:800;color:'+(PLATFORM_COLORS[r.platform]||'var(--muted)')+'">'+PLATFORM_LABELS[r.platform]+'</span>'+
+            '</div>'+
+            '<p style="font-size:13px;font-weight:700;color:var(--ink);margin:0 0 4px">"'+r.text+'"</p>'+
+            '<p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— '+r.name+'</p>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+  };
+
+  window.connectReviewPlatform=function(platform,btn){
+    var key=acctKey();
+    var connected=safeJSON('rv-connected-'+key,{});
+    connected[platform]=true;
+    saveJSON('rv-connected-'+key,connected);
+    if(btn){ btn.textContent='Connected ✓'; btn.disabled=true; btn.style.opacity='0.6'; }
+    var row=document.getElementById('rv-conn-'+platform);
+    if(row) row.style.borderColor='var(--green)';
+    showToastSafe('Connected to '+platform.charAt(0).toUpperCase()+platform.slice(1)+'!','green');
+    setTimeout(function(){ renderReviewsScreen(); },300);
+  };
+
 
   function renderFixedScreen(id){
     ensureScreensAndNav();
