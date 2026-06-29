@@ -1876,93 +1876,118 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: REVIEWS & NFC ============ -->
 <div class="screen" id="s-reviews">
-  <div class="sec-head">
-    <div><h2>Reviews &amp; NFC</h2><p>See your reviews and team leaderboard</p></div>
+
+  <!-- ── SECTION 1: Connect Platforms ── -->
+  <div style="max-width:480px;margin:0 auto">
+    <div style="margin-bottom:6px">
+      <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--ink);margin:0 0 4px">Reviews &amp; NFC</h2>
+      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin:0">Connect your review platforms to start tracking your reviews in one place.</p>
+    </div>
+
+    <!-- Google -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:14px;cursor:pointer" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:24px;height:24px;object-fit:contain">
+        </div>
+        <div>
+          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Google Business Profile</p>
+          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Reviews, ratings, local visibility</p>
+        </div>
+      </div>
+      <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap;flex-shrink:0">Not connected</span>
+    </div>
+
+    <!-- Facebook -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px;cursor:pointer" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:#1877f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png" alt="Facebook" style="width:24px;height:24px;object-fit:contain">
+        </div>
+        <div>
+          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Facebook Page</p>
+          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Page reviews and recommendations</p>
+        </div>
+      </div>
+      <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap;flex-shrink:0">Not connected</span>
+    </div>
+
+    <!-- Yelp -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px;cursor:pointer" onclick="showToast('Contact your account manager to connect this platform — support@cal.marketing','gold')">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:#d32323;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/ad/Yelp_Logo.svg/320px-Yelp_Logo.svg.png" alt="Yelp" style="width:32px;object-fit:contain;filter:brightness(10)">
+        </div>
+        <div>
+          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Yelp Business</p>
+          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Yelp reviews and ratings</p>
+        </div>
+      </div>
+      <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap;flex-shrink:0">Not connected</span>
+    </div>
+
+    <p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;margin-top:14px;line-height:1.6">
+      Contact your account manager to connect platforms —
+      <a href="mailto:support@cal.marketing" style="color:var(--gold);font-weight:800;text-decoration:none">support@cal.marketing</a>
+    </p>
   </div>
 
-  <!-- ── GATE (shown until at least one platform connected) ── -->
-  <div id="rv-gate" style="display:none;max-width:520px;margin:0 auto;padding-top:16px">
-    <div class="card" style="text-align:center;padding:32px 24px">
-      <div style="width:52px;height:52px;border-radius:14px;background:rgba(201,168,76,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
-        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="var(--gold)" stroke-width="2"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
+  <!-- ── SECTION 2: Dashboard ── -->
+  <div style="margin-top:28px">
+
+    <!-- Platform filter -->
+    <div style="margin-bottom:14px">
+      <select class="input-std" style="height:36px;font-size:13px;max-width:200px">
+        <option>All Platforms</option>
+        <option>Google</option>
+        <option>Facebook</option>
+        <option>Yelp</option>
+      </select>
+    </div>
+
+    <!-- KPI row -->
+    <div class="grid g3" style="margin-bottom:14px">
+      <div class="card" style="padding:16px 18px">
+        <p style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px">Total Reviews</p>
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:var(--ink);margin:0;line-height:1">—</p>
       </div>
-      <h3 style="font-size:18px;font-weight:900;color:var(--ink);margin-bottom:8px">Connect Your Review Platforms</h3>
-      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin-bottom:28px">Connect Google, Facebook, or Yelp to see all your reviews and team leaderboard in one place.</p>
-      <div style="display:flex;flex-direction:column;gap:10px">
-
-        <!-- Google -->
-        <div id="rv-conn-google" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:38px;height:38px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <svg viewBox="0 0 48 48" width="22" height="22"><path fill="#4285F4" d="M43.6 20.1H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.5 4 24 4 12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.6 16.1 19 13 24 13c3.1 0 5.8 1.1 8 2.9l5.7-5.7C34.5 6.5 29.5 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.2-1.9 13.9-5.1L31.3 33c-2.1 1.6-4.8 2.5-7.3 2.5-5.2 0-9.6-3.4-11.2-8.1l-6.6 5.1C9.7 39.5 16.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.1-4.1 5.5l6.6 5.1C42.3 35.2 44 30 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
-            </div>
-            <div style="text-align:left">
-              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Google Business</p>
-              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Google reviews &amp; ratings</p>
-            </div>
-          </div>
-          <button class="btn-connect" onclick="connectReviewPlatform('google',this)">Connect</button>
-        </div>
-
-        <!-- Facebook -->
-        <div id="rv-conn-facebook" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:38px;height:38px;border-radius:10px;background:#1877f2;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <svg viewBox="0 0 24 24" fill="#fff" width="20" height="20"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-            </div>
-            <div style="text-align:left">
-              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Facebook</p>
-              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Facebook page reviews</p>
-            </div>
-          </div>
-          <button class="btn-connect" onclick="connectReviewPlatform('facebook',this)">Connect</button>
-        </div>
-
-        <!-- Yelp -->
-        <div id="rv-conn-yelp" style="display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--page)">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:38px;height:38px;border-radius:10px;background:#d32323;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <svg viewBox="0 0 24 24" fill="#fff" width="18" height="18"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm-1 14.5v-5l4.5 2.5L11 16.5zm0-7V4l6 5.5-6 1z"/></svg>
-            </div>
-            <div style="text-align:left">
-              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Yelp</p>
-              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Yelp reviews &amp; ratings</p>
-            </div>
-          </div>
-          <button class="btn-connect" onclick="connectReviewPlatform('yelp',this)">Connect</button>
-        </div>
-
+      <div class="card" style="padding:16px 18px">
+        <p style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px">Avg Rating</p>
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:var(--ink);margin:0;line-height:1">—</p>
       </div>
+      <div class="card" style="padding:16px 18px">
+        <p style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px">This Month</p>
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:32px;font-weight:900;color:var(--ink);margin:0;line-height:1">—</p>
+      </div>
+    </div>
+
+    <!-- Reviews + Leaderboard -->
+    <div class="grid g2">
+
+      <!-- Recent Reviews -->
+      <div class="card">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0 0 14px">Recent Reviews</p>
+        <div style="padding:32px 16px;text-align:center">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" style="margin-bottom:10px"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
+          <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin:0">Connect a platform above to see your reviews here.</p>
+        </div>
+      </div>
+
+      <!-- Review Leaderboard -->
+      <div class="card">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0 0 4px">Review Leaderboard</p>
+        <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0 0 14px">Team members ranked by reviews generated this month</p>
+        <div style="padding:32px 16px;text-align:center">
+          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="var(--muted)" stroke-width="1.5" style="margin-bottom:10px"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+          <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin:0">No data yet — connect your platforms above.</p>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- ── DASHBOARD (shown once a platform is connected) ── -->
-  <div id="rv-dashboard" style="display:none">
-
-    <!-- Reviews card -->
-    <div class="card" style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-        <p class="card-title">Reviews</p>
-        <div style="display:flex;align-items:center;gap:8px">
-          <select id="rv-platform-filter" class="input-std" style="padding:6px 12px;font-size:12px;height:auto" onchange="filterReviews(this.value)">
-            <option value="all">All Platforms</option>
-            <option value="google">Google</option>
-            <option value="facebook">Facebook</option>
-            <option value="yelp">Yelp</option>
-          </select>
-        </div>
-      </div>
-      <div id="rv-reviews-list" style="display:flex;flex-direction:column;gap:10px"></div>
-    </div>
-
-    <!-- Leaderboard card -->
-    <div class="card">
-      <p class="card-title" style="margin-bottom:14px">Review Leaderboard</p>
-      <div id="rv-leaderboard-list" style="display:flex;flex-direction:column;gap:8px"></div>
-    </div>
-
-  </div>
 </div>
+
 
 <!-- NFC Register Card Modal -->
 
@@ -8530,7 +8555,7 @@ function updateWLPreview(){
 }
 
 function selectWLBg(el,style){ document.querySelectorAll('#s-whitelabel .card').forEach(function(c){ if(c.contains(el)) return; }); var bg=document.getElementById('wl-preview-bg'); if(bg) bg.style.background=style==='gradient'?'linear-gradient(135deg,#1b3a6b 0%,#c9a84c 100%)':'#1b3a6b'; el.style.border='2px solid var(--gold)'; el.parentNode.querySelectorAll('.card').forEach(function(c){ if(c!==el) c.style.border=''; }); }
-function saveWhitelabel(){ showToast('White label settings saved!','green'); }
+
 
 // ============ MISC ============
 function showToast(msg,type){}
