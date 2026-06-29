@@ -1970,61 +1970,51 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
 
     <!-- Reviews + Leaderboard -->
-    <div class="grid g2" style="align-items:stretch">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:0">
 
       <!-- Recent Reviews -->
-      <div class="card" style="display:flex;flex-direction:column;min-height:300px">
-        <p style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--ink);margin:0 0 14px">Recent Reviews</p>
-        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px">
-          <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="var(--muted)" stroke-width="1.5" style="opacity:.4"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
-          <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.7;margin:0;max-width:200px">Connect a platform above to see your reviews here.</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0 0 16px;letter-spacing:.2px">Recent Reviews</p>
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 0;text-align:center;gap:10px;border-radius:10px;background:var(--page)">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--muted)" stroke-width="1.5" style="opacity:.35"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
+          <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0;line-height:1.6">Connect a platform above to see your reviews here.</p>
         </div>
       </div>
 
       <!-- Review Leaderboard -->
-      <div class="card" style="display:flex;flex-direction:column;min-height:300px">
-        <p style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--ink);margin:0 0 3px">Review Leaderboard</p>
-        <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 16px">Team members ranked by reviews this month</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0 0 4px;letter-spacing:.2px">Review Leaderboard</p>
+        <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 14px">Team members ranked by reviews this month</p>
 
-        <!-- Rank rows -->
-        <div style="display:flex;flex-direction:column;gap:10px;flex:1">
-
-          <!-- 1st -->
-          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.18)">
-            <span style="font-size:15px;font-weight:900;color:var(--gold);width:18px;flex-shrink:0;text-align:center">1</span>
-            <div style="width:36px;height:36px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
-            <div style="flex:1;min-width:0">
-              <div style="margin-bottom:3px">
-                <p style="font-size:13px;font-weight:900;color:var(--ink);margin:0">—</p>
-              </div>
-              <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">— reviews &middot; — pts</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.18)">
+            <span style="font-size:14px;font-weight:900;color:var(--gold);width:16px;text-align:center;flex-shrink:0">1</span>
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
+            <div style="flex:1">
+              <p style="font-size:13px;font-weight:900;color:var(--ink);margin:0 0 2px">—</p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews · — pts</p>
             </div>
           </div>
-
-          <!-- 2nd -->
-          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--page)">
-            <span style="font-size:15px;font-weight:900;color:var(--muted);width:18px;flex-shrink:0;text-align:center">2</span>
-            <div style="width:36px;height:36px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
-            <div style="flex:1;min-width:0">
-              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 3px">—</p>
-              <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">— reviews &middot; — pts</p>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--page)">
+            <span style="font-size:14px;font-weight:900;color:var(--muted);width:16px;text-align:center;flex-shrink:0">2</span>
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
+            <div style="flex:1">
+              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 2px">—</p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews · — pts</p>
             </div>
           </div>
-
-          <!-- 3rd -->
-          <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--page)">
-            <span style="font-size:15px;font-weight:900;color:var(--muted);width:18px;flex-shrink:0;text-align:center">3</span>
-            <div style="width:36px;height:36px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
-            <div style="flex:1;min-width:0">
-              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 3px">—</p>
-              <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">— reviews &middot; — pts</p>
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--page)">
+            <span style="font-size:14px;font-weight:900;color:var(--muted);width:16px;text-align:center;flex-shrink:0">3</span>
+            <div style="width:32px;height:32px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
+            <div style="flex:1">
+              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 2px">—</p>
+              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews · — pts</p>
             </div>
           </div>
-
         </div>
 
-        <div style="margin-top:16px;text-align:right">
-          <button class="btn-view" style="font-size:12px;padding:7px 18px;height:auto;border-radius:8px" onclick="nav('leaderboard')">View Leaderboard →</button>
+        <div style="margin-top:14px;text-align:right">
+          <button class="btn-view" style="font-size:12px;padding:7px 16px;height:auto;border-radius:8px" onclick="nav('leaderboard')">View Leaderboard →</button>
         </div>
       </div>
 
