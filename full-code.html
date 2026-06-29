@@ -4883,7 +4883,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 var USERS = {
   'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner',companyId:'cal'},
   'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',companyId:'cal'},
-  'aivrya@cal.marketing':{pw:'',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',googleOnly:true,companyId:'cal'},
   'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
   'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester',companyId:'cal'},
   'test@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test User',initials:'TU',username:'testuser',phone:'',title:'Owner / Tester',companyId:'cal'},
@@ -10640,9 +10639,15 @@ function sendWaReply() {
   function seedAgencyUsers(){
     window.USERS=window.USERS||{};
     Object.keys(AGENCY_USERS).forEach(function(email){ window.USERS[email]=Object.assign({},AGENCY_USERS[email]); });
+    window.USERS['chris@cal.marketing'] = {pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'};
+    window.USERS['matt@cal.marketing'] = {pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
+    window.USERS['james@cal.marketing'] = {pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
     var saved=safeJSON('cal-users',{});
     /* Overwrite any stale agency records in localStorage with fresh canonical data */
     Object.keys(AGENCY_USERS).forEach(function(email){ saved[email]=Object.assign({},AGENCY_USERS[email]); });
+    saved['chris@cal.marketing'] = window.USERS['chris@cal.marketing'];
+    saved['matt@cal.marketing'] = window.USERS['matt@cal.marketing'];
+    saved['james@cal.marketing'] = window.USERS['james@cal.marketing'];
     saveJSON('cal-users',saved);
   }
 
