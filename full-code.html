@@ -7568,6 +7568,45 @@ function saveProfile(){
   var pDTitle=document.getElementById('profile-display-title'); if(pDTitle) pDTitle.textContent=title;
   showToast('Profile saved!','green');
 }
+function saveSettingsProfile(){
+  var name=(document.getElementById('stab-pf-name')||{value:''}).value.trim();
+  var email=(document.getElementById('stab-pf-email')||{value:''}).value.trim();
+  var phone=(document.getElementById('stab-pf-phone')||{value:''}).value.trim();
+  var title=(document.getElementById('stab-pf-title')||{value:''}).value.trim();
+  if(!name){ showToast('Please enter your name.','gold'); return; }
+  if(name) currentUser.name=name;
+  if(email) currentUser.email=email;
+  if(phone) currentUser.phone=phone;
+  if(title) currentUser.title=title;
+  var initials=currentUser.name.split(' ').map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2);
+  currentUser.initials=initials;
+  saveState('profileName',currentUser.name);
+  saveState('profileTitle',currentUser.title);
+  saveState('profilePhone',currentUser.phone);
+  var ab=document.getElementById('avatar-btn'); if(ab) ab.textContent=initials;
+  var pdName=document.getElementById('pd-name'); if(pdName) pdName.textContent=currentUser.name;
+  var ddName=document.getElementById('dd-user-name'); if(ddName) ddName.textContent=currentUser.name;
+  var pInit=document.getElementById('profile-initials'); if(pInit) pInit.textContent=initials;
+  var pDName=document.getElementById('profile-display-name'); if(pDName) pDName.textContent=currentUser.name;
+  var pDTitle=document.getElementById('profile-display-title'); if(pDTitle) pDTitle.textContent=currentUser.title;
+  var pdEmail=document.getElementById('pd-email'); if(pdEmail) pdEmail.textContent=currentUser.email;
+  showToast('Profile saved!','green');
+}
+function saveSettingsPassword(){
+  var cur=(document.getElementById('stab-pw-current')||{value:''}).value;
+  var nw=(document.getElementById('stab-pw-new')||{value:''}).value;
+  var cf=(document.getElementById('stab-pw-confirm')||{value:''}).value;
+  if(!cur){ showToast('Please enter your current password.','gold'); return; }
+  if(!nw||nw.length<6){ showToast('New password must be at least 6 characters.','gold'); return; }
+  if(nw!==cf){ showToast('Passwords do not match.','gold'); return; }
+  var curInp=document.getElementById('stab-pw-current');
+  var nwInp=document.getElementById('stab-pw-new');
+  var cfInp=document.getElementById('stab-pw-confirm');
+  if(curInp) curInp.value='';
+  if(nwInp) nwInp.value='';
+  if(cfInp) cfInp.value='';
+  showToast('Password updated!','green');
+}
 function handleProfilePhoto(inp){
   if(!inp||!inp.files||!inp.files[0]) return;
   var file=inp.files[0];
@@ -10886,7 +10925,7 @@ function healthBadge(score){
       if(target && !target.textContent.trim()) target.innerHTML='<div class="fix-card"><h2 class="fix-title">'+(window.TITLES&&window.TITLES[screen]||screen)+'</h2><p class="fix-sub">This desktop preview section is ready for data wiring.</p></div>';
       if(screen==='social') loadSocialConnections();
       if(screen==='job-logging') renderJobLogs();
-      if(screen==='whitelabel') fillWhiteLabelForm();
+      if(screen==='whitelabel'){ fillWhiteLabelForm(); initWLLogoDropzone(); }
       if(screen==='settings'){ fillSettingsLogo(); if(window.fillSettingsPfp) fillSettingsPfp(); renderDashboardIntegrations(); }
       if(screen==='analytics'){ renderDashboardIntegrations(); renderDashboardEmbed(null); }
       if(screen==='whitelabel'){ if(typeof checkGithubStatus==='function') checkGithubStatus(); }
@@ -10900,6 +10939,53 @@ function healthBadge(score){
     var h=document.getElementById('wl-color-hex'); if(h) h.textContent=m.color||'#c9a84c';
     var l=document.getElementById('wl-preview-logo'); if(l) l.src=m.logo||CAL_LOGO;
     var t=document.getElementById('wl-preview-title'); if(t) t.textContent=m.name||'Client Portal';
+  }
+
+  function initWLLogoDropzone(){
+    var input=document.querySelector('#s-whitelabel input[type="file"]');
+    var zone=input&&input.closest('label');
+    if(!zone||!input||zone._wlDropInited) return;
+    zone._wlDropInited=true;
+    var dragCounter=0;
+    function isImageItem(dt){
+      if(dt&&dt.items&&dt.items.length) return dt.items[0].type.indexOf('image/')===0;
+      return true;
+    }
+    zone.addEventListener('dragenter',function(e){
+      e.preventDefault(); e.stopPropagation();
+      dragCounter++;
+      zone.classList.toggle('drag-over',isImageItem(e.dataTransfer));
+      zone.classList.toggle('drag-over-invalid',!isImageItem(e.dataTransfer));
+    });
+    zone.addEventListener('dragover',function(e){
+      e.preventDefault(); e.stopPropagation();
+      e.dataTransfer.dropEffect=isImageItem(e.dataTransfer)?'copy':'none';
+    });
+    zone.addEventListener('dragleave',function(e){
+      e.preventDefault(); e.stopPropagation();
+      dragCounter--;
+      if(dragCounter<=0){ dragCounter=0; zone.classList.remove('drag-over','drag-over-invalid'); }
+    });
+    zone.addEventListener('drop',function(e){
+      e.preventDefault(); e.stopPropagation();
+      dragCounter=0; zone.classList.remove('drag-over','drag-over-invalid');
+      var files=e.dataTransfer&&e.dataTransfer.files;
+      if(!files||!files.length) return;
+      if(!files[0].type||files[0].type.indexOf('image/')!==0){
+        showToastSafe('Please drop an image file (PNG, JPG, or SVG).','gold');
+        return;
+      }
+      var mb=files[0].size/(1024*1024);
+      if(mb>MAX_UPLOAD_MB){
+        var sizeLabel=mb.toFixed(1)+' MB';
+        showToastSafe('Logo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.','gold');
+        var prevLogo=document.getElementById('wl-preview-logo');
+        if(prevLogo){ var savedMeta=getMeta(acctKey()); prevLogo.src=savedMeta.logo||CAL_LOGO; }
+        return;
+      }
+      try{ var dt=new DataTransfer(); dt.items.add(files[0]); input.files=dt.files; } catch(ex){ return; }
+      if(typeof handleWLLogo==='function') handleWLLogo(input);
+    });
   }
 
   function replaceScreens(){
@@ -13630,13 +13716,26 @@ function renderSettingsTabContent(tab,pane){
       +'</div>'
       +'</div>';
   } else if(tab==='profile'){
+    var cu=window.currentUser||{};
     pane.innerHTML='<div '+W+'>'
-      +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:14px">'
-        +'<p style="font-size:14px;font-weight:800;color:var(--ink);margin:0">Your Profile</p>'
-        +'<div class="form-field"><label class="form-label">Full Name</label><input class="input-std" id="stab-pf-name" placeholder="Your Name"></div>'
-        +'<div class="form-field"><label class="form-label">Email</label><input class="input-std" id="stab-pf-email" type="email" placeholder="you@company.com"></div>'
-        +'<div class="form-field"><label class="form-label">Phone</label><input class="input-std" id="stab-pf-phone" type="tel" placeholder="+1 (555) 000-0000"></div>'
-        +'<button class="btn-gold" style="align-self:flex-start" onclick="this.textContent=\'Saved! \u2713\'">Save Profile</button>'
+      +'<div class="card card-pad" style="margin-bottom:14px">'
+        +'<p class="form-section-title" style="margin-bottom:14px">Personal Information</p>'
+        +'<div class="form-grid">'
+          +'<div class="form-field"><label class="form-label">Full Name</label><input class="input-std" id="stab-pf-name" placeholder="Your name" value="'+(cu.name||'')+'"></div>'
+          +'<div class="form-field"><label class="form-label">Email Address</label><input class="input-std" id="stab-pf-email" type="email" placeholder="you@company.com" value="'+(cu.email||'')+'"></div>'
+          +'<div class="form-field"><label class="form-label">Phone Number</label><input class="input-std" id="stab-pf-phone" type="tel" placeholder="+1 (555) 000-0000" value="'+(cu.phone||'')+'"></div>'
+          +'<div class="form-field"><label class="form-label">Job Title</label><input class="input-std" id="stab-pf-title" placeholder="e.g. Agency Owner" value="'+(cu.title||cu.role||'')+'"></div>'
+        +'</div>'
+        +'<button class="btn-primary" style="margin-top:18px" onclick="saveSettingsProfile()">Save Profile</button>'
+      +'</div>'
+      +'<div class="card card-pad">'
+        +'<p class="form-section-title" style="margin-bottom:14px">Change Password</p>'
+        +'<div class="form-grid">'
+          +'<div class="form-field"><label class="form-label">Current Password</label><input class="input-std" type="password" id="stab-pw-current" placeholder="Current password"></div>'
+          +'<div class="form-field"><label class="form-label">New Password</label><input class="input-std" type="password" id="stab-pw-new" placeholder="New password"></div>'
+          +'<div class="form-field"><label class="form-label">Confirm New Password</label><input class="input-std" type="password" id="stab-pw-confirm" placeholder="Confirm new password"></div>'
+        +'</div>'
+        +'<button class="btn-primary" style="margin-top:18px" onclick="saveSettingsPassword()">Update Password</button>'
       +'</div>'
       +'</div>';
   } else if(tab==='notifications'){
