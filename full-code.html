@@ -4911,9 +4911,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div class="lead-detail-row"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg><span id="lp-case"></span></div>
     <div class="lead-detail-row"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg><span id="lp-received"></span></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
-      <button class="btn-action"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07"/></svg>Call</button>
-      <button class="btn-action"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/></svg>Email</button>
-      <button class="btn-action"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>SMS</button>
+      <a id="lp-call-link" href="#" class="btn-action" style="text-decoration:none"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.99 1.18 2 2 0 013 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L7.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14v2.92z"/></svg>Call</a>
+      <a id="lp-email-link" href="#" class="btn-action" style="text-decoration:none"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Email</a>
+      <a id="lp-sms-link" href="#" class="btn-action" style="text-decoration:none"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>SMS</a>
     </div>
     <div class="panel-section">
       <div class="panel-section-label">Update Status</div>
@@ -7986,6 +7986,9 @@ function openLeadPanelById(id){
   set('lp-phone',lead.phone); set('lp-email',lead.email);
   set('lp-source',lead.source); set('lp-case',lead.caseType);
   set('lp-received','Received '+_timeAgo(lead.receivedAt)+' ago');
+  var callLink=document.getElementById('lp-call-link'); if(callLink) callLink.href=lead.phone?'tel:'+lead.phone.replace(/[^+\d]/g,''):'#';
+  var emailLink=document.getElementById('lp-email-link'); if(emailLink) emailLink.href=lead.email?'mailto:'+lead.email:'#';
+  var smsLink=document.getElementById('lp-sms-link'); if(smsLink) smsLink.href=lead.phone?'sms:'+lead.phone.replace(/[^+\d]/g,''):'#';
   var ta=document.getElementById('lp-notes-ta'); if(ta) ta.value=lead.notes||'';
   document.querySelectorAll('#lp-status-changer .status-btn').forEach(function(b){b.classList.toggle('active-status',b.dataset.status===lead.status);});
   _renderLeadActivity(lead);
@@ -8008,6 +8011,9 @@ function openLeadPanel(name,src,caseType,phone,email,status,received){
   _currentLeadId=null;
   var set=function(eid,v){var el=document.getElementById(eid);if(el)el.textContent=v;};
   set('lp-name',name);set('lp-display-name',name);set('lp-phone',phone);set('lp-email',email);set('lp-source',src);set('lp-case',caseType);set('lp-received','Received '+received);
+  var callLink2=document.getElementById('lp-call-link'); if(callLink2) callLink2.href=phone?'tel:'+phone.replace(/[^+\d]/g,''):'#';
+  var emailLink2=document.getElementById('lp-email-link'); if(emailLink2) emailLink2.href=email?'mailto:'+email:'#';
+  var smsLink2=document.getElementById('lp-sms-link'); if(smsLink2) smsLink2.href=phone?'sms:'+phone.replace(/[^+\d]/g,''):'#';
   var ta=document.getElementById('lp-notes-ta');if(ta)ta.value='';
   document.querySelectorAll('#lp-status-changer .status-btn').forEach(function(b){b.classList.toggle('active-status',b.dataset.status===status);});
   _renderLeadActivity(fake);
@@ -9419,7 +9425,7 @@ function handleWLLogo(inp){
     var sizeLabel=mb.toFixed(1)+' MB';
     showToast('Logo too large ('+sizeLabel+'). Max '+MAX_UPLOAD_MB+' MB.','gold');
     var saveBtn=document.querySelector('#s-whitelabel .btn-primary');
-    if(saveBtn) saveBtn.disabled=true;
+    if(saveBtn) saveBtn.disabled=false;
     inp.value='';
     var prevLogo=document.getElementById('wl-preview-logo');
     if(prevLogo){ var savedMeta0=typeof getMeta==='function'?getMeta(typeof acctKey==='function'?acctKey():''):{}; prevLogo.src=savedMeta0.logo||CAL_LOGO; }
