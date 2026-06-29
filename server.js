@@ -823,9 +823,14 @@ async function handleGBPLocations(res, qs) {
   const companyId = (qs && qs.company) || 'default';
   const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', locations: [] }); return; }
-  const account = qs.account;
-  if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
+  let account = qs.account;
   try {
+    if (!account) {
+      const accountsRes = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+      const accounts = accountsRes.body.accounts || [];
+      if (!accounts.length) { jsonResponse(res, 200, { error: 'NO_GBP_ACCOUNTS', locations: [] }); return; }
+      account = accounts[0].name;
+    }
     const r = await googleApiGet(oauth2, `https://mybusinessbusinessinformation.googleapis.com/v1/${account}/locations?readMask=name,title,storefrontAddress,websiteUri`);
     jsonResponse(res, 200, { locations: r.body.locations || [] });
   } catch (e) { jsonResponse(res, 200, { error: e.message, locations: [] }); }
@@ -835,9 +840,17 @@ async function handleGBPReviews(res, qs) {
   const companyId = (qs && qs.company) || 'default';
   const oauth2 = await getGoogleAuthedClient(companyId);
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', reviews: [] }); return; }
-  const location = qs.location;
-  if (!location) { jsonResponse(res, 400, { error: 'MISSING_LOCATION' }); return; }
+  let location = qs.location;
   try {
+    if (!location) {
+      const accountsRes = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+      const accounts = accountsRes.body.accounts || [];
+      if (!accounts.length) { jsonResponse(res, 200, { error: 'NO_GBP_ACCOUNTS', reviews: [] }); return; }
+      const locRes = await googleApiGet(oauth2, `https://mybusinessbusinessinformation.googleapis.com/v1/${accounts[0].name}/locations?readMask=name,title,storefrontAddress,websiteUri`);
+      const locations = locRes.body.locations || [];
+      if (!locations.length) { jsonResponse(res, 200, { error: 'NO_GBP_LOCATIONS', reviews: [] }); return; }
+      location = locations[0].name;
+    }
     const r = await googleApiGet(oauth2, `https://mybusiness.googleapis.com/v4/${location}/reviews`);
     jsonResponse(res, 200, { reviews: r.body.reviews || [], averageRating: r.body.averageRating || null });
   } catch (e) { jsonResponse(res, 200, { error: e.message, reviews: [] }); }
@@ -845,13 +858,25 @@ async function handleGBPReviews(res, qs) {
 
 async function handleGBPInsights(res, qs) {
   const companyId = (qs && qs.company) || 'default';
-  const locationName = qs && qs.location;
+  let locationName = qs && qs.location;
   res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
   try {
     const auth = await getGoogleAuthedClient(companyId);
     if (!auth) { res.end(JSON.stringify({ error: 'not_connected' })); return; }
-    if (!locationName) { res.end(JSON.stringify({ error: 'no_location' })); return; }
-    const accessToken = auth.credentials.access_token;
+    if (!locationName) {
+      const accountsRes = await googleApiGet(auth, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+      const accounts = accountsRes.body.accounts || [];
+      if (!accounts.length) { res.end(JSON.stringify({ error: 'no_gbp_accounts' })); return; }
+      const locRes = await googleApiGet(auth, `https://mybusinessbusinessinformation.googleapis.com/v1/${accounts[0].name}/locations?readMask=name,title,storefrontAddress,websiteUri`);
+      const locations = locRes.body.locations || [];
+      if (!locations.length) { res.end(JSON.stringify({ error: 'no_location' })); return; }
+      const locRaw = locations[0].name || '';
+      const m = locRaw.match(/locations\/\d+/);
+      locationName = m ? m[0] : locRaw;
+    }
+    const tokenInfo = await auth.getAccessToken();
+    const accessToken = tokenInfo && tokenInfo.token;
+    if (!accessToken) { res.end(JSON.stringify({ error: 'not_connected' })); return; }
     const endDate = new Date();
     const startDate = new Date();
     startDate.setDate(endDate.getDate() - 30);
