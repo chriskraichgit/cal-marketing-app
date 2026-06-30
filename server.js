@@ -301,6 +301,60 @@ function jsonResponse(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
+async function handleHealth(res) {
+  const env = {
+    SUPABASE_URL: !!process.env.SUPABASE_URL,
+    SUPABASE_SERVICE_KEY: !!process.env.SUPABASE_SERVICE_KEY,
+    DATABASE_URL: !!process.env.DATABASE_URL,
+    CAL_META_SECRET: !!process.env.CAL_META_SECRET,
+    GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
+    GOOGLE_REDIRECT_URI: !!process.env.GOOGLE_REDIRECT_URI,
+    GOOGLE_API_KEY: !!process.env.GOOGLE_API_KEY,
+    GOOGLE_MAPS_API_KEY: !!process.env.GOOGLE_MAPS_API_KEY,
+    PAGESPEED_API_KEY: !!process.env.PAGESPEED_API_KEY,
+    STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
+    GITHUB_PAT: !!process.env.GITHUB_PAT,
+  };
+  const checks = {
+    server: { ok: true },
+    database: { ok: false, skipped: !env.DATABASE_URL },
+    supabase: { ok: false, skipped: !(env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) },
+    google: {
+      ok: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+      configured: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
+    },
+    stripe: { ok: !!env.STRIPE_SECRET_KEY, configured: !!env.STRIPE_SECRET_KEY },
+  };
+
+  if (env.DATABASE_URL) {
+    try {
+      await pgPool.query('SELECT 1');
+      checks.database = { ok: true };
+    } catch (e) {
+      checks.database = { ok: false, error: e.message };
+    }
+  }
+
+  if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
+    try {
+      const { error } = await supabase.from('google_tokens').select('company_id').limit(1);
+      checks.supabase = { ok: !error, error: error ? error.message : undefined };
+    } catch (e) {
+      checks.supabase = { ok: false, error: e.message };
+    }
+  }
+
+  const requiredOk = env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY && env.DATABASE_URL
+    && checks.database.ok && checks.supabase.ok;
+  jsonResponse(res, 200, {
+    ok: !!requiredOk,
+    time: new Date().toISOString(),
+    env,
+    checks,
+  });
+}
+
 async function handleConnect(res) {
   const oauth2 = createOAuth2Client();
   if (!oauth2) {
@@ -1385,6 +1439,11 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
     res.end();
+    return;
+  }
+
+  if (urlPath === '/api/health' && req.method === 'GET') {
+    await handleHealth(res);
     return;
   }
 
