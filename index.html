@@ -5428,53 +5428,147 @@ function openGoogleModal(){
   if(errEl) errEl.style.display='none';
   openModal('google-modal');
 }
+function setGoogleConnectionUi(connected,user){
+  var label=connected?'Connected':'Not connected';
+  var detail=connected&&user&&user.email?'Connected · '+user.email:label;
+  function setStatus(el){ if(!el)return; el.textContent=detail; el.style.color=connected?'var(--green)':''; }
+  ['int-google-suite-status','gbp-social-status'].forEach(function(id){ setStatus(document.getElementById(id)); });
+  document.querySelectorAll('.int-card').forEach(function(card){
+    var text=(card.textContent||'').toLowerCase();
+    var isGoogle=text.indexOf('google business')>=0||text.indexOf('gbp')>=0||text.indexOf('google calendar')>=0||text.indexOf('search console')>=0;
+    if(!isGoogle||text.indexOf('google ads')>=0)return;
+    var sub=card.querySelector('.int-card-sub'); if(sub)setStatus(sub);
+    var btn=card.querySelector('button');
+    if(btn){
+      btn.disabled=false;
+      btn.textContent=connected?'Disconnect':'Connect';
+      btn.style.background=connected?'var(--green)':'';
+      btn.style.color=connected?'#fff':'';
+      btn.onclick=connected?function(){disconnectGoogleForCompany();}:function(){connectGoogleForCompany();};
+    }
+    var pill=card.querySelector('.pill-green[data-google-pill="1"]');
+    if(connected&&!pill){
+      pill=document.createElement('span'); pill.className='pill pill-green'; pill.setAttribute('data-google-pill','1'); pill.textContent='ACTIVE';
+      if(btn)card.insertBefore(pill,btn); else card.appendChild(pill);
+    } else if(!connected&&pill){ pill.remove(); }
+  });
+  var mainBtn=document.getElementById('int-google-suite-btn');
+  if(mainBtn){
+    mainBtn.disabled=false;
+    mainBtn.textContent=connected?'Disconnect':'Connect';
+    mainBtn.onclick=connected?function(){disconnectGoogleForCompany();}:function(){connectGoogleForCompany();};
+  }
+}
+function refreshGoogleConnectedData(){
+  var company=window.currentCompanyId||'default';
+  if(typeof renderIntegrationsGrid==='function')renderIntegrationsGrid();
+  if(typeof renderIntegrationStatusBar==='function')renderIntegrationStatusBar();
+  if(typeof renderDashboardIntegrations==='function')renderDashboardIntegrations();
+  if(typeof loadGBPLocations==='function')loadGBPLocations(company);
+  ['gbp-insights-widget','gbp-reviews-widget'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='';});
+  if(typeof loadGBPInsightsWidget==='function')loadGBPInsightsWidget('gbp-insights-widget');
+  if(typeof loadGBPReviewsWidget==='function')loadGBPReviewsWidget('gbp-reviews-widget');
+}
+function syncGoogleConnectionUi(showErrors){
+  var company=window.currentCompanyId||'default';
+  return fetch('/api/google/status?company='+encodeURIComponent(company))
+    .then(function(r){return r.json();})
+    .then(function(d){setGoogleConnectionUi(!!(d&&d.connected),d&&d.user);if(d&&d.connected)refreshGoogleConnectedData();return d;})
+    .catch(function(){if(showErrors)showToast('Could not verify Google connection status.','gold');return {connected:false};});
+}
 function connectGoogleForCompany(){
   closeModal('google-connect-prompt-modal');
   var company=window.currentCompanyId||'default';
   var activeBtn=document.activeElement&&document.activeElement.tagName==='BUTTON'?document.activeElement:null;
   var oldText=activeBtn?activeBtn.textContent:null;
-  if(activeBtn){ activeBtn.disabled=true; activeBtn.textContent='Connecting...'; }
+  if(activeBtn){activeBtn.disabled=true;activeBtn.textContent='Connecting...';}
   fetch('/api/google/connect?company='+encodeURIComponent(company))
-    .then(function(r){ return r.json(); })
+    .then(function(r){return r.json();})
     .then(function(d){
       if(d.authUrl){
         var w=window.open(d.authUrl,'google-connect','width=520,height=640,left='+Math.round(screen.width/2-260)+',top='+Math.round(screen.height/2-320));
-        if(!w){ window.location.href=d.authUrl; return; }
-        function onMsg(e){ if(e.data&&(e.data.type==='google-oauth'||e.data.success===true)){window.removeEventListener('message',onMsg);clearInterval(poll);handleGoogleConnected();} }
+        if(!w){window.location.href=d.authUrl;return;}
+        function finish(){if(activeBtn){activeBtn.disabled=false;activeBtn.textContent=oldText||'Connect';}handleGoogleConnected();}
+        function onMsg(e){if(e.data&&(e.data.type==='google-oauth'||e.data.success===true)){window.removeEventListener('message',onMsg);clearInterval(poll);finish();}}
         window.addEventListener('message',onMsg);
-        var poll=setInterval(function(){
-          try{ if(w.closed){ clearInterval(poll); window.removeEventListener('message',onMsg); handleGoogleConnected(); } }catch(e){ clearInterval(poll); }
-        },700);
+        var poll=setInterval(function(){try{if(w.closed){clearInterval(poll);window.removeEventListener('message',onMsg);finish();}}catch(e){clearInterval(poll);}},700);
       } else {
-        if(activeBtn){ activeBtn.disabled=false; activeBtn.textContent=oldText||'Connect'; }
+        if(activeBtn){activeBtn.disabled=false;activeBtn.textContent=oldText||'Connect';}
         showToast(d.error==='GOOGLE_CREDENTIALS_NOT_CONFIGURED'?'Google is not configured yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Replit Secrets.':'Could not start Google connection. Please try again.','gold');
       }
     }).catch(function(){
-      if(activeBtn){ activeBtn.disabled=false; activeBtn.textContent=oldText||'Connect'; }
+      if(activeBtn){activeBtn.disabled=false;activeBtn.textContent=oldText||'Connect';}
       showToast('Could not reach the live backend. Please try again after the app is running.','gold');
     });
 }
 function handleGoogleConnected(){
+  syncGoogleConnectionUi(true).then(function(d){
+    if(d&&d.connected){
+      try{localStorage.setItem('cal-google-connected-'+(window.currentCompanyId||'default'),'1');}catch(e){}
+      showToast('Google connected. Live data is refreshing now.','green');
+    } else {
+      showToast('Google was not connected. Complete the Google authorization window and try again.','gold');
+      if(typeof renderIntegrationsGrid==='function')renderIntegrationsGrid();
+    }
+  });
+}
+
+function loadGoogleCalendarEvents(){
   var company=window.currentCompanyId||'default';
+  var card=document.getElementById('gcal-live-card');
+  var banner=document.getElementById('gcal-connect-card');
+  if(!card) return;
+  var btn=document.getElementById('gcal-connect-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Checking...'; }
+
   fetch('/api/google/status?company='+encodeURIComponent(company))
     .then(function(r){ return r.json(); })
-    .then(function(d){
-      if(d&&d.connected){
-        showToast('Google connected successfully. Checking available services...','green');
-        if(typeof renderIntegrationsGrid==='function') renderIntegrationsGrid();
-        if(typeof renderIntegrationStatusBar==='function') renderIntegrationStatusBar();
-        if(typeof loadGBPInsightsWidget==='function') loadGBPInsightsWidget('gbp-insights-widget');
-        if(typeof loadGBPReviewsWidget==='function') loadGBPReviewsWidget('gbp-reviews-widget');
-      } else {
-        showToast('Google was not connected. Complete the Google authorization window and try again.','gold');
-        if(typeof renderIntegrationsGrid==='function') renderIntegrationsGrid();
+    .then(function(status){
+      if(!status||!status.connected){
+        if(btn){ btn.disabled=false; btn.textContent='Connect'; btn.onclick=function(){ openOAuthModal('google-calendar'); }; btn.style.background=''; btn.style.color=''; }
+        card.innerHTML='<div class="card-head"><span class="card-title">Live Google Calendar</span><span style="font-size:11px;font-weight:800;color:var(--muted)">Not connected</span></div><div style="padding:26px;text-align:center;border:1px dashed var(--border);border-radius:14px;background:var(--page)"><p style="font-size:14px;font-weight:900;color:var(--ink);margin:0">Google Calendar not connected</p><p style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0 14px">Connect Google to load real calendar events.</p><button class="btn-gold" style="height:40px;padding:0 24px;font-size:13px" onclick="openOAuthModal(\'google-calendar\')">Connect Google Calendar</button></div>';
+        return null;
       }
+
+      if(btn){ btn.disabled=false; btn.textContent='Disconnect'; btn.onclick=function(){ disconnectGoogleForCompany(); }; btn.style.background='var(--green)'; btn.style.color='#fff'; }
+      var sub=banner&&banner.querySelector('.int-card-sub');
+      if(sub){ sub.textContent='Connected'+(status.user&&status.user.email?' · '+status.user.email:''); sub.style.color='var(--green)'; }
+
+      var now=new Date();
+      var max=new Date(now.getTime()+30*86400000);
+      return fetch('/api/calendar/events?company='+encodeURIComponent(company)+'&timeMin='+encodeURIComponent(now.toISOString())+'&timeMax='+encodeURIComponent(max.toISOString())+'&maxResults=20');
+    })
+    .then(function(r){ if(r) return r.json(); })
+    .then(function(data){
+      if(!data) return;
+      var events=data.events||[];
+      var error=data.error||'';
+
+      function fmtDate(value){
+        var raw=value&&value.dateTime||value&&value.date||'';
+        if(!raw) return {mon:'—',day:'—',time:'No time'};
+        var d=new Date(raw);
+        return {mon:d.toLocaleDateString(undefined,{month:'short'}),day:String(d.getDate()).padStart(2,'0'),time:(value.date?'All day':d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}))};
+      }
+
+      if(error){
+        var needsReconnect=/insufficient|permission|scope|forbidden|unauthorized/i.test(error);
+        card.innerHTML='<div class="card-head"><span class="card-title">Live Google Calendar</span><span style="font-size:11px;font-weight:800;color:var(--red)">Calendar error</span></div><div style="padding:22px;border:1px solid var(--border);border-radius:14px;background:var(--page)"><p style="font-size:14px;font-weight:900;color:var(--ink);margin:0 0 6px">Calendar connected, but events could not load.</p><p style="font-size:12px;font-weight:700;color:var(--muted);line-height:1.6;margin:0 0 14px">'+(needsReconnect?'Disconnect Google, reconnect, and approve Calendar access.':'Google returned: '+error)+'</p><button class="btn-gold" style="height:38px;padding:0 16px;font-size:12px" onclick="connectGoogleForCompany()">Reconnect Google</button></div>';
+        return;
+      }
+
+      card.innerHTML='<div class="card-head"><span class="card-title">Live Google Calendar</span><button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="loadGoogleCalendarEvents()">↻ Refresh</button></div><div style="font-size:11px;font-weight:800;color:var(--green);margin-bottom:10px">LIVE GOOGLE DATA · NEXT 30 DAYS</div>'
+        +(events.length?'<div style="display:flex;flex-direction:column;gap:8px">'+events.map(function(ev){
+          var t=fmtDate(ev.start||{});
+          return '<a href="'+(ev.htmlLink||'#')+'" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--page);border:1px solid var(--border);text-decoration:none"><div style="width:42px;height:42px;border-radius:10px;background:rgba(66,133,244,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:9px;font-weight:900;color:#4285f4;text-transform:uppercase;line-height:1">'+t.mon+'</span><span style="font-size:16px;font-weight:900;color:#4285f4;line-height:1.1">'+t.day+'</span></div><div style="flex:1;min-width:0"><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(ev.summary||'Untitled event')+'</p><p style="font-size:11px;font-weight:700;color:var(--muted);margin:2px 0 0">'+t.time+(ev.location?' · '+ev.location:'')+'</p></div><span class="pill pill-blue">GOOGLE</span></a>';
+        }).join('')+'</div>':'<div style="padding:26px;text-align:center;border:1px dashed var(--border);border-radius:14px;background:var(--page)"><p style="font-size:14px;font-weight:900;color:var(--ink);margin:0">No upcoming events found</p><p style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0 0">Calendar is connected, but there are no events in the next 30 days.</p></div>');
     })
     .catch(function(){
-      showToast('Could not verify Google connection status. Refresh and try again.','gold');
-      if(typeof renderIntegrationsGrid==='function') renderIntegrationsGrid();
+      if(btn){ btn.disabled=false; btn.textContent='Connect'; }
+      card.innerHTML='<div class="card-head"><span class="card-title">Live Google Calendar</span></div><p style="font-size:12px;color:var(--muted);font-weight:700;padding:18px">Could not reach the Calendar API.</p>';
     });
 }
+
 function isBusinessOwner(){
   return window.currentRole==='admin'||window.currentRole==='agency';
 }
@@ -5713,8 +5807,15 @@ function disconnectGoogleForCompany(){
   var company=window.currentCompanyId||'default';
   if(!confirm('Disconnect Google from this account?')) return;
   fetch('/api/google/disconnect?company='+encodeURIComponent(company),{method:'POST'})
-    .then(function(){ showToast('Google disconnected.',''); if(typeof renderIntegrationsGrid==='function')renderIntegrationsGrid(); if(typeof renderIntegrationStatusBar==='function')renderIntegrationStatusBar(); ['gbp-insights-widget','gbp-reviews-widget','ga4-widget','gsc-widget','gmail-widget','pagespeed-widget'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='';}); })
-    .catch(function(){ showToast('This feature requires the live backend. Coming soon.','gold'); });
+    .then(function(){
+      try{localStorage.removeItem('cal-google-connected-'+company);}catch(e){}
+      setGoogleConnectionUi(false);
+      showToast('Google disconnected.','');
+      if(typeof renderIntegrationsGrid==='function')renderIntegrationsGrid();
+      if(typeof renderIntegrationStatusBar==='function')renderIntegrationStatusBar();
+      ['gbp-insights-widget','gbp-reviews-widget','ga4-widget','gsc-widget','gmail-widget','pagespeed-widget'].forEach(function(id){var el=document.getElementById(id);if(el)el.innerHTML='';});
+    })
+    .catch(function(){showToast('This feature requires the live backend. Coming soon.','gold');});
 }
 var PLATFORM_CONN_SERVICES=[
   {id:'google-analytics',name:'Google Analytics',img:null,icon:'GA',bg:'#e8710a'},
@@ -6119,6 +6220,7 @@ function launchApp(){
   } else {
     nav(lastNav&&TITLES[lastNav]?lastNav:'home');
   }
+  setTimeout(function(){ if(typeof syncGoogleConnectionUi==='function') syncGoogleConnectionUi(false); },900);
 }
 
 function showWelcomeBanner(){}
@@ -6330,6 +6432,7 @@ function nav(screen){
   if(screen==='job-logging') renderJobLogs();
   if(screen==='social'){ if(!currentAcctId) currentAcctId='local'; loadSocialConnections(); }
   if(screen==='files') initGDriveCard();
+  if(screen==='schedule') loadGoogleCalendarEvents();
   if(screen==='settings'){ renderSettingsTabs(); setTimeout(renderIntegrationsGrid,300); }
   if(screen==='onboarding') renderOnboarding();
   if(screen==='reports'){
@@ -10704,6 +10807,7 @@ function sendWaReply() {
   }
 
   function seedAgencyUsers(){
+    window.USERS=window.USERS||{};
     // Always force-write agency users — never let localStorage override them
     var AGENCY_PW = 'CAL_D1gital$2026!';
     window.USERS['chris@cal.marketing']  = {pw:AGENCY_PW,role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'};
