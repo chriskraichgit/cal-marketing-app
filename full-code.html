@@ -4598,13 +4598,13 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div class="modal">
     <div class="modal-head"><h2>New Task</h2><button class="icon-btn" onclick="closeModal('new-task-modal')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
     <div class="modal-body"><div class="form-grid">
-      <div class="form-field"><label class="form-label">Task Title</label><input class="input-std" placeholder="e.g. Write May blog post"></div>
-      <div class="form-field"><label class="form-label">Assignee</label><select class="input-std"><option>Chris Kraich</option><option>Alex Torres</option><option>Maria Santos</option></select></div>
-      <div class="form-field"><label class="form-label">Due Date</label><input class="input-std" type="date"></div>
-      <div class="form-field"><label class="form-label">Category</label><select class="input-std"><option>Ads</option><option>Content</option><option>SEO</option><option>Dev</option><option>Reviews</option><option>General</option></select></div>
-      <div class="form-field"><label class="form-label">Description</label><textarea class="notes-textarea" placeholder="Task details..."></textarea></div>
+      <div class="form-field"><label class="form-label">Task Title</label><input class="input-std" id="ntm-title" placeholder="e.g. Write May blog post"></div>
+      <div class="form-field"><label class="form-label">Assignee</label><select class="input-std" id="ntm-assignee"><option value="">— Select Assignee —</option><optgroup label="Agency"><option value="chris">Chris Kraich</option><option value="matt">Matt Gallagher</option><option value="james">James Wodzinski</option></optgroup><optgroup label="Client / Admin"><option value="alex">Alex Torres</option><option value="maria">Maria Santos</option></optgroup></select></div>
+      <div class="form-field"><label class="form-label">Due Date</label><input class="input-std" id="ntm-due" type="date"></div>
+      <div class="form-field"><label class="form-label">Category</label><select class="input-std" id="ntm-category"><option>Ads</option><option>Content</option><option>SEO</option><option>Dev</option><option>Reviews</option><option>Reports</option><option>General</option></select></div>
+      <div class="form-field"><label class="form-label">Description</label><textarea class="notes-textarea" id="ntm-desc" placeholder="Task details..."></textarea></div>
     </div></div>
-    <div class="modal-actions"><button class="btn-gold" onclick="closeModal('new-task-modal');showToast('Task created!','green')">Create Task</button><button class="btn-ghost" onclick="closeModal('new-task-modal')">Cancel</button></div>
+    <div class="modal-actions"><button class="btn-gold" onclick="createSharedTodo()">Create Task</button><button class="btn-ghost" onclick="closeModal('new-task-modal')">Cancel</button></div>
   </div>
 </div>
 
@@ -12536,9 +12536,12 @@ function sendWaReply() {
   window.openAtAddModal=function(){
     var sel=document.getElementById('at-modal-assign');
     if(sel){
-      sel.innerHTML='<option value="">Unassigned</option>'+CP_TEAM.map(function(m){
-        return '<option value="'+m.id+'"'+(atFilter===m.id?' selected':'')+'>'+m.name+'</option>';
-      }).join('');
+      var agOpts=CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(atFilter===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('');
+      var AT_ADM=window.AT_ADMIN_USERS||[];
+      var clOpts=AT_ADM.map(function(m){ return '<option value="'+m.id+'">'+m.name+'</option>'; }).join('');
+      sel.innerHTML='<option value="">Unassigned</option>'
+        +'<optgroup label="Agency">'+agOpts+'</optgroup>'
+        +(clOpts?'<optgroup label="Client / Admin">'+clOpts+'</optgroup>':'');
     }
     var ti=document.getElementById('at-modal-title'); if(ti) ti.value='';
     var de=document.getElementById('at-modal-desc'); if(de) de.value='';
@@ -12553,8 +12556,13 @@ function sendWaReply() {
     atSave(st); closeModal('at-add-modal'); renderAgencyTodos();
   };
   function atAssignSelect(id,cur){
-    var S='style="flex-shrink:0;height:30px;border:1px solid var(--border,#e2e8f0);border-radius:8px;padding:0 8px;font-size:12px;font-weight:800;font-family:inherit;color:var(--ink,#10243f);background:var(--surface,#fff);cursor:pointer;max-width:130px"';
-    var opts='<option value=""'+(!cur?' selected':'')+'>Unassigned</option>'+CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(cur===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('');
+    var S='style="flex-shrink:0;height:30px;border:1px solid var(--border,#e2e8f0);border-radius:8px;padding:0 8px;font-size:12px;font-weight:800;font-family:inherit;color:var(--ink,#10243f);background:var(--surface,#fff);cursor:pointer;max-width:160px"';
+    var agOpts=CP_TEAM.map(function(m){ return '<option value="'+m.id+'"'+(cur===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('');
+    var AT_ADM=window.AT_ADMIN_USERS||[];
+    var clOpts=AT_ADM.map(function(m){ return '<option value="'+m.id+'"'+(cur===m.id?' selected':'')+'>'+m.name+'</option>'; }).join('');
+    var opts='<option value=""'+(!cur?' selected':'')+'>Unassigned</option>'
+      +'<optgroup label="Agency">'+agOpts+'</optgroup>'
+      +(clOpts?'<optgroup label="Client / Admin">'+clOpts+'</optgroup>':'');
     return '<select '+S+' onchange="atSetAssignee(\''+id+'\',this.value)">'+opts+'</select>';
   }
   function renderAgencyTodos(){
@@ -12611,6 +12619,29 @@ function sendWaReply() {
       +chips
       +(open.map(row).join('')||emptyState)
       +(done.length?'<p style="font-size:11px;font-weight:800;color:var(--muted,#94a3b8);letter-spacing:.07em;text-transform:uppercase;margin:20px 0 10px">Completed ('+done.length+')</p>'+done.map(row).join(''):'');
+    // Append cross-assign "From Clients" section
+    if(window.stdLoad){
+      var xd=window.stdLoad();
+      function _isAg(id){ return CP_TEAM.some(function(m){return m.id===id;}); }
+      var fromCl=xd.items.filter(function(t){ return t.from==='client' && _isAg(t.assignee); });
+      if(fromCl.length){
+        var rowWrapCl='display:flex;align-items:center;gap:10px;background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:12px;padding:11px 14px;margin-bottom:8px;';
+        var clRows=fromCl.map(function(t){
+          var chkStyle=t.done
+            ?'flex-shrink:0;width:22px;height:22px;border-radius:6px;border:2px solid var(--green,#22c55e);background:var(--green,#22c55e);color:#fff;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center'
+            :'flex-shrink:0;width:22px;height:22px;border-radius:6px;border:2px solid var(--border,#e2e8f0);background:transparent;color:#fff;font-size:12px;font-weight:900;cursor:pointer;display:inline-flex;align-items:center;justify-content:center';
+          return '<div style="'+rowWrapCl+(t.done?'opacity:.72;':'')+'">'
+            +'<button style="'+chkStyle+'" onclick="window.stdToggle&&window.stdToggle(\''+t.id+'\')">'+(t.done?'\u2713':'')+'</button>'
+            +'<span style="flex:1;font-size:14px;font-weight:700;color:var(--ink,#10243f);'+(t.done?'text-decoration:line-through;color:var(--muted,#94a3b8);':'')+'">'+esc(t.text)+'</span>'
+            +'<span style="font-size:11px;font-weight:800;color:#3b82f6;background:#3b82f618;border-radius:999px;padding:2px 8px;flex-shrink:0">from client</span>'
+            +'<button onclick="window.stdDelete&&window.stdDelete(\''+t.id+'\')" style="flex-shrink:0;width:26px;height:26px;border:0;background:transparent;color:var(--muted,#94a3b8);font-size:18px;cursor:pointer">\u00d7</button>'
+            +'</div>';
+        }).join('');
+        var secDiv=document.createElement('div'); secDiv.style.marginTop='24px';
+        secDiv.innerHTML='<p style="font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.07em;text-transform:uppercase;margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid rgba(59,130,246,.25)">\ud83d\udce8 Requests from Clients <span style="background:#3b82f618;color:#3b82f6;border-radius:999px;padding:1px 7px;font-size:10px;font-weight:900">'+fromCl.length+'</span></p>'+clRows;
+        el.appendChild(secDiv);
+      }
+    }
   }
 
   function injectAgencyToolsCSS(){
@@ -12672,6 +12703,7 @@ function sendWaReply() {
     var r=_priorNavAgency?_priorNavAgency(s):undefined;
     if(window.currentScreen==='client-projects') renderClientProjects();
     if(window.currentScreen==='agency-todos') renderAgencyTodos();
+    if(window.currentScreen==='todos' && window.renderTodosKanban) window.renderTodosKanban();
     return r;
   };
 
@@ -12706,6 +12738,128 @@ function sendWaReply() {
     onbInit();
     if(window.currentScreen && FIXED_SCREEN_SET[window.currentScreen]) renderFixedScreen(window.currentScreen);
   }
+  /* ====== SHARED CROSS-ASSIGN TODOS (agency ↔ client) ====== */
+  window.AT_ADMIN_USERS=[
+    {id:'alex',  name:'Alex Torres',  initials:'AT', color:'var(--blue,#3b82f6)'},
+    {id:'maria', name:'Maria Santos', initials:'MS', color:'#7c3aed'}
+  ];
+  function isAgMember(id){ return CP_TEAM.some(function(m){return m.id===id;}); }
+  function allMemberInitials(id){
+    var m=CP_TEAM.find(function(x){return x.id===id;})||(window.AT_ADMIN_USERS||[]).find(function(x){return x.id===id;});
+    return m?m.initials:'?';
+  }
+  function allMemberColor(id){
+    var m=CP_TEAM.find(function(x){return x.id===id;})||(window.AT_ADMIN_USERS||[]).find(function(x){return x.id===id;});
+    return m?m.color:'var(--border)';
+  }
+  function allMemberFirstName(id){
+    var m=CP_TEAM.find(function(x){return x.id===id;})||(window.AT_ADMIN_USERS||[]).find(function(x){return x.id===id;});
+    return m?(m.name||m.full||'').split(' ')[0]:id||'?';
+  }
+
+  var STD_KEY='cal-cross-todos-v1';
+  window.stdLoad=function(){
+    var d=safeJSON(STD_KEY,null);
+    if(!d||!d.items){
+      d={items:[
+        {id:cpUid(),text:'Review Q3 ad creative brief',    done:false,status:'todo',       assignee:'chris',from:'client',due:'',category:'Ads'},
+        {id:cpUid(),text:'Share June analytics report',    done:false,status:'inprogress', assignee:'alex', from:'agency',due:'',category:'Reports'},
+        {id:cpUid(),text:'Update GBP hours for summer',    done:false,status:'todo',       assignee:'matt', from:'client',due:'',category:'SEO'},
+        {id:cpUid(),text:'Approve new Meta ad copy',       done:false,status:'todo',       assignee:'alex', from:'agency',due:'',category:'Ads'},
+        {id:cpUid(),text:'Send NFC card setup instructions',done:true, status:'done',      assignee:'maria',from:'agency',due:'',category:'Reviews'}
+      ]};
+      saveJSON(STD_KEY,d);
+    }
+    return d;
+  };
+  window.stdSave=function(d){ saveJSON(STD_KEY,d); };
+
+  window.createSharedTodo=function(){
+    var titleEl=document.getElementById('ntm-title');
+    var title=(titleEl?titleEl.value:'').trim();
+    if(!title){ if(window.showToast) showToast('Add a task title first.','gold'); if(titleEl) titleEl.focus(); return; }
+    var assignee=((document.getElementById('ntm-assignee')||{}).value)||'';
+    var due=((document.getElementById('ntm-due')||{}).value)||'';
+    var category=((document.getElementById('ntm-category')||{}).value)||'General';
+    var desc=((document.getElementById('ntm-desc')||{}).value||'').trim();
+    var fromRole=(window.currentRole==='agency'||window.currentRole==='test')?'agency':'client';
+    var d=window.stdLoad();
+    d.items.unshift({id:cpUid(),text:title,desc:desc,done:false,status:'todo',assignee:assignee,from:fromRole,due:due,category:category});
+    window.stdSave(d);
+    closeModal('new-task-modal');
+    if(titleEl) titleEl.value='';
+    if(window.showToast) showToast('Task created!','green');
+    if(window.renderTodosKanban) window.renderTodosKanban();
+    renderAgencyTodos();
+  };
+  window.stdToggle=function(id){
+    var d=window.stdLoad(); var t=d.items.find(function(x){return x.id===id;});
+    if(t){ t.done=!t.done; t.status=t.done?'done':(t.status==='done'?'todo':t.status); }
+    window.stdSave(d);
+    if(window.renderTodosKanban) window.renderTodosKanban();
+    if(window.currentScreen==='agency-todos') renderAgencyTodos();
+  };
+  window.stdDelete=function(id){
+    var d=window.stdLoad(); d.items=d.items.filter(function(x){return x.id!==id;});
+    window.stdSave(d);
+    if(window.renderTodosKanban) window.renderTodosKanban();
+    if(window.currentScreen==='agency-todos') renderAgencyTodos();
+  };
+  window.stdSetStatus=function(id,status){
+    var d=window.stdLoad(); var t=d.items.find(function(x){return x.id===id;});
+    if(t){ t.status=status; t.done=(status==='done'); }
+    window.stdSave(d);
+    if(window.renderTodosKanban) window.renderTodosKanban();
+  };
+
+  window.renderTodosKanban=function(){
+    var kanban=document.getElementById('todos-kanban'); if(!kanban) return;
+    if((window.currentRole||'')==='user') return;
+    var d=window.stdLoad();
+    var pillMap={Ads:'pill-blue',Content:'pill-gold',SEO:'pill-green',Dev:'pill-purple',Reviews:'pill-muted',Reports:'pill-blue',General:'pill-muted'};
+    function pill(cat){ return '<span class="pill '+(pillMap[cat]||'pill-muted')+'">'+esc(cat||'General')+'</span>'; }
+    function ava(id){
+      if(!id) return '';
+      var ini=allMemberInitials(id); var clr=allMemberColor(id); var fn=allMemberFirstName(id);
+      var tx=(clr.indexOf('gold')>-1||clr.indexOf('e5a')>-1)?'#000':'#fff';
+      return '<span class="task-assignee"><div class="task-assignee-av" style="background:'+clr+';color:'+tx+'">'+ini+'</div>'+fn+'</span>';
+    }
+    function moveBtns(t){
+      var b='';
+      if(t.status!=='todo') b+='<button onclick="stdSetStatus(\''+t.id+'\',\'todo\')" style="flex:1;height:23px;border:1px solid var(--border);border-radius:6px;background:transparent;font-size:10px;font-weight:700;cursor:pointer;color:var(--muted)">To Do</button>';
+      if(t.status!=='inprogress') b+='<button onclick="stdSetStatus(\''+t.id+'\',\'inprogress\')" style="flex:1;height:23px;border:1px solid var(--border);border-radius:6px;background:transparent;font-size:10px;font-weight:700;cursor:pointer;color:var(--muted)">In Progress</button>';
+      if(t.status!=='done') b+='<button onclick="stdSetStatus(\''+t.id+'\',\'done\')" style="flex:1;height:23px;border:1px solid var(--green,#22c55e);border-radius:6px;background:var(--green,#22c55e);font-size:10px;font-weight:800;cursor:pointer;color:#fff">\u2713 Done</button>';
+      return b?'<div style="display:flex;gap:5px;margin-top:7px">'+b+'</div>':'';
+    }
+    function taskCard(t){
+      return '<div class="task-card" style="cursor:default;'+(t.done?'opacity:.65':'')+'">'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px">'
+        +'<p class="task-card-title" style="'+(t.done?'text-decoration:line-through;color:var(--muted)':'')+'">'+esc(t.text)+'</p>'
+        +'<button onclick="stdDelete(\''+t.id+'\')" style="flex-shrink:0;width:20px;height:20px;border:0;background:transparent;color:var(--muted);font-size:15px;cursor:pointer;line-height:1">\u00d7</button>'
+        +'</div>'
+        +'<div class="task-card-meta">'+pill(t.category)+ava(t.assignee)+(t.due?'<span class="task-due">'+t.due+'</span>':'')+'</div>'
+        +moveBtns(t)
+        +'</div>';
+    }
+    function groupSection(label,tasks,accent){
+      return '<div style="border-top:2px solid '+accent+'33;padding-top:9px;margin-top:8px">'
+        +'<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">'
+        +'<span style="font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:'+accent+'">'+label+'</span>'
+        +'<span style="min-width:18px;height:18px;padding:0 5px;background:'+accent+'22;color:'+accent+';border-radius:999px;font-size:10px;font-weight:900;display:inline-flex;align-items:center;justify-content:center">'+tasks.length+'</span>'
+        +'</div>'
+        +(tasks.length?tasks.map(taskCard).join(''):'<p style="font-size:12px;font-weight:700;color:var(--muted);padding:2px 0 8px">No tasks</p>')
+        +'</div>';
+    }
+    [{status:'todo',colId:'col-todo',cntId:'todo-count'},{status:'inprogress',colId:'col-inprogress',cntId:'inprogress-count'},{status:'done',colId:'col-done',cntId:'done-count'}].forEach(function(cfg){
+      var el=document.getElementById(cfg.colId); if(!el) return;
+      var all=d.items.filter(function(t){ return t.status===cfg.status; });
+      var agTasks=all.filter(function(t){ return isAgMember(t.assignee); });
+      var clTasks=all.filter(function(t){ return !isAgMember(t.assignee); });
+      var cntEl=document.getElementById(cfg.cntId); if(cntEl) cntEl.textContent=all.length;
+      el.innerHTML=groupSection('Agency',agTasks,'#c9a84c')+groupSection('Client \u2022 Admin',clTasks,'#3b82f6');
+    });
+  };
+
   document.addEventListener('DOMContentLoaded',init);
   init();
 })();
