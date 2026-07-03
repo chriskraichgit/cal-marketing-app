@@ -10301,6 +10301,12 @@ function sendWaReply() {
     buildAcctDd();
     refreshScreenForAccount(a);
     applyAccountBranding();
+    // Force a full re-render of whatever screen is currently open, as if
+    // the user had freshly navigated to it — prevents stale data from the
+    // previously selected account from lingering on screen.
+    if(window.currentScreen && typeof window.nav==='function'){
+      try{ window.nav(window.currentScreen); }catch(e){}
+    }
   };
 
   window.removeAccount=function(id){
@@ -11384,17 +11390,10 @@ function sendWaReply() {
                  (connected.google?'google':connected.facebook?'facebook':'yelp')
       };
     });
-    if(!allReviews.length){
-      allReviews=[
-        {name:'Robert M.',text:'Outstanding service from start to finish.',rating:5,ago:'2h ago',platform:connected.google?'google':connected.facebook?'facebook':'yelp'},
-        {name:'Jennifer K.',text:'Handled everything perfectly.',rating:5,ago:'5h ago',platform:connected.google?'google':connected.facebook?'facebook':'yelp'},
-        {name:'Marcus D.',text:'Very professional and helpful.',rating:5,ago:'Yesterday',platform:connected.facebook?'facebook':connected.google?'google':'yelp'},
-        {name:'Cara T.',text:'Highly recommend to everyone.',rating:4,ago:'Yesterday',platform:connected.yelp?'yelp':connected.google?'google':'facebook'},
-        {name:'Antonio R.',text:'Best in Miami. Will use again.',rating:5,ago:'Jun 21',platform:connected.google?'google':connected.yelp?'yelp':'facebook'}
-      ];
-    }
+    if(!allReviews.length){ allReviews=[]; }
     window._rvAllReviews=allReviews;
     filterReviews((document.getElementById('rv-platform-filter')||{value:'all'}).value);
+    if(connected.google){ loadLiveReviewsForReviewsScreen(key); }
 
     // Leaderboard
     var lb=document.getElementById('rv-leaderboard-list');
@@ -11417,6 +11416,46 @@ function sendWaReply() {
         '</div>';
       }).join('')||'<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">No team data yet.</p>';
     }
+  }
+
+  function rvRatingValue(v){
+    var map={FIVE:5,FOUR:4,THREE:3,TWO:2,ONE:1,STAR_RATING_UNSPECIFIED:0};
+    if(typeof v==='number') return Math.max(0,Math.min(5,Math.round(v)));
+    return map[v]||0;
+  }
+  function rvAgo(ts){
+    if(!ts) return '';
+    var t=new Date(ts).getTime();
+    if(!isFinite(t)) return '';
+    var h=Math.floor(Math.max(0,Date.now()-t)/3600000);
+    if(h<1) return 'Just now';
+    if(h<24) return h+'h ago';
+    var d=Math.floor(h/24);
+    if(d===1) return 'Yesterday';
+    if(d<7) return d+'d ago';
+    return new Date(t).toLocaleDateString();
+  }
+  function loadLiveReviewsForReviewsScreen(key){
+    var list=document.getElementById('rv-reviews-list');
+    if(list) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">Loading live Google reviews...</p>';
+    fetch('/api/gbp/reviews?company='+encodeURIComponent(window.currentCompanyId||'default'))
+      .then(function(r){ return r.json(); })
+      .then(function(data){
+        if(data&&data.error){ throw new Error(data.error); }
+        window._rvAllReviews=(data.reviews||[]).map(function(rv){
+          return {
+            name:(rv.reviewer&&rv.reviewer.displayName)||'Anonymous',
+            text:rv.comment||'',
+            rating:rvRatingValue(rv.starRating),
+            ago:rvAgo(rv.updateTime||rv.createTime),
+            platform:'google'
+          };
+        });
+        filterReviews((document.getElementById('rv-platform-filter')||{value:'all'}).value);
+      })
+      .catch(function(){
+        if(list) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">Connect Google Business Profile to load live reviews.</p>';
+      });
   }
 
   window.filterReviews=function(platform){
@@ -11452,6 +11491,14 @@ function sendWaReply() {
 
   window.connectReviewPlatform=function(platform,btn){
     var key=acctKey();
+    if(platform==='google'){
+      if(typeof connectGoogleForCompany==='function'){
+        connectGoogleForCompany();
+      } else {
+        showToastSafe('Google connection is not available in this build.','gold');
+      }
+      return;
+    }
     var connected=safeJSON('rv-connected-'+key,{});
     connected[platform]=true;
     saveJSON('rv-connected-'+key,connected);
