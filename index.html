@@ -5624,6 +5624,7 @@ function loadGoogleCalendarEvents() {
         if (gridBody) gridBody.innerHTML = '<div style="padding:22px;border:1px solid var(--border);border-radius:14px;background:var(--page)"><p style="font-size:14px;font-weight:900;color:var(--ink);margin:0 0 6px">Calendar connected, but events could not load.</p><p style="font-size:12px;font-weight:700;color:var(--muted);margin:0 0 14px">' + (needsReconnect ? 'Disconnect Google, reconnect, and approve Calendar access.' : error) + '</p><button class="btn-gold" style="height:38px;padding:0 16px;font-size:12px" onclick="connectGoogleForCompany()">Reconnect Google</button></div>';
         return;
       }
+      window._gcalConnected = true;
       window._gcalEvents = events;
       window._gcalEventMap = {};
       events.forEach(function(ev) { if (ev.id) window._gcalEventMap[ev.id] = ev; });
@@ -5641,19 +5642,51 @@ function loadGoogleCalendarEvents() {
     });
 }
 
+function gcalManualToGcalEvents() {
+  return (window._gcalManualItems || []).map(function(item) {
+    return { id: 'manual-' + item.sortKey, summary: item.title, start: { dateTime: item.sortKey }, location: item.sub || '', htmlLink: '', _isManual: true };
+  });
+}
+
 function gcalRenderNotConnected() {
-  var placeholder = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:52px 20px;border:2px dashed var(--border);border-radius:14px;background:var(--page)"><div style="width:72px;height:72px;border-radius:18px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.10);display:flex;align-items:center;justify-content:center"><img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:48px;height:48px;object-fit:contain" alt="Google Calendar"></div><div style="text-align:center"><p style="font-size:16px;font-weight:900;color:var(--ink);margin:0">Not connected</p><p style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0 0;max-width:340px;line-height:1.5">Connect Google Calendar to see your live calendar here.</p></div><button class="btn-gold" style="height:40px;padding:0 24px;font-size:13px" onclick="openOAuthModal(\'google-calendar\')">Connect Google Calendar</button></div>';
+  window._gcalConnected = false;
+  var connectBanner = '<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border:1px dashed var(--border);border-radius:10px;background:var(--page);margin-bottom:12px">'
+    + '<img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:24px;height:24px;object-fit:contain;flex-shrink:0" alt="Google Calendar">'
+    + '<div style="flex:1;min-width:0"><p style="font-size:12px;font-weight:800;color:var(--ink);margin:0">Google Calendar not connected</p>'
+    + '<p style="font-size:11px;font-weight:700;color:var(--muted);margin:2px 0 0">Connect to sync live events. Manual events shown below.</p></div>'
+    + '<button class="btn-gold" style="height:32px;padding:0 14px;font-size:11px;white-space:nowrap" onclick="openOAuthModal(\'google-calendar\')">Connect</button>'
+    + '</div>';
+
+  var manualEvents = gcalManualToGcalEvents();
+  window._gcalEventMap = {};
+  manualEvents.forEach(function(ev) { if (ev.id) window._gcalEventMap[ev.id] = ev; });
+  gcalInitGridClickHandler();
+
   var gridBody = document.getElementById('gcal-grid-body');
-  if (gridBody) gridBody.innerHTML = placeholder;
-  var upcoming = document.getElementById('gcal-upcoming-list');
-  if (upcoming) upcoming.innerHTML = '<div style="padding:18px;text-align:center;border:1px dashed var(--border);border-radius:10px"><p style="font-size:13px;font-weight:700;color:var(--muted);margin:0">Connect Google Calendar to see upcoming meetings.</p></div>';
-  var week = document.getElementById('gcal-week-list');
-  if (week) week.innerHTML = '<div style="padding:14px;text-align:center"><span style="font-size:12px;font-weight:700;color:var(--muted)">Not connected</span></div>';
+  if (gridBody) {
+    var gridWrap = document.createElement('div');
+    gridWrap.innerHTML = connectBanner;
+    var innerEl = document.createElement('div');
+    gridBody.innerHTML = '';
+    gridBody.appendChild(gridWrap);
+    gridBody.appendChild(innerEl);
+    var v = window._gcalView || 'month';
+    var a = window._gcalAnchor || new Date();
+    var titleEl = document.getElementById('gcal-grid-title');
+    if (v === 'month') gcalRenderMonth(innerEl, titleEl, a, manualEvents);
+    else if (v === 'week') gcalRenderWeekGrid(innerEl, titleEl, a, manualEvents);
+    else gcalRenderDayGrid(innerEl, titleEl, a, manualEvents);
+  }
+
+  gcalRenderUpcoming(manualEvents);
+  gcalRenderWeek(manualEvents);
+
   var content = document.getElementById('gcal-content-list');
   if (content) content.innerHTML = '<div style="padding:14px;text-align:center;border:1px dashed var(--border);border-radius:10px"><span style="font-size:12px;font-weight:700;color:var(--muted)">Connect Google Calendar to see the content calendar.</span></div>';
 }
 
 function gcalRenderUpcoming(events) {
+  events = events || [];
   var el = document.getElementById('gcal-upcoming-list');
   if (!el) return;
   var now = new Date();
@@ -5677,12 +5710,13 @@ function gcalRenderUpcoming(events) {
       + '<p style="font-size:13px;font-weight:800;color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + escHtml(ev.summary || 'Untitled event') + '</p>'
       + '<p style="font-size:11px;font-weight:700;color:var(--muted);margin:2px 0 0">' + escHtml(t.time) + (ev.location ? ' · ' + escHtml(ev.location) : '') + '</p>'
       + '</div>'
-      + '<span class="pill pill-blue" style="font-size:9px">GOOGLE</span>'
+      + (ev._isManual ? '<span class="pill pill-gold" style="font-size:9px">MANUAL</span>' : '<span class="pill pill-blue" style="font-size:9px">GOOGLE</span>')
       + '</a>';
   }).join('');
 }
 
 function gcalRenderWeek(events) {
+  events = events || [];
   var el = document.getElementById('gcal-week-list');
   if (!el) return;
   var now = new Date();
@@ -5749,6 +5783,7 @@ function navCalendarToday() {
 }
 
 function gcalRenderGrid() {
+  if (!window._gcalConnected) { gcalRenderNotConnected(); return; }
   var el = document.getElementById('gcal-grid-body');
   var title = document.getElementById('gcal-grid-title');
   if (!el) return;
@@ -5769,7 +5804,8 @@ function gcalEventsForDay(events, date) {
 }
 
 function gcalEventDot(ev) {
-  return '<div data-gcalid="' + escHtml(ev.id || '') + '" style="cursor:pointer;font-size:10px;font-weight:700;color:#fff;background:#4285f4;border-radius:4px;padding:1px 4px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">' + escHtml(ev.summary || 'Event') + '</div>';
+  var bg = ev._isManual ? 'var(--gold)' : '#4285f4';
+  return '<div data-gcalid="' + escHtml(ev.id || '') + '" style="cursor:pointer;font-size:10px;font-weight:700;color:#fff;background:' + bg + ';border-radius:4px;padding:1px 4px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">' + escHtml(ev.summary || 'Event') + '</div>';
 }
 
 function gcalRenderMonth(el, titleEl, anchor, events) {
@@ -5840,7 +5876,7 @@ function gcalRenderDayGrid(el, titleEl, anchor, events) {
           + '<div style="flex-shrink:0;text-align:center;min-width:52px"><span style="font-size:12px;font-weight:900;color:#4285f4">' + escHtml(t.time) + '</span></div>'
           + '<div style="flex:1;min-width:0"><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">' + escHtml(ev.summary || 'Untitled') + '</p>'
           + (ev.location ? '<p style="font-size:11px;font-weight:700;color:var(--muted);margin:2px 0 0">📍 ' + escHtml(ev.location) + '</p>' : '')
-          + '</div><span class="pill pill-blue" style="font-size:9px">GOOGLE</span></div>';
+          + '</div>' + (ev._isManual ? '<span class="pill pill-gold" style="font-size:9px">MANUAL</span>' : '<span class="pill pill-blue" style="font-size:9px">GOOGLE</span>') + '</div>';
       }).join('')
     + '</div>';
 }
@@ -6958,7 +6994,7 @@ function nav(screen){
   if(screen!=='projects') closeProject();
   if(screen==='home') initHomeScreen();
   if(screen==='leads') initLeads();
-  if(screen==='notes'){ renderNotesList(); openNote(currentNoteIndex); }
+  if(screen==='notes'){ if(typeof _loadNotesForAcct==='function') _loadNotesForAcct(); renderNotesList(); openNote(currentNoteIndex); }
   if(screen==='plans') setTimeout(highlightCurrentPlan,50);
   if(screen==='permissions') renderPermAccounts();
   if(screen==='job-logging') renderJobLogs();
@@ -7271,6 +7307,9 @@ function refreshScreenForAccount(account){
   var score=scoreMap[account.id]||75;
   var hs=document.getElementById('h-score'); if(hs) hs.textContent=score;
   if(currentScreen==='home' && typeof window.applyHomeForRole==='function') window.applyHomeForRole();
+  if(currentScreen==='leads') initLeads();
+  if(currentScreen==='inbox'){ inboxInvalidateCache(); try{ renderInboxThreadList(); }catch(e){} }
+  if(currentScreen==='notes'){ if(typeof _loadNotesForAcct==='function') _loadNotesForAcct(); try{ renderNotesList(); openNote(0); }catch(e){} }
   showToast('Switched to '+account.name,'gold');
 }
 function refreshIntegrationsForAccount(acctId){
@@ -8858,6 +8897,13 @@ function selectQty(btn){ document.querySelectorAll('.qty-btn').forEach(function(
 function toggleAudio(btn){ var card=btn.closest('.recording-card'); var player=card?card.querySelector('.audio-player'):null; if(player){ var isVis=player.classList.contains('show'); player.classList.toggle('show'); btn.textContent=isVis?'▶ Play':'⏸ Pause'; } }
 
 // ============ NOTES ============
+function _notesKey(){ return 'cal-notes-'+(typeof acctKey==='function'?acctKey():'local'); }
+function _loadNotesForAcct(){
+  try{
+    var raw=localStorage.getItem(_notesKey());
+    if(raw){ var d=JSON.parse(raw); if(Array.isArray(d)){ NOTES_DATA.length=0; d.forEach(function(n){ NOTES_DATA.push(n); }); return; } }
+  }catch(e){}
+}
 function openNote(idx){
   currentNoteIndex=idx;
   var note=NOTES_DATA[idx]; if(!note) return;
@@ -8893,7 +8939,7 @@ function startNoteSave(){
     if(ind) ind.textContent='All changes saved';
     var note=NOTES_DATA[currentNoteIndex];
     if(note){ var title=document.getElementById('note-title'); var body=document.getElementById('note-body'); if(title) note.title=title.value; if(body) note.content=body.innerHTML; }
-    saveState('notes',NOTES_DATA);
+    try{ localStorage.setItem(_notesKey(),JSON.stringify(NOTES_DATA)); }catch(e){}
   },1500);
 }
 function execCmd(cmd){ document.execCommand(cmd,false,null); var nb=document.getElementById('note-body'); if(nb) nb.focus(); }
