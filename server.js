@@ -7,6 +7,8 @@ const { URL } = require('url');
 const { createClient } = require('@supabase/supabase-js');
 const ws = require('ws');
 const { Pool } = require('pg');
+const express = require('express');
+const { setupAuth, isAuthenticated } = require('./auth');
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY,
@@ -27,12 +29,22 @@ try { if (!fs.existsSync(LOGO_DIR)) fs.mkdirSync(LOGO_DIR); } catch (e) {}
 // Agency/test roles may access any account key; admin/user roles may only access their own email key.
 const SERVER_USERS = {
   'chris@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
-  'james@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
-  'matt@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
+  'james@cal.marketing':           { pwHash: '5611b415fe6a7d4efcd1e264fc4588adcc71c3c73988be6a4de88db113431389', role: 'agency' },
+  'matt@cal.marketing':            { pwHash: 'f33acfd52532e44037f9a33293836d30b71368357d3310cdf6734a3ebe178e0e', role: 'agency' },
   'info@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'test'   },
   'client@apexlegal.com':          { pwHash: '7e166f079a275064a2118127d7102a9471f671acb67a65a2c628684606b5e11f', role: 'admin'  },
   'staff@apexlegal.com':           { pwHash: '7df64b2903b0ac2dc591ee097c36f4acdae759753bd197eaf11008093e2966ca', role: 'user'   },
   'info@unitedsewerservice.com':   { pwHash: 'c87b71ef7b9882f404028ae7d5431cc6fdb73b64cfe52e9dc0501ff3dbe1a580', role: 'admin'  },
+};
+
+const SERVER_USER_PROFILES = {
+  'chris@cal.marketing':         { name: 'Chris Kraich',    initials: 'CK', companyId: 'cal',         title: 'Agency Owner'       },
+  'james@cal.marketing':         { name: 'James Wodzinski', initials: 'JW', companyId: 'cal',         title: 'Agency Partner'     },
+  'matt@cal.marketing':          { name: 'Matt Gallagher',  initials: 'MG', companyId: 'cal',         title: 'Agency Partner'     },
+  'info@cal.marketing':          { name: 'Test Owner',      initials: 'TO', companyId: 'cal',         title: 'Owner / Tester'     },
+  'client@apexlegal.com':        { name: 'Alex Torres',     initials: 'AT', companyId: 'apexlegal',   title: 'Marketing Director' },
+  'staff@apexlegal.com':         { name: 'Maria Santos',    initials: 'MS', companyId: 'apexlegal',   title: 'Staff Member'       },
+  'info@unitedsewerservice.com': { name: 'United Owner',    initials: 'US', companyId: 'unitedsewer', title: 'Owner'              },
 };
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -1517,7 +1529,7 @@ async function handleStripeDisconnect(res) {
   jsonResponse(res, 200, { disconnected: true });
 }
 
-const server = http.createServer(async (req, res) => {
+async function _legacyHandler(req, res) {
   const urlPath = req.url.split('?')[0];
   const qs = parseQueryString(req.url);
 
@@ -1636,7 +1648,7 @@ const server = http.createServer(async (req, res) => {
     });
     res.end(data);
   });
-});
+}
 
 // ============ GITHUB PUSH ============
 async function handleGithubStatus(req, res) {
@@ -1727,6 +1739,53 @@ async function handleGithubPush(req, res) {
   }
 }
 
-server.listen(PORT, HOST, () => {
-  console.log(`Server running at http://${HOST}:${PORT}/`);
+(async () => {
+  const app = express();
+
+  await setupAuth(app);
+
+  app.get('/api/auth/user', isAuthenticated, (req, res) => {
+    const claims = req.user && req.user.claims;
+    const email = ((claims && claims.email) || '').toLowerCase();
+    const user = SERVER_USERS[email];
+    if (!user) {
+      return res.status(403).json({ error: 'ACCESS_NOT_GRANTED', message: 'Access not granted. Contact your administrator.' });
+    }
+    const profile = SERVER_USER_PROFILES[email] || {};
+    const firstName = (claims && claims.first_name) || '';
+    const lastName = (claims && claims.last_name) || '';
+    const oidcName = [firstName, lastName].filter(Boolean).join(' ');
+    const name = profile.name || oidcName || email;
+    const initials = profile.initials || name.split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0, 2) || email.slice(0, 2).toUpperCase();
+    return res.json({
+      email,
+      role: user.role,
+      name,
+      initials,
+      companyId: profile.companyId || 'default',
+      title: profile.title || '',
+      profileImageUrl: (claims && claims.profile_image_url) || '',
+    });
+  });
+
+  app.post('/api/meta/login', isAuthenticated, (req, res) => {
+    const claims = req.user && req.user.claims;
+    const email = ((claims && claims.email) || '').toLowerCase();
+    const user = SERVER_USERS[email];
+    if (!user) {
+      return res.status(403).json({ error: 'ACCESS_NOT_GRANTED', message: 'Access not granted. Contact your administrator.' });
+    }
+    const token = signMetaToken({ email, role: user.role, exp: Date.now() + TOKEN_TTL_MS });
+    return res.json({ token });
+  });
+
+  app.use((req, res) => _legacyHandler(req, res));
+
+  const server = http.createServer(app);
+  server.listen(PORT, HOST, () => {
+    console.log(`[CAL] Server running at http://${HOST}:${PORT}/`);
+  });
+})().catch(err => {
+  console.error('[CAL] Fatal startup error:', err);
+  process.exit(1);
 });
