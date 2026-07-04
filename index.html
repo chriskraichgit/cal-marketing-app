@@ -890,32 +890,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
     <h1 class="login-title" id="login-main-title">CAL OS</h1>
     <p class="login-sub" id="login-main-sub">CLIENT OPERATING SYSTEM — v1.0</p>
-    <div class="login-tabs" style="display:flex;gap:0;border:1.5px solid var(--border);border-radius:999px;overflow:hidden;margin-bottom:20px">
-      <button id="tab-signin" onclick="switchLoginTab('signin')" style="flex:1;height:40px;border:0;background:var(--blue);color:#fff;font-size:13px;font-weight:700;cursor:pointer">Sign In</button>
-      <button id="tab-create" onclick="switchLoginTab('create')" style="flex:1;height:40px;border:0;background:transparent;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer">Create Account</button>
-    </div>
     <div id="signin-panel">
-      <div class="login-form">
-        <div class="field">
-          <label for="login-identifier">Email, Phone, or Username</label>
-          <input class="input-std" id="login-identifier" type="text" placeholder="you@company.com" autocomplete="username">
-        </div>
-        <div class="field">
-          <div class="field-row"><label for="login-pw">Password</label><a href="javascript:void(0)" onclick="openForgotPassword()">Forgot password?</a></div>
-          <div class="pw-wrap">
-            <input class="input-std" id="login-pw" type="password" placeholder="••••••••••" autocomplete="current-password">
-            <button class="pw-toggle" type="button" aria-pressed="false" onclick="togglePw()">
-              <svg class="eye-on" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              <svg class="eye-off" viewBox="0 0 24 24"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-            </button>
-          </div>
-        </div>
-        <div class="login-error" id="login-error">Incorrect credentials. Please try again.</div>
-        <button class="btn-primary btn-blue" onclick="doLogin()">Sign In</button>
-        <button type="button" onclick="openGoogleModal()" style="width:100%;height:48px;border:1.5px solid var(--border);border-radius:999px;background:var(--surface);display:flex;align-items:center;justify-content:center;gap:10px;font-size:14px;font-weight:700;color:var(--ink);transition:all .14s;margin-top:4px;cursor:pointer" onmouseover="this.style.borderColor='#4285f4'" onmouseout="this.style.borderColor=''">
-          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.1 33.4 29.6 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 2.9l6.3-6.3C34.4 5.9 29.5 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16.1 19.2 13 24 13c3 0 5.7 1.1 7.8 2.9l6.3-6.3C34.4 5.9 29.5 4 24 4 16.2 4 9.5 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.2-1.8 13.9-4.9l-6.4-5.4C29.5 35.6 26.9 36 24 36c-5.6 0-10.3-3.8-11.9-9L5 32.6C8.3 39.4 15.6 44 24 44z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.7c-.8 2.5-2.5 4.7-4.7 6.2l6.4 5.4C41.5 36.8 44.5 30.8 44.5 24c0-1.3-.1-2.7-.2-4z"/></svg>
-          Sign in with Google (Coming Soon)
-        </button>
+      <div class="login-form" style="align-items:center">
+        <p style="font-size:13px;font-weight:700;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:4px">Sign in securely with your Replit account.<br>Supports Google, GitHub, Apple, X, and email.</p>
+        <div class="login-error" id="login-error" style="width:100%;text-align:center">Access not granted. Contact your administrator.</div>
+        <a href="/api/login" id="replit-signin-btn" class="btn-primary btn-blue" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#fff;width:100%">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 3a7 7 0 110 14A7 7 0 0112 5zm0 2a5 5 0 100 10A5 5 0 0012 7zm0 2a3 3 0 110 6 3 3 0 010-6z"/></svg>
+          Sign in with Replit
+        </a>
       </div>
     </div>
     <div id="create-panel" style="display:none">
@@ -4910,14 +4892,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 // ============ DATA ============
 var USERS = {
-  'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner',companyId:'cal'},
-  'james@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',companyId:'cal'},
-  'matt@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
-  'info@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester',companyId:'cal'},
-  'test@cal.marketing':{pw:'CAL_D1gital$2026!',role:'test',name:'Test User',initials:'TU',username:'testuser',phone:'',title:'Owner / Tester',companyId:'cal'},
-  'client@apexlegal.com':{pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director',companyId:'apexlegal'},
-  'staff@apexlegal.com':{pw:'StaffUser2025!',role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member',companyId:'apexlegal'},
-  'info@unitedsewerservice.com':{pw:'United2026!',role:'admin',name:'United Owner',initials:'US',username:'unitedsewer',company:'United Sewer and Septic',phone:'(845) 555-0200',title:'Owner',companyId:'unitedsewer'}
+  'chris@cal.marketing':{role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 555-0100',title:'Agency Owner',companyId:'cal'},
+  'james@cal.marketing':{role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 555-0101',title:'Agency Partner',companyId:'cal'},
+  'matt@cal.marketing':{role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 555-0102',title:'Agency Partner',companyId:'cal'},
+  'info@cal.marketing':{role:'test',name:'Test Owner',initials:'TO',username:'testowner',phone:'',title:'Owner / Tester',companyId:'cal'},
+  'test@cal.marketing':{role:'test',name:'Test User',initials:'TU',username:'testuser',phone:'',title:'Owner / Tester',companyId:'cal'},
+  'client@apexlegal.com':{role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director',companyId:'apexlegal'},
+  'staff@apexlegal.com':{role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member',companyId:'apexlegal'},
+  'info@unitedsewerservice.com':{role:'admin',name:'United Owner',initials:'US',username:'unitedsewer',company:'United Sewer and Septic',phone:'(845) 555-0200',title:'Owner',companyId:'unitedsewer'}
 };
 var currentCompanyId = 'default';
 function companyParam(extra) {
@@ -5063,45 +5045,30 @@ window.addEventListener('DOMContentLoaded',function(){
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape') closeAllModals();
   });
+  // Check for existing Replit session — skip login screen if already authenticated
+  fetch('/api/auth/user',{credentials:'include'})
+    .then(function(r){ return (r.ok||r.status===403)?r.json():null; })
+    .then(function(userData){
+      if(userData&&userData.email){
+        currentUser={email:userData.email,name:userData.name,initials:userData.initials,role:userData.role,title:userData.title||'',companyId:userData.companyId||'default',profileImageUrl:userData.profileImageUrl||''};
+        currentRole=userData.role;
+        currentCompanyId=userData.companyId||'default';
+        if(typeof window._loginToMetaServer==='function'){
+          window._loginToMetaServer('','',function(){ launchApp(); });
+        } else {
+          launchApp();
+        }
+      } else if(userData&&userData.error==='ACCESS_NOT_GRANTED'){
+        var err=document.getElementById('login-error');
+        if(err) err.classList.add('show');
+      }
+    })
+    .catch(function(){});
 });
 
 // ============ LOGIN ============
 function doLogin(){
-  var identifier=((document.getElementById('login-identifier')||{}).value||'').trim().toLowerCase();
-  var pw=(document.getElementById('login-pw')||{value:''}).value||'';
-  var err=document.getElementById('login-error');
-  var u=null; var matchedEmail='';
-  // Look up user by email, username, or phone
-  Object.keys(USERS).forEach(function(email){
-    var ud=USERS[email];
-    if(email===identifier||(ud.username&&ud.username.toLowerCase()===identifier)||(ud.phone&&ud.phone.replace(/\D/g,'')===identifier.replace(/\D/g,''))) {
-      u=ud; matchedEmail=email;
-    }
-  });
-  // Agency accounts: accept any of the known passwords regardless of browser autofill
-  var AGENCY_DOMAIN='@cal.marketing';
-  var isAgencyAcct=u&&(u.role==='agency'||matchedEmail.indexOf(AGENCY_DOMAIN)>=0);
-  var AGENCY_VALID_PWS=['CAL_D1gital$2026!','Cal2026','CalMarketing26','cal2026','CAL_D1gital'];
-  var pwOk=false;
-  if(u){
-    if(isAgencyAcct){
-      // Agency: accept any of the known passwords OR the stored one
-      pwOk=(pw===u.pw)||AGENCY_VALID_PWS.indexOf(pw)>=0;
-    } else {
-      // Non-agency: exact password match only
-      pwOk=(pw===u.pw);
-    }
-  }
-  if(!u||!pwOk){
-    if(err) err.classList.add('show');
-    var inp=document.getElementById('login-pw'); if(inp) inp.value='';
-    return;
-  }
-  if(err) err.classList.remove('show');
-  currentUser=Object.assign({},u,{email:matchedEmail});
-  currentRole=u.role;
-  currentCompanyId=u.companyId||'default';
-  launchApp();
+  window.location.href='/api/login';
 }
 
 var _pendingLogin=null;
@@ -5446,11 +5413,7 @@ function togglePw(){
 function doLogout(){
   try{ localStorage.removeItem('cal-session'); }catch(e){}
   currentUser=null; currentRole=null; currentScreen='';
-  document.getElementById('app').style.display='none';
-  document.getElementById('login-view').style.display='';
-  var liId=document.getElementById('login-identifier'); if(liId) liId.value='';
-  document.getElementById('login-pw').value='';
-  closeProfileDd();
+  window.location.href='/api/logout';
 }
 function openGoogleModal(){
   var errEl=document.getElementById('google-signin-error');
@@ -6184,6 +6147,9 @@ function renderIntegrationsGrid(){
         if(statusEl) statusEl.textContent='Not connected';
         if(btnEl){ btnEl.textContent='Connect'; btnEl.disabled=false; btnEl.onclick=function(){ connectGoogleForCompany(); }; }
         var old=document.getElementById('int-gbp-card'); if(old) old.remove();
+      }
+      if(window.currentRole==='admin'||window.currentRole==='user'){
+        if(btnEl){ btnEl.textContent='Managed by Agency'; btnEl.disabled=true; btnEl.onclick=null; btnEl.style.opacity='.55'; btnEl.style.cursor='default'; }
       }
     }).catch(function(){
       var statusEl=document.getElementById('int-google-suite-status');
@@ -7078,7 +7044,7 @@ function buildSidebarAccounts(){
       var btn=document.createElement('button');
       btn.className='nav-btn'+(a.id===currentAcctId?' active':'');
       btn.innerHTML='<span class="sb-acct-av" style="background:'+a.color+'">'+a.initials+'</span>'+a.name;
-      btn.onclick=(function(id){ return function(){ setCurrentAcct(id); closeSbAcctDd(); closeSidebar(); }; })(a.id);
+      btn.onclick=(function(id){ return function(){ setCurrentAcct(id); closeSbAcctDd(); closeSidebar(); if(typeof nav==='function') nav('home'); }; })(a.id);
       acctsSub.appendChild(btn);
     });
   }
@@ -7094,6 +7060,8 @@ function updateSbCurrentAcct(acct){
     var matches=av2.style.background===acct.color&&b.textContent.indexOf(acct.name)>=0;
     b.classList.toggle('active',matches);
   });
+  var sbSub=document.getElementById('sb-acct-sw-sub');
+  if(sbSub) sbSub.textContent=acct.name||'';
 }
 function sbNavSearch(val){
   var cl=document.getElementById('sb-search-clear');
@@ -10923,8 +10891,8 @@ function sendWaReply() {
     // Force a full re-render of whatever screen is currently open, as if
     // the user had freshly navigated to it — prevents stale data from the
     // previously selected account from lingering on screen.
-    if(window.currentScreen && typeof window.nav==='function'){
-      try{ window.nav(window.currentScreen); }catch(e){}
+    if(typeof window.nav==='function'){
+      try{ window.nav('home'); }catch(e){}
     }
   };
 
@@ -11362,11 +11330,10 @@ function sendWaReply() {
    agency users.
 ============================================================ */
 (function(){
-  var AGENCY_PASSWORD='CAL_D1gital$2026!';
   var AGENCY_USERS={
-    'chris@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'},
-    'james@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'},
-    'matt@cal.marketing':{pw:AGENCY_PASSWORD,role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'}
+    'chris@cal.marketing':{pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'},
+    'james@cal.marketing':{pw:'James_CAL_26!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'},
+    'matt@cal.marketing':{pw:'Matt_CAL_26!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'}
   };
   var FIXED_SCREEN_SET={help:true,plans:true,billing:true,whitelabel:true};
 
@@ -11434,11 +11401,10 @@ function sendWaReply() {
   function seedAgencyUsers(){
     window.USERS=window.USERS||{};
     // Always force-write agency users — never let localStorage override them
-    var AGENCY_PW = 'CAL_D1gital$2026!';
-    window.USERS['chris@cal.marketing']  = {pw:AGENCY_PW,role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'};
-    window.USERS['matt@cal.marketing']   = {pw:AGENCY_PW,role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
-    window.USERS['james@cal.marketing']  = {pw:AGENCY_PW,role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
-    window.USERS['test@cal.marketing']   = {pw:AGENCY_PW,role:'test',name:'Test User',initials:'TU',username:'testuser',phone:'',title:'Owner / Tester',companyId:'cal'};
+    window.USERS['chris@cal.marketing']  = {pw:'CAL_D1gital$2026!',role:'agency',name:'Chris Kraich',initials:'CK',username:'chris',phone:'(845) 957-9261',title:'Founder / Agency',companyId:'cal'};
+    window.USERS['matt@cal.marketing']   = {pw:'Matt_CAL_26!',role:'agency',name:'Matt Gallagher',initials:'MG',username:'matt',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
+    window.USERS['james@cal.marketing']  = {pw:'James_CAL_26!',role:'agency',name:'James Wodzinski',initials:'JW',username:'james',phone:'(845) 957-9261',title:'Agency Partner',companyId:'cal'};
+    window.USERS['test@cal.marketing']   = {pw:'CAL_D1gital$2026!',role:'test',name:'Test User',initials:'TU',username:'testuser',phone:'',title:'Owner / Tester',companyId:'cal'};
     window.USERS['client@apexlegal.com'] = {pw:'ApexClient2025!',role:'admin',name:'Alex Torres',initials:'AT',username:'alextorres',company:'Apex Legal Group',phone:'(786) 555-0200',title:'Marketing Director',companyId:'apexlegal'};
     window.USERS['staff@apexlegal.com']  = {pw:'StaffUser2025!',role:'user',name:'Maria Santos',initials:'MS',username:'mariasantos',company:'Apex Legal Group',phone:'(786) 555-0300',title:'Staff Member',companyId:'apexlegal'};
     // Sync to localStorage but never let localStorage ghost entries override agency accounts
@@ -12506,7 +12472,8 @@ function sendWaReply() {
       var editable=canEdit && !ongoing;
       var stepHtml=steps.map(function(s){
         var ds=onbStep(st,s.id);
-        var owner=s.owner==='cal'?'<span class="onb-owner cal">CAL</span>':'<span class="onb-owner client">You</span>';
+        var _isAgencyViewing=(window.currentRole==='agency'||window.currentRole==='test');
+        var owner=s.owner==='cal'?'<span class="onb-owner cal">CAL</span>':'<span class="onb-owner client">'+(_isAgencyViewing?'Client':'You')+'</span>';
         var check=ongoing
           ? '<span class="onb-check-btn ongoing" aria-hidden="true">\u21BB</span>'
           : (editable
@@ -13587,7 +13554,7 @@ function sendWaReply() {
   function _metaAuthHeader(){ var t=_getMetaToken(); return t?{'Authorization':'Bearer '+t}:{}; }
   function _loginToMetaServer(email,password,cb){
     try{
-      fetch('/api/meta/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:password})})
+      fetch('/api/meta/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})
         .then(function(r){ return r.json(); }).then(function(data){
           if(data&&data.token){ _setMetaToken(data.token); _flushPushQueue(); }
           if(typeof cb==='function') cb(!!(data&&data.token));
