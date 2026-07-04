@@ -693,7 +693,7 @@ async function handleGoogleConnect(res, qs) {
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/business.manage',
       'https://www.googleapis.com/auth/webmasters.readonly',
-      'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/calendar',
       'https://www.googleapis.com/auth/analytics.readonly',
       'https://www.googleapis.com/auth/gmail.readonly',
       'https://www.googleapis.com/auth/spreadsheets.readonly',
@@ -1089,6 +1089,50 @@ async function handleCalendarEvents(res, qs) {
     }));
     jsonResponse(res, 200, { events });
   } catch (e) { jsonResponse(res, 200, { error: e.message, events: [] }); }
+}
+
+async function handleCalendarCreateEvent(req, res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = await getGoogleAuthedClient(companyId);
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
+  try {
+    const raw = await readRequestBody(req, 32 * 1024);
+    const body = JSON.parse(raw.toString('utf8'));
+    const { title, startDateTime, endDateTime, description, location, meetingLink } = body;
+    if (!title || !startDateTime || !endDateTime) {
+      jsonResponse(res, 400, { error: 'MISSING_REQUIRED_FIELDS' }); return;
+    }
+    const cal = google.calendar({ version: 'v3', auth: oauth2 });
+    const descParts = [description || '', meetingLink ? 'Meeting link: ' + meetingLink : ''].filter(Boolean);
+    const eventBody = {
+      summary: title,
+      description: descParts.join('\n') || undefined,
+      location: location || undefined,
+      start: { dateTime: startDateTime },
+      end: { dateTime: endDateTime },
+    };
+    const r = await cal.events.insert({ calendarId: 'primary', requestBody: eventBody });
+    jsonResponse(res, 200, { id: r.data.id, htmlLink: r.data.htmlLink, event: r.data });
+  } catch (e) { jsonResponse(res, 200, { error: e.message }); }
+}
+
+async function handleCalendarList(res, qs) {
+  const companyId = (qs && qs.company) || 'default';
+  const oauth2 = await getGoogleAuthedClient(companyId);
+  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', calendars: [] }); return; }
+  try {
+    const cal = google.calendar({ version: 'v3', auth: oauth2 });
+    const r = await cal.calendarList.list({ minAccessRole: 'reader' });
+    const calendars = (r.data.items || []).map(c => ({
+      id: c.id,
+      summary: c.summary,
+      description: c.description,
+      primary: c.primary || false,
+      backgroundColor: c.backgroundColor,
+      accessRole: c.accessRole,
+    }));
+    jsonResponse(res, 200, { calendars });
+  } catch (e) { jsonResponse(res, 200, { error: e.message, calendars: [] }); }
 }
 
 // ---- GA4 ----
@@ -1529,6 +1573,8 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/sheets/metadata' && req.method === 'GET') { await handleSheetsMetadata(res, qs); return; }
   if (urlPath === '/api/pagespeed' && req.method === 'GET') { await handlePageSpeed(res, qs); return; }
   if (urlPath === '/api/calendar/events' && req.method === 'GET') { await handleCalendarEvents(res, qs); return; }
+  if (urlPath === '/api/calendar/events' && req.method === 'POST') { await handleCalendarCreateEvent(req, res, qs); return; }
+  if (urlPath === '/api/calendar/list' && req.method === 'GET') { await handleCalendarList(res, qs); return; }
   if (urlPath === '/api/stripe/connect' && req.method === 'POST') { await handleStripeConnect(req, res); return; }
   if (urlPath === '/api/stripe/status' && req.method === 'GET') { await handleStripeStatus(res); return; }
   if (urlPath === '/api/stripe/revenue' && req.method === 'GET') { await handleStripeRevenue(res, qs); return; }
