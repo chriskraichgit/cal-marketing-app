@@ -131,13 +131,49 @@ async function handleMetaLogin(req, res) {
   const user = SERVER_USERS[email];
   if (!user) { jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return; }
   const submittedHash = crypto.createHash('sha256').update(password).digest('hex');
-  const hashBuf = Buffer.from(user.pwHash, 'hex');
+  // Check user-specific custom password first (set via change-password), fall back to default
+  const store = loadMetaStore();
+  const customHash = store['cal-user-pw-' + email];
+  const activeHash = customHash || user.pwHash;
+  const hashBuf = Buffer.from(activeHash, 'hex');
   const submitBuf = Buffer.from(submittedHash, 'hex');
   if (hashBuf.length !== submitBuf.length || !crypto.timingSafeEqual(hashBuf, submitBuf)) {
     jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return;
   }
   const token = signMetaToken({ email, role: user.role, exp: Date.now() + TOKEN_TTL_MS });
   jsonResponse(res, 200, { token });
+}
+
+async function handleChangePassword(req, res) {
+  const rawToken = extractBearerToken(req);
+  const payload = rawToken ? verifyMetaToken(rawToken) : null;
+  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+  let body;
+  try {
+    const raw = await readRequestBody(req, 64 * 1024);
+    body = JSON.parse(raw.toString('utf8'));
+  } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+  const currentPassword = (body && typeof body.currentPassword === 'string') ? body.currentPassword : '';
+  const newPassword = (body && typeof body.newPassword === 'string') ? body.newPassword : '';
+  if (!newPassword || newPassword.length < 8) {
+    jsonResponse(res, 400, { error: 'PASSWORD_TOO_SHORT', message: 'New password must be at least 8 characters.' }); return;
+  }
+  const email = payload.email;
+  const user = SERVER_USERS[email];
+  if (!user) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
+  const store = loadMetaStore();
+  const customHash = store['cal-user-pw-' + email];
+  const activeHash = customHash || user.pwHash;
+  const curSubmittedHash = crypto.createHash('sha256').update(currentPassword).digest('hex');
+  const hashBuf = Buffer.from(activeHash, 'hex');
+  const submitBuf = Buffer.from(curSubmittedHash, 'hex');
+  if (hashBuf.length !== submitBuf.length || !crypto.timingSafeEqual(hashBuf, submitBuf)) {
+    jsonResponse(res, 401, { error: 'WRONG_CURRENT_PASSWORD', message: 'Current password is incorrect.' }); return;
+  }
+  const newHash = crypto.createHash('sha256').update(newPassword).digest('hex');
+  store['cal-user-pw-' + email] = newHash;
+  saveMetaStore(store);
+  jsonResponse(res, 200, { ok: true });
 }
 
 async function handleMetaGet(req, res, qs) {
@@ -1113,7 +1149,12 @@ async function handleCalendarCreateEvent(req, res, qs) {
     };
     const r = await cal.events.insert({ calendarId: 'primary', requestBody: eventBody });
     jsonResponse(res, 200, { id: r.data.id, htmlLink: r.data.htmlLink, event: r.data });
-  } catch (e) { jsonResponse(res, 200, { error: e.message }); }
+  } catch (e) {
+    var msg = (e && e.message) || '';
+    var isScope = /insufficient.*(permission|scope)|Request had insufficient authentication scopes|forbidden|unauthorized/i.test(msg);
+    if (isScope) { jsonResponse(res, 200, { error: 'INSUFFICIENT_SCOPE' }); return; }
+    jsonResponse(res, 200, { error: msg });
+  }
 }
 
 async function handleCalendarList(res, qs) {
@@ -1523,6 +1564,10 @@ const server = http.createServer(async (req, res) => {
 
   if (urlPath === '/api/meta/login' && req.method === 'POST') {
     await handleMetaLogin(req, res);
+    return;
+  }
+  if (urlPath === '/api/auth/change-password' && req.method === 'POST') {
+    await handleChangePassword(req, res);
     return;
   }
   if (urlPath === '/api/meta' && req.method === 'GET') {
