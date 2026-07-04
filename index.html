@@ -1061,7 +1061,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <div class="sb-acct-sw-av" id="sb-acct-sw-av" style="background:#2a3f5f;display:flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
           <div class="sb-acct-sw-info">
             <div class="sb-acct-sw-name" id="sb-acct-sw-name">Sub Accounts</div>
-            <div class="sb-acct-sw-sub" id="sb-acct-sw-sub">Click to view</div>
+            <div class="sb-acct-sw-sub" id="sb-acct-sw-sub"></div>
           </div>
           <svg class="sb-acct-sw-chev" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>
         </button>
@@ -2786,11 +2786,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </div>
       <div class="form-section-title" style="margin-top:18px">Change Password</div>
       <div class="form-grid">
-        <div class="form-field"><label class="form-label">Current Password</label><input class="input-std" type="password" placeholder="••••••••"></div>
-        <div class="form-field"><label class="form-label">New Password</label><input class="input-std" type="password" placeholder="••••••••"></div>
-        <div class="form-field"><label class="form-label">Confirm New Password</label><input class="input-std" type="password" placeholder="••••••••"></div>
+        <div class="form-field"><label class="form-label">Current Password</label><input class="input-std" type="password" id="pf-cur-pw" autocomplete="current-password" placeholder="••••••••"></div>
+        <div class="form-field"><label class="form-label">New Password</label><input class="input-std" type="password" id="pf-new-pw" autocomplete="new-password" placeholder="Min 8 characters"></div>
+        <div class="form-field"><label class="form-label">Confirm New Password</label><input class="input-std" type="password" id="pf-confirm-pw" autocomplete="new-password" placeholder="Repeat new password"></div>
       </div>
-      <button class="btn-primary" style="margin-top:18px" onclick="saveProfile()">Save Changes</button>
+      <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="saveProfile()">Save Profile</button>
+        <button class="btn-view" id="pf-pw-btn" onclick="changePassword()">Update Password</button>
+      </div>
     </div>
   </div>
 </div>
@@ -4856,7 +4859,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     '.table-wrap{overflow-x:auto}',
     '@media(max-width:600px){.modal{border-radius:20px 20px 0 0!important;position:fixed!important;bottom:0!important;left:0!important;right:0!important;top:auto!important;transform:none!important;max-width:100%!important;width:100%!important;margin:0!important}}',
     '@media(max-width:400px){.grid.g2,.grid.g3,.grid.g4{grid-template-columns:1fr!important}}',
-    '.btn-primary,.btn-view,.tab-btn,.f-btn{min-height:44px}'
+    '.btn-primary,.btn-view,.tab-btn,.f-btn{min-height:44px}',
+    'body.role-admin .btn-connect{opacity:.45;pointer-events:none;cursor:not-allowed}'
   ].join('');
   document.head.appendChild(s);
 })();
@@ -6012,6 +6016,13 @@ function submitAddEvent() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Add Event'; }
+      if (data.error === 'INSUFFICIENT_SCOPE') {
+        if (errEl) {
+          errEl.innerHTML = 'Your Google connection needs to be refreshed to create events. <a href="#" style="color:var(--gold);font-weight:900;text-decoration:underline" onclick="event.preventDefault();closeModal(\'add-event-modal\');openOAuthModal(\'google-calendar\')">Reconnect Google</a>';
+          errEl.style.display = '';
+        }
+        return;
+      }
       if (data.error) { showEvErr('Google Calendar error: ' + data.error); return; }
       showToast('Event created in Google Calendar!', 'green');
       closeModal('add-event-modal');
@@ -6661,6 +6672,8 @@ function launchApp(){
   accounts=JSON.parse(localStorage.getItem('cal-accounts')||'null')||DEFAULT_ACCOUNTS.slice();
   agencyPermissions=JSON.parse(localStorage.getItem('cal-agency-perms')||'null')||{};
   setupRoleUI();
+  document.body.classList.remove('role-agency','role-admin','role-user','role-test');
+  document.body.classList.add('role-'+(currentRole||'user'));
   setTimeout(checkAndPromptGoogleConnect, 1500);
   // Restore persisted profile
   var savedName=loadState('profileName','');
@@ -7185,7 +7198,7 @@ function buildAcctDd(){
   accounts.forEach(function(a){
     var row=document.createElement('button');
     row.className='acct-dd-row'+(a.id===currentAcctId?' selected':'');
-    row.onclick=function(){ setCurrentAcct(a.id); closeAcctDd(); };
+    row.onclick=function(){ setCurrentAcct(a.id); closeAcctDd(); if(typeof nav==='function') nav('home'); };
     row.innerHTML='<div class="acct-dd-avatar" style="background:'+a.color+'">'+a.initials+'</div><div><span class="acct-dd-name">'+a.name+'</span><span class="acct-dd-meta">'+a.plan+' Plan</span></div>'+(a.id===currentAcctId?'<div class="acct-dd-check"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>':'');
     list.appendChild(row);
   });
@@ -7438,6 +7451,31 @@ function gateCampaigns(){ gateDataScreen('s-campaigns','campaigns-gate',['google
 function gateAllDataScreens(){ try{ gateAnalytics(); }catch(e){} try{ gateRoi(); }catch(e){} try{ gateRevenue(); }catch(e){} try{ gateCampaigns(); }catch(e){} }
 
 // ============ PROFILE ============
+async function changePassword(){
+  var cur=(document.getElementById('pf-cur-pw')||{value:''}).value;
+  var np=(document.getElementById('pf-new-pw')||{value:''}).value;
+  var cp=(document.getElementById('pf-confirm-pw')||{value:''}).value;
+  if(!cur||!np||!cp){ showToast('Please fill in all password fields.','gold'); return; }
+  if(np!==cp){ showToast('New passwords do not match.','gold'); return; }
+  if(np.length<8){ showToast('New password must be at least 8 characters.','gold'); return; }
+  var btn=document.getElementById('pf-pw-btn');
+  if(btn){ btn.disabled=true; btn.textContent='Updating…'; }
+  try{
+    var token=''; try{ token=localStorage.getItem('cal-meta-session-token')||''; }catch(e){}
+    var res=await fetch('/api/auth/change-password',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({currentPassword:cur,newPassword:np})});
+    var data=await res.json();
+    if(res.ok && data.ok){
+      showToast('Password updated successfully!','green');
+      document.getElementById('pf-cur-pw').value='';
+      document.getElementById('pf-new-pw').value='';
+      document.getElementById('pf-confirm-pw').value='';
+    } else {
+      var msg=data.message||(data.error==='WRONG_CURRENT_PASSWORD'?'Current password is incorrect.':'Failed to update password.');
+      showToast(msg,'red');
+    }
+  } catch(e){ showToast('Network error — please try again.','red'); }
+  if(btn){ btn.disabled=false; btn.textContent='Update Password'; }
+}
 function saveProfile(){
   var name=(document.getElementById('pf-name')||{value:''}).value.trim()||currentUser.name;
   var title=(document.getElementById('pf-title')||{value:''}).value.trim();
@@ -8904,6 +8942,10 @@ var OAUTH_ICONS={
   'whatsapp':'https://upload.wikimedia.org/wikipedia/commons/5/5e/WhatsApp_icon.png'
 };
 function openOAuthModal(platform){
+  if(window.currentRole==='admin'){
+    showToast('Contact your account manager to modify connections — info@cal.marketing','gold');
+    return;
+  }
   var data=OAUTH_DATA[platform]; if(!data) return;
   window._oauthPlatform=platform;
   if(platform==='gbp'||platform==='google-search-console'||platform==='google-calendar'){
@@ -9537,6 +9579,10 @@ var DASH_DATA={
 function _dashKey(){ return 'cal-dashboards-'+(window.currentAcctId||'local'); }
 function _getDashUrls(){ try{ return JSON.parse(localStorage.getItem(_dashKey())||'{}'); }catch(e){ return {}; } }
 function openDashboardUrlModal(platform){
+  if(window.currentRole==='admin'){
+    showToast('Contact your account manager to modify connections — info@cal.marketing','gold');
+    return;
+  }
   _dashPlatform=platform;
   var d=DASH_DATA[platform]; if(!d) return;
   var el=function(id){ return document.getElementById(id); };
@@ -10779,6 +10825,8 @@ function sendWaReply() {
     var swName=document.getElementById('acct-sw-name');
     if(swAvatar){ swAvatar.textContent=m.initials||a.initials; swAvatar.style.background=m.color||a.color; }
     if(swName) swName.textContent=m.name||a.name;
+    var sbSub=document.getElementById('sb-acct-sw-sub');
+    if(sbSub) sbSub.textContent=m.name||a.name;
     buildAcctDd();
     refreshScreenForAccount(a);
     applyAccountBranding();
