@@ -12648,9 +12648,7 @@ function sendWaReply() {
         :'<span style="font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);background:rgba(0,0,0,.06);border:1px solid var(--border);border-radius:999px;padding:3px 9px">Pending</span>';
       var btn=done
         ?'<button disabled style="height:32px;padding:0 14px;border:none;border-radius:8px;background:rgba(34,197,94,.12);color:#16a34a;font-size:11px;font-weight:800;font-family:inherit;cursor:default;display:inline-flex;align-items:center;gap:5px"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20,6 9,17 4,12"/></svg>Done</button>'
-        :(window._hsReadOnly
-          ?'<span style="font-size:11px;font-weight:700;color:var(--muted);font-style:italic">Client action required</span>'
-          :'<button onclick="'+s.action+'" style="height:32px;padding:0 14px;border:none;border-radius:8px;background:var(--gold);color:#000;font-size:11px;font-weight:900;font-family:inherit;cursor:pointer">'+s.btn+'</button>');
+        :'<button onclick="'+s.action+'" style="height:32px;padding:0 14px;border:none;border-radius:8px;background:var(--gold);color:#000;font-size:11px;font-weight:900;font-family:inherit;cursor:pointer">'+s.btn+'</button>';
       var iconBg=done?'rgba(34,197,94,.12)':'var(--gold-pale,#faf4e2)';
       var iconBorder=done?'rgba(34,197,94,.3)':'rgba(201,168,76,.3)';
       var iconStroke=done?'#16a34a':'var(--gold)';
@@ -12658,11 +12656,11 @@ function sendWaReply() {
     }).join('');
     var _ro=window._hsReadOnly;
     var _heroEyebrow=_ro?('Setup Progress — '+_agencyClientName()):('Welcome to CAL OS 👋');
-    var _heroTitle=_ro?('Client Account Setup'):('Let\'s get your account set up');
-    var _heroSub=_ro?('Read-only view. Steps marked "Client action required" can only be completed by the client.'):('Complete the steps below to unlock your full dashboard and start seeing real results.');
+    var _heroTitle=_ro?('Client Account Setup — '+_agencyClientName()):('Let\'s get your account set up');
+    var _heroSub=_ro?('Connect and configure your client\'s platforms below. Click any step to complete it on their behalf — OAuth connections will prompt for the client\'s account credentials.'):('Complete the steps below to unlock your full dashboard and start seeing real results.');
     wrap.innerHTML=
       '<div style="background:linear-gradient(135deg,var(--ink,#10243f),#1b3a6b);border-radius:16px;padding:22px;color:#fff;margin-bottom:14px;box-shadow:var(--soft)">'
-      +(_ro?'<div style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border-radius:6px;padding:3px 8px;margin-bottom:8px"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Agency view — read only</div><br>':'')
+      +(_ro?'<div style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.6);background:rgba(255,255,255,.1);border-radius:6px;padding:3px 8px;margin-bottom:8px"><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Agency Setup View</div><br>':'')
       +'<p style="font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase;color:var(--gold,#f4b942);margin:0 0 4px">'+_heroEyebrow+'</p>'
       +'<p style="font-family:Barlow Condensed,sans-serif;font-size:26px;font-weight:900;margin:0 0 6px;line-height:1.1">'+_heroTitle+'</p>'
       +'<p style="font-size:13px;font-weight:600;color:rgba(255,255,255,.82);margin:0 0 14px;line-height:1.5">'+_heroSub+'</p>'
