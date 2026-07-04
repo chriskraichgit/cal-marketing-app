@@ -7270,6 +7270,7 @@ function refreshScreenForAccount(account){
   var scoreMap={'a1':78,'a2':64,'a3':82,'a4':71,'a5':88};
   var score=scoreMap[account.id]||75;
   var hs=document.getElementById('h-score'); if(hs) hs.textContent=score;
+  if(currentScreen==='home' && typeof window.applyHomeForRole==='function') window.applyHomeForRole();
   showToast('Switched to '+account.name,'gold');
 }
 function refreshIntegrationsForAccount(acctId){
@@ -12919,33 +12920,59 @@ function sendWaReply() {
   }
 
   function _seedHomeSetupDemoAdmins(){
-    // Known demo admin accounts already have data — mark home setup completed
-    // so they always see the regular dashboard, never the new-account flow.
-    // Seed by both email (admin key) and account ID (agency key via acctKey()).
-    var DEMO_ADMIN_KEYS=['client@apexlegal.com','info@unitedsewerservice.com'];
-    DEMO_ADMIN_KEYS.forEach(function(email){
+    // Seed each demo account with realistic, differentiated setup progress.
+    // acctKey() returns the account ID (e.g. 'a1') for agency/test roles,
+    // so both the home-setup state and platform-connection state are keyed per account.
+    var ACCT_SEEDS=[
+      // a1 — Apex Legal Group: established client, all 6 steps done → show dashboard
+      {id:'a1',data:{completed:true,skipped:false,steps:{}},
+       conn:{gbp:true,'google-ads':true,'meta-ads':true}},
+      // a2 — Green Collar Roofing: early stage — billing set up, no platforms yet (1/6)
+      {id:'a2',data:{completed:false,skipped:false,steps:{billing:true}},
+       conn:{}},
+      // a3 — Willy Diamond Tree Care: mid-progress — GBP + billing + team + profile (4/6)
+      {id:'a3',data:{completed:false,skipped:false,steps:{billing:true,team:true,profile:true}},
+       conn:{gbp:true}},
+      // a4 — Houses Auto Body: brand new, nothing done yet (0/6)
+      {id:'a4',data:{completed:false,skipped:false,steps:{}},
+       conn:{}},
+      // a5 — United Sewer and Septic: Google Ads + billing + profile done (3/6)
+      {id:'a5',data:{completed:false,skipped:false,steps:{billing:true,profile:true}},
+       conn:{'google-ads':true}}
+    ];
+    // Detect the old bad seed pattern (completed:true with empty steps for non-a1 accounts)
+    // and replace it with the correct per-account data so existing sessions are fixed.
+    ACCT_SEEDS.forEach(function(s){
+      var hsKey=_HSP+s.id;
+      var existing=null;
+      try{ existing=JSON.parse(localStorage.getItem(hsKey)||'null'); }catch(e){}
+      var isOldBadSeed=existing&&existing.completed===true&&existing.skipped===false
+        &&JSON.stringify(existing.steps||'{}')==='{}' && s.id!=='a1';
+      if(!existing||isOldBadSeed){
+        localStorage.setItem(hsKey,JSON.stringify(s.data));
+      }
+      // Seed platform connections only if none exist yet for this account
+      var connKey='cal-platform-conn-'+s.id;
+      if(!localStorage.getItem(connKey)){
+        localStorage.setItem(connKey,JSON.stringify(s.conn));
+      }
+    });
+    // Admin email keys — so demo admin users see the full dashboard on their own home screen
+    var DEMO_ADMIN_EMAILS=['client@apexlegal.com','info@unitedsewerservice.com'];
+    DEMO_ADMIN_EMAILS.forEach(function(email){
       var k=_HSP+email;
       if(!localStorage.getItem(k)){
         localStorage.setItem(k,JSON.stringify({completed:true,skipped:false,steps:{}}));
       }
     });
-    // Seed by account ID — when an agency views a client, acctKey()='a1' etc.
-    var DEMO_ACCT_IDS=['a1','a2','a3','a4','a5'];
-    DEMO_ACCT_IDS.forEach(function(id){
-      var k=_HSP+id;
-      if(!localStorage.getItem(k)){
-        localStorage.setItem(k,JSON.stringify({completed:true,skipped:false,steps:{}}));
-      }
-    });
-    // Also mark the current logged-in admin as existing if they have any nav history,
-    // guarding against a fresh browser for any other pre-existing admin email.
+    // Guard: mark any currently-logged-in admin as an existing account if they have history
     if(window.currentRole==='admin'&&window.currentUser&&window.currentUser.email){
       var ck=_HSP+window.currentUser.email;
       if(!localStorage.getItem(ck)){
         var hasHist=false;
         try{ var ast=JSON.parse(localStorage.getItem('cal-app-state')||'{}'); hasHist=!!(ast.lastNav); }catch(e){}
         var hasConn=false;
-        try{ var cs=JSON.parse(localStorage.getItem('cal-platform-conn-'+window.currentUser.email)||'{}'); hasConn=Object.keys(cs).some(function(k){ return cs[k]; }); }catch(e){}
+        try{ var cs=JSON.parse(localStorage.getItem('cal-platform-conn-'+window.currentUser.email)||'{}'); hasConn=Object.keys(cs).some(function(kk){ return cs[kk]; }); }catch(e){}
         if(hasHist||hasConn) localStorage.setItem(ck,JSON.stringify({completed:true,skipped:false,steps:{}}));
       }
     }
