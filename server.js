@@ -441,7 +441,7 @@ async function handleConnect(res) {
   }
   const authUrl = oauth2.generateAuthUrl({
     access_type: 'offline',
-    prompt: 'consent',
+    prompt: 'consent select_account',
     scope: [
       'https://www.googleapis.com/auth/drive.readonly',
       'https://www.googleapis.com/auth/drive.file',
@@ -765,7 +765,7 @@ async function handleGoogleConnect(res, qs) {
   if (!oauth2) { jsonResponse(res, 200, { error: 'GOOGLE_CREDENTIALS_NOT_CONFIGURED', authUrl: null }); return; }
   const authUrl = oauth2.generateAuthUrl({
     access_type: 'offline',
-    prompt: 'consent',
+    prompt: 'consent select_account',
     state: companyId,
     scope: [
       'https://www.googleapis.com/auth/userinfo.email',
@@ -1176,7 +1176,7 @@ async function handleCalendarCreateEvent(req, res, qs) {
   try {
     const raw = await readRequestBody(req, 32 * 1024);
     const body = JSON.parse(raw.toString('utf8'));
-    const { title, startDateTime, endDateTime, description, location, meetingLink } = body;
+    const { title, startDateTime, endDateTime, description, location, meetingLink, calendarId } = body;
     if (!title || !startDateTime || !endDateTime) {
       jsonResponse(res, 400, { error: 'MISSING_REQUIRED_FIELDS' }); return;
     }
@@ -1189,7 +1189,8 @@ async function handleCalendarCreateEvent(req, res, qs) {
       start: { dateTime: startDateTime },
       end: { dateTime: endDateTime },
     };
-    const r = await cal.events.insert({ calendarId: 'primary', requestBody: eventBody });
+    const targetCalendarId = calendarId || (qs && qs.calendarId) || 'primary';
+    const r = await cal.events.insert({ calendarId: targetCalendarId, requestBody: eventBody });
     jsonResponse(res, 200, { id: r.data.id, htmlLink: r.data.htmlLink, event: r.data });
   } catch (e) {
     var msg = (e && e.message) || '';
@@ -1772,7 +1773,7 @@ async function handleGithubPush(req, res) {
 (async () => {
   const app = express();
 
-  await setupAuth(app);
+  await setupAuth(app, SERVER_USERS);
 
   app.get('/api/auth/user', isAuthenticated, (req, res) => {
     const claims = req.user && req.user.claims;
