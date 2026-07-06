@@ -132,6 +132,38 @@ function saveMetaStore(store) {
   try { fs.writeFileSync(META_STORE_FILE, JSON.stringify(store)); } catch (e) {}
 }
 
+async function getCustomPasswordHash(email) {
+  try {
+    const result = await pgPool.query(
+      'SELECT pw_hash FROM user_passwords WHERE email = $1',
+      [email]
+    );
+    if (result.rows.length > 0) return result.rows[0].pw_hash;
+  } catch (e) {
+    console.warn('[CAL] getCustomPasswordHash DB error, falling back to file store:', e.message);
+    const store = loadMetaStore();
+    const fileHash = store['cal-user-pw-' + email];
+    if (fileHash) return fileHash;
+  }
+  return null;
+}
+
+async function setCustomPasswordHash(email, hash) {
+  try {
+    await pgPool.query(
+      `INSERT INTO user_passwords (email, pw_hash, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (email) DO UPDATE SET pw_hash = EXCLUDED.pw_hash, updated_at = NOW()`,
+      [email, hash]
+    );
+  } catch (e) {
+    console.warn('[CAL] setCustomPasswordHash DB error, falling back to file store:', e.message);
+    const store = loadMetaStore();
+    store['cal-user-pw-' + email] = hash;
+    saveMetaStore(store);
+  }
+}
+
 async function handleMetaLogin(req, res) {
   let body;
   try {
@@ -143,9 +175,8 @@ async function handleMetaLogin(req, res) {
   const user = SERVER_USERS[email];
   if (!user) { jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return; }
   const submittedHash = crypto.createHash('sha256').update(password).digest('hex');
-  // Check user-specific custom password first (set via change-password), fall back to default
-  const store = loadMetaStore();
-  const customHash = store['cal-user-pw-' + email];
+  // Check durable DB for custom password first, fall back to SERVER_USERS default
+  const customHash = await getCustomPasswordHash(email);
   const activeHash = customHash || user.pwHash;
   const hashBuf = Buffer.from(activeHash, 'hex');
   const submitBuf = Buffer.from(submittedHash, 'hex');
@@ -173,8 +204,8 @@ async function handleChangePassword(req, res) {
   const email = payload.email;
   const user = SERVER_USERS[email];
   if (!user) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
-  const store = loadMetaStore();
-  const customHash = store['cal-user-pw-' + email];
+  // Read current hash from durable DB, fall back to SERVER_USERS default
+  const customHash = await getCustomPasswordHash(email);
   const activeHash = customHash || user.pwHash;
   const curSubmittedHash = crypto.createHash('sha256').update(currentPassword).digest('hex');
   const hashBuf = Buffer.from(activeHash, 'hex');
@@ -183,8 +214,7 @@ async function handleChangePassword(req, res) {
     jsonResponse(res, 401, { error: 'WRONG_CURRENT_PASSWORD', message: 'Current password is incorrect.' }); return;
   }
   const newHash = crypto.createHash('sha256').update(newPassword).digest('hex');
-  store['cal-user-pw-' + email] = newHash;
-  saveMetaStore(store);
+  await setCustomPasswordHash(email, newHash);
   jsonResponse(res, 200, { ok: true });
 }
 
