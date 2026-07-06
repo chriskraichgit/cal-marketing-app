@@ -1905,14 +1905,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <div class="screen" id="s-reviews">
 
   <!-- ── SECTION 1: Connect Platforms ── -->
-  <div style="max-width:520px;margin:0 auto">
+  <div id="rv-gate" style="max-width:520px;margin:0 auto">
     <div style="margin-bottom:6px">
       <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--ink);margin:0 0 4px">Reviews &amp; NFC</h2>
       <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin:0">Connect your review platforms to start tracking your reviews in one place.</p>
     </div>
 
     <!-- Google -->
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:14px">
+    <div class="card" id="rv-conn-google" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:14px">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
           <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:24px;height:24px;object-fit:contain">
@@ -1923,13 +1923,13 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
-        <button class="btn-connect" onclick="showToast('Contact your account manager to connect this platform — info@cal.marketing','gold')">Connect</button>
+        <span class="pill" id="rv-google-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Checking…</span>
+        <button class="btn-connect" id="rv-google-btn" onclick="rvGoogleBtnClick()">Connect</button>
       </div>
     </div>
 
     <!-- Facebook -->
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px">
+    <div class="card" id="rv-conn-facebook" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:40px;height:40px;border-radius:10px;background:#1877f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
           <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png" alt="Facebook" style="width:24px;height:24px;object-fit:contain">
@@ -1940,13 +1940,13 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
-        <button class="btn-connect" onclick="showToast('Contact your account manager to connect this platform — info@cal.marketing','gold')">Connect</button>
+        <span class="pill" id="rv-facebook-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
+        <button class="btn-connect" id="rv-facebook-btn" onclick="connectReviewPlatform('facebook',this)">Connect</button>
       </div>
     </div>
 
     <!-- Yelp -->
-    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px">
+    <div class="card" id="rv-conn-yelp" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px">
       <div style="display:flex;align-items:center;gap:12px">
         <div style="width:40px;height:40px;border-radius:10px;background:#d32323;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
           <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a428d992fa97cb75437dc89.jpg" alt="Yelp" style="width:40px;height:40px;object-fit:cover">
@@ -1957,41 +1957,43 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <span class="pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
-        <button class="btn-connect" onclick="showToast('Contact your account manager to connect this platform — info@cal.marketing','gold')">Connect</button>
+        <span class="pill" id="rv-yelp-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
+        <button class="btn-connect" id="rv-yelp-btn" onclick="connectReviewPlatform('yelp',this)">Connect</button>
       </div>
     </div>
 
     <p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;margin-top:14px;line-height:1.6">
-      Contact your account manager to connect platforms —
+      Google connects to your real Business Profile. Facebook and Yelp connections are managed by your account manager —
       <a href="mailto:info@cal.marketing" style="color:var(--gold);font-weight:800;text-decoration:none">info@cal.marketing</a>
     </p>
   </div>
 
   <!-- ── SECTION 2: Dashboard ── -->
-  <div style="margin-top:28px">
+  <div id="rv-dashboard" style="margin-top:28px;display:none">
 
     <!-- Platform filter -->
-    <div style="margin-bottom:14px">
-      <select class="input-std" style="height:36px;font-size:13px;max-width:200px">
-        <option value="google" selected>Google</option>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+      <select class="input-std" id="rv-platform-filter" onchange="filterReviews(this.value)" style="height:36px;font-size:13px;max-width:200px">
+        <option value="all" selected>All Platforms</option>
+        <option value="google">Google</option>
         <option value="facebook">Facebook</option>
         <option value="yelp">Yelp</option>
       </select>
+      <button class="btn-view" style="font-size:12px;padding:7px 16px;height:auto;border-radius:8px" onclick="rvShowGate()">Manage Connections</button>
     </div>
 
     <!-- KPI row -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px">
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:var(--ink);line-height:1;margin-bottom:10px">—</div>
+        <div id="rv-kpi-total" style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:var(--ink);line-height:1;margin-bottom:10px">—</div>
         <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px">Total Reviews</div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:var(--gold);line-height:1;margin-bottom:10px">—</div>
+        <div id="rv-kpi-avg" style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:var(--gold);line-height:1;margin-bottom:10px">—</div>
         <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px">Avg Rating</div>
       </div>
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:32px 20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.04)">
-        <div style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:var(--ink);line-height:1;margin-bottom:10px">—</div>
+        <div id="rv-kpi-month" style="font-family:'Barlow Condensed',sans-serif;font-size:52px;font-weight:900;color:var(--ink);line-height:1;margin-bottom:10px">—</div>
         <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px">This Month</div>
       </div>
     </div>
@@ -2002,12 +2004,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <!-- Recent Reviews -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;display:flex;flex-direction:column">
         <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0 0 14px;letter-spacing:.2px">Recent Reviews</p>
-        <div style="border-radius:10px;background:var(--page);border:1px solid var(--border);padding:32px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;flex:1">
-          <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="var(--muted)" stroke-width="1.5" style="opacity:.35"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
-          <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0;line-height:1.6">Connect a platform above to see your reviews here.</p>
-        </div>
-        <div style="margin-top:14px;text-align:right">
-          <button class="btn-view" style="font-size:12px;padding:7px 16px;height:auto;border-radius:8px" onclick="showToast('Connect a platform to view all reviews.','gold')">View All Reviews →</button>
+        <div id="rv-reviews-list" style="display:flex;flex-direction:column;gap:8px;flex:1">
+          <p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">Loading reviews…</p>
         </div>
       </div>
 
@@ -2016,32 +2014,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0 0 4px;letter-spacing:.2px">Review Leaderboard</p>
         <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 14px">Team members ranked by reviews this month</p>
 
-        <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.18)">
-            <span style="font-size:14px;font-weight:900;color:var(--gold);width:16px;text-align:center;flex-shrink:0">1</span>
-            <div style="width:32px;height:32px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
-            <div style="flex:1">
-              <p style="font-size:13px;font-weight:900;color:var(--ink);margin:0 0 2px">—</p>
-              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews · — pts</p>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--page)">
-            <span style="font-size:14px;font-weight:900;color:var(--muted);width:16px;text-align:center;flex-shrink:0">2</span>
-            <div style="width:32px;height:32px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
-            <div style="flex:1">
-              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 2px">—</p>
-              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews · — pts</p>
-            </div>
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;background:var(--page)">
-            <span style="font-size:14px;font-weight:900;color:var(--muted);width:16px;text-align:center;flex-shrink:0">3</span>
-            <div style="width:32px;height:32px;border-radius:50%;background:var(--border);flex-shrink:0"></div>
-            <div style="flex:1">
-              <p style="font-size:13px;font-weight:800;color:var(--ink);margin:0 0 2px">—</p>
-              <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">— reviews · — pts</p>
-            </div>
-          </div>
-        </div>
+        <div id="rv-leaderboard-list" style="display:flex;flex-direction:column;gap:8px"></div>
 
         <div style="margin-top:14px;text-align:right">
           <button class="btn-view" style="font-size:12px;padding:7px 16px;height:auto;border-radius:8px" onclick="nav('leaderboard')">View Leaderboard →</button>
@@ -5502,6 +5475,7 @@ function handleGoogleConnected(){
       showToast('Google was not connected. Complete the Google authorization window and try again.','gold');
       if(typeof renderIntegrationsGrid==='function')renderIntegrationsGrid();
     }
+    if(typeof renderReviewsScreen==='function'){ try{ renderReviewsScreen(); }catch(e){} }
   });
 }
 
@@ -11932,53 +11906,129 @@ function sendWaReply() {
       </div>`;
   }
 
+  window.rvShowGate=function(){
+    var gate=document.getElementById('rv-gate');
+    var dash=document.getElementById('rv-dashboard');
+    if(gate) gate.style.display='block';
+    if(dash) dash.style.display='none';
+  };
+
+  window.rvGoogleBtnClick=function(){
+    if(window.currentRole==='admin'||window.currentRole==='user'){
+      showToastSafe('Contact your account manager to modify connections — info@cal.marketing','gold');
+      return;
+    }
+    var btn=document.getElementById('rv-google-btn');
+    if(btn&&btn.textContent.indexOf('Disconnect')!==-1){ rvDisconnectGoogle(); return; }
+    if(typeof connectGoogleForCompany==='function'){
+      connectGoogleForCompany();
+    } else {
+      showToastSafe('Google connection is not available in this build.','gold');
+    }
+  };
+
+  function rvDisconnectGoogle(){
+    var company=window.currentCompanyId||'default';
+    if(!confirm('Disconnect Google from this account?')) return;
+    fetch('/api/google/disconnect?company='+encodeURIComponent(company),{method:'POST'})
+      .then(function(){
+        try{ localStorage.removeItem('cal-google-connected-'+company); }catch(e){}
+        showToastSafe('Google disconnected.','');
+        if(typeof setGoogleConnectionUi==='function') setGoogleConnectionUi(false);
+        if(typeof renderIntegrationsGrid==='function') renderIntegrationsGrid();
+        renderReviewsScreen();
+      })
+      .catch(function(){ showToastSafe('Could not reach the live backend. Please try again.','gold'); });
+  }
+
+  function rvSyncGoogleUi(){
+    var pill=document.getElementById('rv-google-pill');
+    var btn=document.getElementById('rv-google-btn');
+    var row=document.getElementById('rv-conn-google');
+    var company=window.currentCompanyId||'default';
+    if(pill) pill.textContent='Checking…';
+    return fetch('/api/google/status?company='+encodeURIComponent(company))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        var connected=!!(d&&d.connected);
+        if(pill){
+          pill.textContent=connected?('Connected'+(d.user&&d.user.email?' · '+d.user.email:'')):'Not connected';
+          pill.style.background=connected?'rgba(34,197,94,.12)':'rgba(27,58,107,.08)';
+          pill.style.color=connected?'var(--green)':'var(--muted)';
+        }
+        if(row) row.style.borderColor=connected?'var(--green)':'';
+        if(btn){
+          if(window.currentRole==='admin'||window.currentRole==='user'){
+            btn.textContent='Managed by Agency'; btn.disabled=true; btn.style.opacity='.55';
+          } else {
+            btn.disabled=false; btn.style.opacity='1';
+            btn.textContent=connected?'Disconnect':'Connect';
+          }
+        }
+        window._rvGoogleConnected=connected;
+        return connected;
+      })
+      .catch(function(){
+        if(pill) pill.textContent='Unable to check';
+        window._rvGoogleConnected=false;
+        return false;
+      });
+  }
+
   function renderReviewsScreen(){
     var key=acctKey();
     var d=(typeof ACCT_LB!=='undefined'&&ACCT_LB[key])||ACCT_LB&&ACCT_LB.a1||{};
     var team=d.team||[];
     var reviews=d.reviews||[];
 
-    // Restore connection state from localStorage
+    // Facebook / Yelp remain mocked via localStorage toggle
     var connected=safeJSON('rv-connected-'+key,{});
 
     var gate=document.getElementById('rv-gate');
     var dash=document.getElementById('rv-dashboard');
     if(!gate||!dash) return;
 
-    var anyConnected=connected.google||connected.facebook||connected.yelp;
-    gate.style.display=anyConnected?'none':'block';
-    dash.style.display=anyConnected?'block':'none';
-
-    // Restore connect button states
-    ['google','facebook','yelp'].forEach(function(p){
+    ['facebook','yelp'].forEach(function(p){
+      var row=document.getElementById('rv-conn-'+p);
+      var btn=document.getElementById('rv-'+p+'-btn');
+      var pill=document.getElementById('rv-'+p+'-pill');
       if(connected[p]){
-        var row=document.getElementById('rv-conn-'+p);
-        if(row){
-          var btn=row.querySelector('.btn-connect');
-          if(btn){ btn.textContent='Connected ✓'; btn.disabled=true; btn.style.opacity='0.6'; }
-          row.style.borderColor='var(--green)';
-        }
+        if(btn){ btn.textContent='Connected ✓'; btn.disabled=true; btn.style.opacity='0.6'; }
+        if(pill){ pill.textContent='Connected'; pill.style.background='rgba(34,197,94,.12)'; pill.style.color='var(--green)'; }
+        if(row) row.style.borderColor='var(--green)';
+      } else {
+        if(btn){ btn.textContent='Connect'; btn.disabled=false; btn.style.opacity='1'; }
+        if(pill){ pill.textContent='Not connected'; pill.style.background='rgba(27,58,107,.08)'; pill.style.color='var(--muted)'; }
+        if(row) row.style.borderColor='';
       }
     });
 
-    if(!anyConnected) return;
+    rvSyncGoogleUi().then(function(googleConnected){
+      var anyConnected=googleConnected||connected.facebook||connected.yelp;
+      gate.style.display=anyConnected?'none':'block';
+      dash.style.display=anyConnected?'block':'none';
+      if(!anyConnected) return;
 
-    // Build platform-tagged reviews pool
-    var PLATFORMS=['google','facebook','yelp'];
-    var allReviews=reviews.map(function(r,i){
-      return {
-        name:r.name,
-        text:r.text,
-        rating:r.rating,
-        ago:r.ago,
-        platform:connected[PLATFORMS[i%3]]?PLATFORMS[i%3]:
-                 (connected.google?'google':connected.facebook?'facebook':'yelp')
-      };
+      // Build platform-tagged mock reviews pool (Facebook / Yelp only)
+      var PLATFORMS=['facebook','yelp'];
+      window._rvMockReviews=reviews.map(function(r,i){
+        return {
+          name:r.name,
+          text:r.text,
+          rating:r.rating,
+          ago:r.ago,
+          platform:PLATFORMS[i%2],
+          recent:!/mo ago|\/\d{4}/.test(r.ago||'')
+        };
+      }).filter(function(r){ return connected[r.platform]; });
+
+      if(googleConnected){
+        loadLiveReviewsForReviewsScreen(key);
+      } else {
+        window._rvGoogleReviews=[];
+        rvRebuildReviewsList();
+      }
     });
-    if(!allReviews.length){ allReviews=[]; }
-    window._rvAllReviews=allReviews;
-    filterReviews((document.getElementById('rv-platform-filter')||{value:'all'}).value);
-    if(connected.google){ loadLiveReviewsForReviewsScreen(key); }
 
     // Leaderboard
     var lb=document.getElementById('rv-leaderboard-list');
@@ -12020,39 +12070,66 @@ function sendWaReply() {
     if(d<7) return d+'d ago';
     return new Date(t).toLocaleDateString();
   }
-  function loadLiveReviewsForReviewsScreen(key){
+  function loadLiveReviewsForReviewsScreen(company){
     var list=document.getElementById('rv-reviews-list');
-    if(list) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">Loading live Google reviews...</p>';
-    fetch('/api/gbp/reviews?company='+encodeURIComponent(window.currentCompanyId||'default'))
+    if(list&&!(window._rvMockReviews&&window._rvMockReviews.length)) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">Loading live Google reviews...</p>';
+    fetch('/api/gbp/reviews?company='+encodeURIComponent(company||window.currentCompanyId||'default'))
       .then(function(r){ return r.json(); })
       .then(function(data){
         if(data&&data.error){ throw new Error(data.error); }
-        window._rvAllReviews=(data.reviews||[]).map(function(rv){
+        var now=Date.now();
+        window._rvGoogleReviews=(data.reviews||[]).map(function(rv){
+          var ts=rv.updateTime||rv.createTime;
+          var t=ts?new Date(ts).getTime():NaN;
           return {
             name:(rv.reviewer&&rv.reviewer.displayName)||'Anonymous',
             text:rv.comment||'',
             rating:rvRatingValue(rv.starRating),
-            ago:rvAgo(rv.updateTime||rv.createTime),
-            platform:'google'
+            ago:rvAgo(ts),
+            platform:'google',
+            recent:isFinite(t)?(now-t)<=30*24*3600000:true
           };
         });
-        filterReviews((document.getElementById('rv-platform-filter')||{value:'all'}).value);
+        rvRebuildReviewsList();
       })
       .catch(function(){
-        if(list) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">Connect Google Business Profile to load live reviews.</p>';
+        window._rvGoogleReviews=[];
+        rvRebuildReviewsList();
+        if(list&&!(window._rvMockReviews&&window._rvMockReviews.length)) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">Could not load live Google reviews. Try reconnecting.</p>';
       });
+  }
+
+  function rvRebuildReviewsList(){
+    window._rvAllReviews=[].concat(window._rvGoogleReviews||[],window._rvMockReviews||[]);
+    filterReviews((document.getElementById('rv-platform-filter')||{value:'all'}).value);
+  }
+
+  function rvComputeKpis(all){
+    var elT=document.getElementById('rv-kpi-total');
+    var elA=document.getElementById('rv-kpi-avg');
+    var elM=document.getElementById('rv-kpi-month');
+    var total=all.length;
+    var avg=total?(all.reduce(function(s,r){ return s+(r.rating||0); },0)/total):0;
+    var month=all.filter(function(r){ return r.recent!==false; }).length;
+    if(elT) elT.textContent=total||'—';
+    if(elA) elA.textContent=total?avg.toFixed(1):'—';
+    if(elM) elM.textContent=total?month:'—';
   }
 
   window.filterReviews=function(platform){
     var list=document.getElementById('rv-reviews-list');
     if(!list) return;
-    var reviews=(window._rvAllReviews||[]).filter(function(r){
+    var all=window._rvAllReviews||[];
+    rvComputeKpis(all);
+    var reviews=all.filter(function(r){
       return platform==='all'||r.platform===platform;
     });
     var PLATFORM_LABELS={google:'Google',facebook:'Facebook',yelp:'Yelp'};
     var PLATFORM_COLORS={google:'#4285F4',facebook:'#1877f2',yelp:'#d32323'};
     if(!reviews.length){
-      list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">No reviews for this platform yet.</p>';
+      list.innerHTML=all.length?
+        '<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">No reviews for this platform yet.</p>':
+        '<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">Connect a platform above to see your reviews here.</p>';
       return;
     }
     list.innerHTML=reviews.map(function(r){
@@ -12075,6 +12152,10 @@ function sendWaReply() {
   };
 
   window.connectReviewPlatform=function(platform,btn){
+    if(window.currentRole==='admin'){
+      showToastSafe('Contact your account manager to connect this platform — info@cal.marketing','gold');
+      return;
+    }
     var key=acctKey();
     if(platform==='google'){
       if(typeof connectGoogleForCompany==='function'){
