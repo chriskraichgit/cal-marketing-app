@@ -4,17 +4,6 @@ const path = require('path');
 const crypto = require('crypto');
 const { google } = require('googleapis');
 const { URL } = require('url');
-const { createClient } = require('@supabase/supabase-js');
-const ws = require('ws');
-const { Pool } = require('pg');
-const express = require('express');
-const { setupAuth, isAuthenticated } = require('./auth');
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY,
-  { realtime: { transport: ws } }
-);
-const pgPool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 const PORT = 5000;
 const HOST = '0.0.0.0';
@@ -22,29 +11,35 @@ const HOST = '0.0.0.0';
 const TOKEN_FILE = path.join(__dirname, '.gdrive-tokens.json');
 const GOOGLE_TOKEN_FILE = path.join(__dirname, '.google-tokens.json');
 const META_STORE_FILE = path.join(__dirname, '.cal-meta-store.json');
-const LOGO_DIR = path.join(__dirname, '.cal-logos');
-try { if (!fs.existsSync(LOGO_DIR)) fs.mkdirSync(LOGO_DIR); } catch (e) {}
-// Known users for server-side meta token issuance.
-// Passwords are stored as SHA-256 hashes only — never plaintext.
-// Agency/test roles may access any account key; admin/user roles may only access their own email key.
-const SERVER_USERS = {
+const NFC_TAPS_FILE = path.join(__dirname, 'nfc_taps.json');
+
+// ============================================================
+// SERVER_USERS — Known users for server-side meta token issuance.
+//
+// ⚠️  SECURITY: These credentials should be loaded from environment
+//     variables in production, NOT hardcoded here.
+//
+//     Recommended env-var approach:
+//       CAL_USERS_JSON = JSON string of the full users object, OR
+//       individual vars like CAL_USER_CHRIS_HASH / CAL_USER_CHRIS_ROLE
+//
+//     To generate a SHA-256 hash of a password:
+//       node -e "const c=require('crypto');console.log(c.createHash('sha256').update('YourPassword').digest('hex'))"
+//
+//     Passwords are stored as SHA-256 hashes only — never plaintext.
+//     Agency/test roles may access any account key; admin/user roles
+//     may only access their own email key.
+// ============================================================
+const SERVER_USERS = process.env.CAL_USERS_JSON
+  ? JSON.parse(process.env.CAL_USERS_JSON)
+  : {
   'chris@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
-  'james@cal.marketing':           { pwHash: '5611b415fe6a7d4efcd1e264fc4588adcc71c3c73988be6a4de88db113431389', role: 'agency' },
-  'matt@cal.marketing':            { pwHash: 'f33acfd52532e44037f9a33293836d30b71368357d3310cdf6734a3ebe178e0e', role: 'agency' },
+  'james@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
+  'matt@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
   'info@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'test'   },
   'client@apexlegal.com':          { pwHash: '7e166f079a275064a2118127d7102a9471f671acb67a65a2c628684606b5e11f', role: 'admin'  },
   'staff@apexlegal.com':           { pwHash: '7df64b2903b0ac2dc591ee097c36f4acdae759753bd197eaf11008093e2966ca', role: 'user'   },
   'info@unitedsewerservice.com':   { pwHash: 'c87b71ef7b9882f404028ae7d5431cc6fdb73b64cfe52e9dc0501ff3dbe1a580', role: 'admin'  },
-};
-
-const SERVER_USER_PROFILES = {
-  'chris@cal.marketing':         { name: 'Chris Kraich',    initials: 'CK', companyId: 'cal',         title: 'Agency Owner'       },
-  'james@cal.marketing':         { name: 'James Wodzinski', initials: 'JW', companyId: 'cal',         title: 'Agency Partner'     },
-  'matt@cal.marketing':          { name: 'Matt Gallagher',  initials: 'MG', companyId: 'cal',         title: 'Agency Partner'     },
-  'info@cal.marketing':          { name: 'Test Owner',      initials: 'TO', companyId: 'cal',         title: 'Owner / Tester'     },
-  'client@apexlegal.com':        { name: 'Alex Torres',     initials: 'AT', companyId: 'apexlegal',   title: 'Marketing Director' },
-  'staff@apexlegal.com':         { name: 'Maria Santos',    initials: 'MS', companyId: 'apexlegal',   title: 'Staff Member'       },
-  'info@unitedsewerservice.com': { name: 'United Owner',    initials: 'US', companyId: 'unitedsewer', title: 'Owner'              },
 };
 
 const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -52,12 +47,6 @@ const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 // Secret is sourced from the environment (set CAL_META_SECRET in production for persistence).
 // If absent, a random ephemeral secret is generated at startup — tokens will not survive a restart.
 const META_SECRET = process.env.CAL_META_SECRET || crypto.randomBytes(32).toString('hex');
-if (!process.env.CAL_META_SECRET) {
-  console.warn('[CAL] WARNING: CAL_META_SECRET is not set.');
-  console.warn('[CAL]   A random ephemeral secret was generated at startup.');
-  console.warn('[CAL]   Every server restart will invalidate all existing meta tokens.');
-  console.warn('[CAL]   Set CAL_META_SECRET as an environment secret for persistent sessions.');
-}
 
 function signMetaToken(payload) {
   const b64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -132,36 +121,41 @@ function saveMetaStore(store) {
   try { fs.writeFileSync(META_STORE_FILE, JSON.stringify(store)); } catch (e) {}
 }
 
-async function getCustomPasswordHash(email) {
+// ============ NFC TAP LOG ============
+function loadNfcTaps() {
   try {
-    const result = await pgPool.query(
-      'SELECT pw_hash FROM user_passwords WHERE email = $1',
-      [email]
-    );
-    if (result.rows.length > 0) return result.rows[0].pw_hash;
-  } catch (e) {
-    console.warn('[CAL] getCustomPasswordHash DB error, falling back to file store:', e.message);
-    const store = loadMetaStore();
-    const fileHash = store['cal-user-pw-' + email];
-    if (fileHash) return fileHash;
-  }
-  return null;
+    if (fs.existsSync(NFC_TAPS_FILE)) return JSON.parse(fs.readFileSync(NFC_TAPS_FILE, 'utf8'));
+  } catch (e) {}
+  return [];
 }
 
-async function setCustomPasswordHash(email, hash) {
+function appendNfcTap(entry) {
   try {
-    await pgPool.query(
-      `INSERT INTO user_passwords (email, pw_hash, updated_at)
-       VALUES ($1, $2, NOW())
-       ON CONFLICT (email) DO UPDATE SET pw_hash = EXCLUDED.pw_hash, updated_at = NOW()`,
-      [email, hash]
-    );
-  } catch (e) {
-    console.warn('[CAL] setCustomPasswordHash DB error, falling back to file store:', e.message);
-    const store = loadMetaStore();
-    store['cal-user-pw-' + email] = hash;
-    saveMetaStore(store);
-  }
+    const taps = loadNfcTaps();
+    taps.push(entry);
+    fs.writeFileSync(NFC_TAPS_FILE, JSON.stringify(taps, null, 2));
+  } catch (e) { console.error('[NFC] Failed to write tap log:', e.message); }
+}
+
+// ============ ACCOUNT SLUG ============
+function accountSlug(email) {
+  return (email || '').toLowerCase().replace(/@/g, '_at_').replace(/\./g, '_');
+}
+
+function accountDataFile(email) {
+  return path.join(__dirname, `data_${accountSlug(email)}.json`);
+}
+
+function loadAccountData(email) {
+  try {
+    const fp = accountDataFile(email);
+    if (fs.existsSync(fp)) return JSON.parse(fs.readFileSync(fp, 'utf8'));
+  } catch (e) {}
+  return {};
+}
+
+function saveAccountData(email, data) {
+  try { fs.writeFileSync(accountDataFile(email), JSON.stringify(data, null, 2)); } catch (e) {}
 }
 
 async function handleMetaLogin(req, res) {
@@ -175,47 +169,13 @@ async function handleMetaLogin(req, res) {
   const user = SERVER_USERS[email];
   if (!user) { jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return; }
   const submittedHash = crypto.createHash('sha256').update(password).digest('hex');
-  // Check durable DB for custom password first, fall back to SERVER_USERS default
-  const customHash = await getCustomPasswordHash(email);
-  const activeHash = customHash || user.pwHash;
-  const hashBuf = Buffer.from(activeHash, 'hex');
+  const hashBuf = Buffer.from(user.pwHash, 'hex');
   const submitBuf = Buffer.from(submittedHash, 'hex');
   if (hashBuf.length !== submitBuf.length || !crypto.timingSafeEqual(hashBuf, submitBuf)) {
     jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return;
   }
   const token = signMetaToken({ email, role: user.role, exp: Date.now() + TOKEN_TTL_MS });
   jsonResponse(res, 200, { token });
-}
-
-async function handleChangePassword(req, res) {
-  const rawToken = extractBearerToken(req);
-  const payload = rawToken ? verifyMetaToken(rawToken) : null;
-  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
-  let body;
-  try {
-    const raw = await readRequestBody(req, 64 * 1024);
-    body = JSON.parse(raw.toString('utf8'));
-  } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
-  const currentPassword = (body && typeof body.currentPassword === 'string') ? body.currentPassword : '';
-  const newPassword = (body && typeof body.newPassword === 'string') ? body.newPassword : '';
-  if (!newPassword || newPassword.length < 8) {
-    jsonResponse(res, 400, { error: 'PASSWORD_TOO_SHORT', message: 'New password must be at least 8 characters.' }); return;
-  }
-  const email = payload.email;
-  const user = SERVER_USERS[email];
-  if (!user) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
-  // Read current hash from durable DB, fall back to SERVER_USERS default
-  const customHash = await getCustomPasswordHash(email);
-  const activeHash = customHash || user.pwHash;
-  const curSubmittedHash = crypto.createHash('sha256').update(currentPassword).digest('hex');
-  const hashBuf = Buffer.from(activeHash, 'hex');
-  const submitBuf = Buffer.from(curSubmittedHash, 'hex');
-  if (hashBuf.length !== submitBuf.length || !crypto.timingSafeEqual(hashBuf, submitBuf)) {
-    jsonResponse(res, 401, { error: 'WRONG_CURRENT_PASSWORD', message: 'Current password is incorrect.' }); return;
-  }
-  const newHash = crypto.createHash('sha256').update(newPassword).digest('hex');
-  await setCustomPasswordHash(email, newHash);
-  jsonResponse(res, 200, { ok: true });
 }
 
 async function handleMetaGet(req, res, qs) {
@@ -243,84 +203,9 @@ async function handleMetaPut(req, res, qs) {
   } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
   if (!body || typeof body !== 'object' || Array.isArray(body)) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
   const store = loadMetaStore();
-  const existing = store[key] || {};
-  const merged = Object.assign({}, existing);
-  Object.keys(body).forEach(function(k) {
-    if (k.indexOf('layoutPrefs_') === 0) {
-      const exPrefs = existing[k] || {};
-      const inPrefs = body[k] || {};
-      const mergedPrefs = {};
-      Object.keys(exPrefs).forEach(function(navKey) {
-        const ev = exPrefs[navKey];
-        mergedPrefs[navKey] = (ev !== null && typeof ev === 'object') ? ev : { v: !!ev, t: 0 };
-      });
-      Object.keys(inPrefs).forEach(function(navKey) {
-        const iv = inPrefs[navKey];
-        const normIv = (iv !== null && typeof iv === 'object') ? iv : { v: !!iv, t: 1 };
-        const normEv = mergedPrefs[navKey] || { v: false, t: 0 };
-        const it = normIv.t || 0;
-        const et = normEv.t || 0;
-        if (it >= et) mergedPrefs[navKey] = normIv;
-      });
-      merged[k] = mergedPrefs;
-    } else {
-      merged[k] = body[k];
-    }
-  });
-  store[key] = merged;
+  store[key] = Object.assign({}, store[key] || {}, body);
   saveMetaStore(store);
   jsonResponse(res, 200, { ok: true });
-}
-
-function safeLogoFilename(key) {
-  return crypto.createHash('sha256').update(key).digest('hex');
-}
-
-async function handleLogoGet(req, res, qs) {
-  const key = qs.key;
-  if (!key) { jsonResponse(res, 400, { error: 'MISSING_KEY' }); return; }
-  const base = safeLogoFilename(key);
-  const dataFile = path.join(LOGO_DIR, base + '.data');
-  const mimeFile = path.join(LOGO_DIR, base + '.mime');
-  try {
-    if (!fs.existsSync(dataFile)) { jsonResponse(res, 404, { error: 'NOT_FOUND' }); return; }
-    const imgData = fs.readFileSync(dataFile);
-    let mimeType = 'image/png';
-    try { mimeType = fs.readFileSync(mimeFile, 'utf8').trim(); } catch (e) {}
-    res.writeHead(200, { 'Content-Type': mimeType, 'Cache-Control': 'public, max-age=31536000' });
-    res.end(imgData);
-  } catch (e) { jsonResponse(res, 500, { error: 'READ_FAILED' }); }
-}
-
-async function handleLogoPut(req, res, qs) {
-  const rawToken = extractBearerToken(req);
-  const payload = rawToken ? verifyMetaToken(rawToken) : null;
-  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
-  const key = qs.key;
-  if (!key) { jsonResponse(res, 400, { error: 'MISSING_KEY' }); return; }
-  if (!isKeyAllowed(key, payload)) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
-  let body;
-  try {
-    const raw = await readRequestBody(req, 5 * 1024 * 1024);
-    body = JSON.parse(raw.toString('utf8'));
-  } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
-  const dataUrl = body && typeof body.logo === 'string' ? body.logo : '';
-  if (!dataUrl.startsWith('data:')) { jsonResponse(res, 400, { error: 'INVALID_LOGO' }); return; }
-  const match = /^data:([^;]+);base64,(.+)$/.exec(dataUrl);
-  if (!match) { jsonResponse(res, 400, { error: 'INVALID_DATA_URL' }); return; }
-  const mimeType = match[1];
-  let imgBuf;
-  try { imgBuf = Buffer.from(match[2], 'base64'); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BASE64' }); return; }
-  const base = safeLogoFilename(key);
-  try {
-    fs.writeFileSync(path.join(LOGO_DIR, base + '.data'), imgBuf);
-    fs.writeFileSync(path.join(LOGO_DIR, base + '.mime'), mimeType);
-  } catch (e) { jsonResponse(res, 500, { error: 'WRITE_FAILED' }); return; }
-  const logoUrl = '/api/logo?key=' + encodeURIComponent(key);
-  const store = loadMetaStore();
-  store[key] = Object.assign({}, store[key] || {}, { logo: logoUrl });
-  saveMetaStore(store);
-  jsonResponse(res, 200, { ok: true, url: logoUrl });
 }
 
 function getAuthedClient() {
@@ -379,60 +264,6 @@ function jsonResponse(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
-async function handleHealth(res) {
-  const env = {
-    SUPABASE_URL: !!process.env.SUPABASE_URL,
-    SUPABASE_SERVICE_KEY: !!process.env.SUPABASE_SERVICE_KEY,
-    DATABASE_URL: !!process.env.DATABASE_URL,
-    CAL_META_SECRET: !!process.env.CAL_META_SECRET,
-    GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
-    GOOGLE_REDIRECT_URI: !!process.env.GOOGLE_REDIRECT_URI,
-    GOOGLE_API_KEY: !!process.env.GOOGLE_API_KEY,
-    GOOGLE_MAPS_API_KEY: !!process.env.GOOGLE_MAPS_API_KEY,
-    PAGESPEED_API_KEY: !!process.env.PAGESPEED_API_KEY,
-    STRIPE_SECRET_KEY: !!process.env.STRIPE_SECRET_KEY,
-    GITHUB_PAT: !!process.env.GITHUB_PAT,
-  };
-  const checks = {
-    server: { ok: true },
-    database: { ok: false, skipped: !env.DATABASE_URL },
-    supabase: { ok: false, skipped: !(env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) },
-    google: {
-      ok: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
-      configured: !!(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET),
-    },
-    stripe: { ok: !!env.STRIPE_SECRET_KEY, configured: !!env.STRIPE_SECRET_KEY },
-  };
-
-  if (env.DATABASE_URL) {
-    try {
-      await pgPool.query('SELECT 1');
-      checks.database = { ok: true };
-    } catch (e) {
-      checks.database = { ok: false, error: e.message };
-    }
-  }
-
-  if (env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY) {
-    try {
-      const { error } = await supabase.from('google_tokens').select('company_id').limit(1);
-      checks.supabase = { ok: !error, error: error ? error.message : undefined };
-    } catch (e) {
-      checks.supabase = { ok: false, error: e.message };
-    }
-  }
-
-  const requiredOk = env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY && env.DATABASE_URL
-    && checks.database.ok && checks.supabase.ok;
-  jsonResponse(res, 200, {
-    ok: !!requiredOk,
-    time: new Date().toISOString(),
-    env,
-    checks,
-  });
-}
-
 async function handleConnect(res) {
   const oauth2 = createOAuth2Client();
   if (!oauth2) {
@@ -441,7 +272,7 @@ async function handleConnect(res) {
   }
   const authUrl = oauth2.generateAuthUrl({
     access_type: 'offline',
-    prompt: 'consent select_account',
+    prompt: 'consent',
     scope: [
       'https://www.googleapis.com/auth/drive.readonly',
       'https://www.googleapis.com/auth/drive.file',
@@ -581,12 +412,10 @@ function parseMultipart(buffer, contentType) {
   if (start === -1) return parts;
   start += boundaryBuf.length;
   while (start < buffer.length) {
-    // After a boundary we expect either "--" (end) or "\r\n" then part data
-    if (buffer[start] === 0x2d && buffer[start + 1] === 0x2d) break; // closing "--"
+    if (buffer[start] === 0x2d && buffer[start + 1] === 0x2d) break;
     if (buffer[start] === 0x0d && buffer[start + 1] === 0x0a) start += 2;
     const next = buffer.indexOf(boundaryBuf, start);
     if (next === -1) break;
-    // Part is buffer[start .. next], strip trailing \r\n
     let end = next;
     if (buffer[end - 2] === 0x0d && buffer[end - 1] === 0x0a) end -= 2;
     const partBuf = buffer.slice(start, end);
@@ -690,91 +519,34 @@ function createGoogleOAuth2Client() {
   return new google.auth.OAuth2(clientId, clientSecret, getGoogleRedirectUri());
 }
 
-// ── Supabase-backed Google token storage ──────────────────────────────────
-async function loadGoogleTokens(companyId) {
-  try {
-    const { data, error } = await supabase
-      .from('google_tokens')
-      .select('tokens')
-      .eq('company_id', companyId)
-      .single();
-    if (error || !data) return null;
-    return data.tokens;
-  } catch (e) {
-    console.error('loadGoogleTokens error:', e.message);
-    return null;
-  }
+function loadGoogleTokens() {
+  try { if (fs.existsSync(GOOGLE_TOKEN_FILE)) return JSON.parse(fs.readFileSync(GOOGLE_TOKEN_FILE, 'utf8')); } catch (e) {}
+  return null;
 }
+function saveGoogleTokens(tokens) { fs.writeFileSync(GOOGLE_TOKEN_FILE, JSON.stringify(tokens, null, 2)); }
+function deleteGoogleTokens() { try { if (fs.existsSync(GOOGLE_TOKEN_FILE)) fs.unlinkSync(GOOGLE_TOKEN_FILE); } catch (e) {} }
 
-async function saveGoogleTokens(companyId, tokens, userInfo) {
-  try {
-    const row = {
-      company_id: companyId,
-      tokens: tokens,
-      updated_at: new Date().toISOString()
-    };
-    if (userInfo && userInfo.email) row.user_email = userInfo.email;
-    if (userInfo && userInfo.name)  row.user_name  = userInfo.name;
-    const { error } = await supabase
-      .from('google_tokens')
-      .upsert(row, { onConflict: 'company_id' });
-    if (error) console.error('saveGoogleTokens error:', error.message);
-  } catch (e) {
-    console.error('saveGoogleTokens error:', e.message);
-  }
-}
-
-async function deleteGoogleTokens(companyId) {
-  try {
-    const { error } = await supabase
-      .from('google_tokens')
-      .delete()
-      .eq('company_id', companyId);
-    if (error) console.error('deleteGoogleTokens error:', error.message);
-  } catch (e) {
-    console.error('deleteGoogleTokens error:', e.message);
-  }
-}
-
-async function getGoogleAuthedClient(companyId) {
-  const tokens = await loadGoogleTokens(companyId);
+function getGoogleAuthedClient() {
+  const oauth2 = createGoogleOAuth2Client();
+  if (!oauth2) return null;
+  const tokens = loadGoogleTokens();
   if (!tokens) return null;
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI
-  );
-  oauth2Client.setCredentials(tokens);
-  // Auto-refresh if expired
-  if (tokens.expiry_date && tokens.expiry_date < Date.now() + 60000) {
-    try {
-      const { credentials } = await oauth2Client.refreshAccessToken();
-      await saveGoogleTokens(companyId, credentials);
-      oauth2Client.setCredentials(credentials);
-    } catch (e) {
-      console.error('Token refresh error for', companyId, e.message);
-    }
-  }
-  return oauth2Client;
+  oauth2.setCredentials(tokens);
+  oauth2.on('tokens', (t) => { const cur = loadGoogleTokens() || {}; saveGoogleTokens(Object.assign({}, cur, t)); });
+  return oauth2;
 }
-// ─────────────────────────────────────────────────────────────────────────────
 
-async function handleGoogleConnect(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
+async function handleGoogleConnect(res) {
   const oauth2 = createGoogleOAuth2Client();
   if (!oauth2) { jsonResponse(res, 200, { error: 'GOOGLE_CREDENTIALS_NOT_CONFIGURED', authUrl: null }); return; }
   const authUrl = oauth2.generateAuthUrl({
     access_type: 'offline',
-    prompt: 'consent select_account',
-    state: companyId,
+    prompt: 'consent',
     scope: [
       'https://www.googleapis.com/auth/userinfo.email',
       'https://www.googleapis.com/auth/business.manage',
       'https://www.googleapis.com/auth/webmasters.readonly',
-      'https://www.googleapis.com/auth/calendar',
-      'https://www.googleapis.com/auth/analytics.readonly',
-      'https://www.googleapis.com/auth/gmail.readonly',
-      'https://www.googleapis.com/auth/spreadsheets.readonly',
+      'https://www.googleapis.com/auth/calendar.readonly',
     ],
   });
   jsonResponse(res, 200, { authUrl });
@@ -792,137 +564,33 @@ async function handleGoogleCallback(res, qs) {
   const oauth2 = createGoogleOAuth2Client();
   if (!oauth2) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html('Google credentials not configured', true)); return; }
   try {
-    const companyId = qs.state || 'default';
     const { tokens } = await oauth2.getToken(qs.code);
-    let userInfo = {};
-    try {
-      oauth2.setCredentials(tokens);
-      const oauth2api = google.oauth2({ version: 'v2', auth: oauth2 });
-      const { data } = await oauth2api.userinfo.get();
-      userInfo = { email: data.email, name: data.name };
-    } catch(e) {}
-    await saveGoogleTokens(companyId, tokens, userInfo);
+    saveGoogleTokens(tokens);
     res.writeHead(200, { 'Content-Type': 'text/html' });
     res.end(html(null, false));
   } catch (e) { res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html(e.message, true)); }
 }
 
-async function handleGoogleStatus(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const tokens = await loadGoogleTokens(companyId);
-  if (!tokens) {
+async function handleGoogleStatus(res) {
+  const oauth2 = getGoogleAuthedClient();
+  if (!oauth2) {
     jsonResponse(res, 200, { connected: false, configured: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) });
     return;
   }
-  const { data } = await supabase
-    .from('google_tokens')
-    .select('user_email, user_name')
-    .eq('company_id', companyId)
-    .single();
-  jsonResponse(res, 200, {
-    connected: true,
-    configured: true,
-    user: { email: data && data.user_email, name: data && data.user_name }
-  });
+  try {
+    const api = google.oauth2({ version: 'v2', auth: oauth2 });
+    const info = await api.userinfo.get();
+    jsonResponse(res, 200, { connected: true, configured: true, user: info.data });
+  } catch (e) { deleteGoogleTokens(); jsonResponse(res, 200, { connected: false, configured: true, error: e.message }); }
 }
 
-async function handleGoogleDisconnect(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
-  if (oauth2) { try { const t = await loadGoogleTokens(companyId); const tok = t && (t.access_token || t.refresh_token); if (tok) await oauth2.revokeToken(tok); } catch (e) {} }
-  await deleteGoogleTokens(companyId);
+async function handleGoogleDisconnect(res) {
+  const oauth2 = getGoogleAuthedClient();
+  if (oauth2) { try { const t = loadGoogleTokens(); const tok = t && (t.access_token || t.refresh_token); if (tok) await oauth2.revokeToken(tok); } catch (e) {} }
+  deleteGoogleTokens();
   jsonResponse(res, 200, { disconnected: true });
 }
 
-async function handleCompaniesStatus(res) {
-  const companies = ['cal', 'apexlegal', 'unitedsewer', 'greencollar', 'willydiamond', 'housesautobody'];
-  const statuses = {};
-  for (const c of companies) {
-    const tokens = await loadGoogleTokens(c);
-    statuses[c] = { connected: !!tokens };
-    if (tokens) {
-      try {
-        const oauth2 = await getGoogleAuthedClient(c);
-        const api = google.oauth2({ version: 'v2', auth: oauth2 });
-        const info = await api.userinfo.get();
-        statuses[c].user = info.data.email;
-      } catch (e) {
-        statuses[c].connected = false;
-        statuses[c].error = e.message;
-      }
-    }
-  }
-  jsonResponse(res, 200, { companies: statuses });
-}
-
-// ============ GOOGLE SIGN-IN (User Authentication) ============
-// NOTE: Add this redirect URI to Google Cloud Console OAuth credentials:
-// https://df44dd17-cdb7-4b8f-9e82-c52589af1601-00-1up1j4dm8544a.picard.replit.dev/api/auth/google/callback
-function getSignInRedirectUri() {
-  const domain = process.env.REPLIT_DEV_DOMAIN || process.env.REPLIT_DOMAINS || `localhost:${PORT}`;
-  const host = domain.split(',')[0].trim();
-  return `https://${host}/api/auth/google/callback`;
-}
-
-async function handleAuthGoogleStart(res) {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(`<!DOCTYPE html><html><body><script>
-      window.opener && window.opener.postMessage({ type: 'google-signin', success: false, error: 'Google credentials not configured. Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in Replit Secrets.' }, '*');
-      window.close();
-    </script><p style="font-family:sans-serif;padding:20px">Google credentials not configured.</p></body></html>`);
-    return;
-  }
-  const oauth2 = new google.auth.OAuth2(clientId, clientSecret, getSignInRedirectUri());
-  const authUrl = oauth2.generateAuthUrl({
-    access_type: 'online',
-    prompt: 'select_account',
-    scope: [
-      'https://www.googleapis.com/auth/userinfo.email',
-      'https://www.googleapis.com/auth/userinfo.profile',
-    ],
-  });
-  res.writeHead(302, { Location: authUrl });
-  res.end();
-}
-
-async function handleAuthGoogleCallback(res, qs) {
-  const fail = (msg) => {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(`<!DOCTYPE html><html><body><script>
-      window.opener && window.opener.postMessage(${JSON.stringify({ type: 'google-signin', success: false, error: msg })}, '*');
-      window.close();
-    </script><p style="font-family:sans-serif;padding:20px">Sign-in failed: ${msg}</p></body></html>`);
-  };
-  if (qs.error) { fail(qs.error); return; }
-  if (!qs.code) { fail('No authorization code received from Google.'); return; }
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
-  if (!clientId || !clientSecret) { fail('Google credentials not configured.'); return; }
-  try {
-    const oauth2 = new google.auth.OAuth2(clientId, clientSecret, getSignInRedirectUri());
-    const { tokens } = await oauth2.getToken(qs.code);
-    oauth2.setCredentials(tokens);
-    const api = google.oauth2({ version: 'v2', auth: oauth2 });
-    const info = await api.userinfo.get();
-    const email = (info.data.email || '').toLowerCase();
-    const name = info.data.name || '';
-    const picture = info.data.picture || '';
-    const payload = JSON.stringify({ type: 'google-signin', success: true, email, name, picture });
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(`<!DOCTYPE html><html><body><script>
-      try { sessionStorage.setItem('google-signin-result', ${JSON.stringify(payload)}); } catch(e) {}
-      window.opener && window.opener.postMessage(${payload}, '*');
-      window.close();
-    </script><p style="font-family:sans-serif;padding:20px">Signed in! You can close this window.</p></body></html>`);
-  } catch (e) {
-    fail(e.message);
-  }
-}
-
-// Helper: authenticated HTTPS request using OAuth2 access token
 async function googleApiGet(oauth2, url) {
   const tokenInfo = await oauth2.getAccessToken();
   const accessToken = tokenInfo.token || tokenInfo.res?.data?.access_token;
@@ -941,9 +609,8 @@ async function googleApiGet(oauth2, url) {
 }
 
 // ---- GBP ----
-async function handleGBPAccounts(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
+async function handleGBPAccounts(res) {
+  const oauth2 = getGoogleAuthedClient();
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', accounts: [] }); return; }
   try {
     const r = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
@@ -952,133 +619,29 @@ async function handleGBPAccounts(res, qs) {
 }
 
 async function handleGBPLocations(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
+  const oauth2 = getGoogleAuthedClient();
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', locations: [] }); return; }
-  let account = qs.account;
+  const account = qs.account;
+  if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
   try {
-    if (!account) {
-      const accountsRes = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
-      const accounts = accountsRes.body.accounts || [];
-      if (!accounts.length) { jsonResponse(res, 200, { error: 'NO_GBP_ACCOUNTS', locations: [] }); return; }
-      account = accounts[0].name;
-    }
     const r = await googleApiGet(oauth2, `https://mybusinessbusinessinformation.googleapis.com/v1/${account}/locations?readMask=name,title,storefrontAddress,websiteUri`);
     jsonResponse(res, 200, { locations: r.body.locations || [] });
   } catch (e) { jsonResponse(res, 200, { error: e.message, locations: [] }); }
 }
 
 async function handleGBPReviews(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
+  const oauth2 = getGoogleAuthedClient();
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', reviews: [] }); return; }
-  let location = qs.location;
+  const location = qs.location;
+  if (!location) { jsonResponse(res, 400, { error: 'MISSING_LOCATION' }); return; }
   try {
-    if (!location) {
-      const accountsRes = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
-      const accounts = accountsRes.body.accounts || [];
-      if (!accounts.length) { jsonResponse(res, 200, { error: 'NO_GBP_ACCOUNTS', reviews: [] }); return; }
-      const locRes = await googleApiGet(oauth2, `https://mybusinessbusinessinformation.googleapis.com/v1/${accounts[0].name}/locations?readMask=name,title,storefrontAddress,websiteUri`);
-      const locations = locRes.body.locations || [];
-      if (!locations.length) { jsonResponse(res, 200, { error: 'NO_GBP_LOCATIONS', reviews: [] }); return; }
-      location = locations[0].name;
-    }
     const r = await googleApiGet(oauth2, `https://mybusiness.googleapis.com/v4/${location}/reviews`);
     jsonResponse(res, 200, { reviews: r.body.reviews || [], averageRating: r.body.averageRating || null });
   } catch (e) { jsonResponse(res, 200, { error: e.message, reviews: [] }); }
 }
 
-async function handleGBPInsights(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  let locationName = qs && qs.location;
-  res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-  try {
-    const auth = await getGoogleAuthedClient(companyId);
-    if (!auth) { res.end(JSON.stringify({ error: 'not_connected' })); return; }
-    if (!locationName) {
-      const accountsRes = await googleApiGet(auth, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
-      const accounts = accountsRes.body.accounts || [];
-      if (!accounts.length) { res.end(JSON.stringify({ error: 'no_gbp_accounts' })); return; }
-      const locRes = await googleApiGet(auth, `https://mybusinessbusinessinformation.googleapis.com/v1/${accounts[0].name}/locations?readMask=name,title,storefrontAddress,websiteUri`);
-      const locations = locRes.body.locations || [];
-      if (!locations.length) { res.end(JSON.stringify({ error: 'no_location' })); return; }
-      const locRaw = locations[0].name || '';
-      const m = locRaw.match(/locations\/\d+/);
-      locationName = m ? m[0] : locRaw;
-    }
-    const tokenInfo = await auth.getAccessToken();
-    const accessToken = tokenInfo && tokenInfo.token;
-    if (!accessToken) { res.end(JSON.stringify({ error: 'not_connected' })); return; }
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(endDate.getDate() - 30);
-    const body = JSON.stringify({
-      dailyRange: {
-        startDate: { year: startDate.getFullYear(), month: startDate.getMonth() + 1, day: startDate.getDate() },
-        endDate:   { year: endDate.getFullYear(),   month: endDate.getMonth() + 1,   day: endDate.getDate() }
-      },
-      multiDailyMetricTimeSeries: [
-        { dailyMetric: 'CALL_CLICKS' },
-        { dailyMetric: 'WEBSITE_CLICKS' },
-        { dailyMetric: 'DIRECTION_REQUESTS' },
-        { dailyMetric: 'BUSINESS_IMPRESSIONS_MOBILE_SEARCH' },
-        { dailyMetric: 'BUSINESS_IMPRESSIONS_DESKTOP_SEARCH' },
-        { dailyMetric: 'BUSINESS_IMPRESSIONS_MOBILE_MAPS' },
-        { dailyMetric: 'BUSINESS_IMPRESSIONS_DESKTOP_MAPS' }
-      ]
-    });
-    const https = require('https');
-    const urlMod = require('url');
-    const apiUrl = 'https://businessprofileperformance.googleapis.com/v1/' + locationName + ':fetchMultiDailyMetricTimeSeries';
-    const parsed = urlMod.parse(apiUrl);
-    const data = await new Promise((resolve, reject) => {
-      const req = https.request({
-        hostname: parsed.hostname,
-        path: parsed.path,
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + accessToken,
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(body)
-        }
-      }, (resp) => {
-        let raw = '';
-        resp.on('data', chunk => raw += chunk);
-        resp.on('end', () => { try { resolve(JSON.parse(raw)); } catch(e) { resolve({ raw }); } });
-      });
-      req.on('error', reject);
-      req.write(body);
-      req.end();
-    });
-    const totals = {};
-    if (data.multiDailyMetricTimeSeries) {
-      data.multiDailyMetricTimeSeries.forEach(item => {
-        let total = 0;
-        if (item.timeSeries && item.timeSeries.datedValues) {
-          item.timeSeries.datedValues.forEach(dv => { total += parseInt(dv.value || 0); });
-        }
-        totals[item.dailyMetric] = total;
-      });
-    }
-    const totalImpressions = (totals['BUSINESS_IMPRESSIONS_MOBILE_SEARCH'] || 0)
-      + (totals['BUSINESS_IMPRESSIONS_DESKTOP_SEARCH'] || 0)
-      + (totals['BUSINESS_IMPRESSIONS_MOBILE_MAPS'] || 0)
-      + (totals['BUSINESS_IMPRESSIONS_DESKTOP_MAPS'] || 0);
-    res.end(JSON.stringify({
-      calls: totals['CALL_CLICKS'] || 0,
-      websiteClicks: totals['WEBSITE_CLICKS'] || 0,
-      directionRequests: totals['DIRECTION_REQUESTS'] || 0,
-      impressions: totalImpressions,
-      raw: data
-    }));
-  } catch(e) {
-    res.end(JSON.stringify({ error: e.message }));
-  }
-}
-
-async function handleGBPReply(req, res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
+async function handleGBPReply(req, res) {
+  const oauth2 = getGoogleAuthedClient();
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
   let body;
   try { const raw = await readRequestBody(req, 32 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
@@ -1103,9 +666,8 @@ async function handleGBPReply(req, res, qs) {
 }
 
 // ---- GSC ----
-async function handleGSCSites(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
+async function handleGSCSites(res) {
+  const oauth2 = getGoogleAuthedClient();
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', sites: [] }); return; }
   try {
     const sc = google.searchconsole({ version: 'v1', auth: oauth2 });
@@ -1115,8 +677,7 @@ async function handleGSCSites(res, qs) {
 }
 
 async function handleGSCAnalytics(req, res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
+  const oauth2 = getGoogleAuthedClient();
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', rows: [] }); return; }
   const siteUrl = qs.siteUrl;
   if (!siteUrl) { jsonResponse(res, 400, { error: 'MISSING_SITE_URL' }); return; }
@@ -1139,8 +700,7 @@ async function handleGSCAnalytics(req, res, qs) {
 
 // ---- Calendar ----
 async function handleCalendarEvents(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
+  const oauth2 = getGoogleAuthedClient();
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', events: [] }); return; }
   try {
     const cal = google.calendar({ version: 'v3', auth: oauth2 });
@@ -1169,217 +729,6 @@ async function handleCalendarEvents(res, qs) {
   } catch (e) { jsonResponse(res, 200, { error: e.message, events: [] }); }
 }
 
-async function handleCalendarCreateEvent(req, res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
-  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
-  try {
-    const raw = await readRequestBody(req, 32 * 1024);
-    const body = JSON.parse(raw.toString('utf8'));
-    const { title, startDateTime, endDateTime, description, location, meetingLink, calendarId } = body;
-    if (!title || !startDateTime || !endDateTime) {
-      jsonResponse(res, 400, { error: 'MISSING_REQUIRED_FIELDS' }); return;
-    }
-    const cal = google.calendar({ version: 'v3', auth: oauth2 });
-    const descParts = [description || '', meetingLink ? 'Meeting link: ' + meetingLink : ''].filter(Boolean);
-    const eventBody = {
-      summary: title,
-      description: descParts.join('\n') || undefined,
-      location: location || undefined,
-      start: { dateTime: startDateTime },
-      end: { dateTime: endDateTime },
-    };
-    const targetCalendarId = calendarId || (qs && qs.calendarId) || 'primary';
-    const r = await cal.events.insert({ calendarId: targetCalendarId, requestBody: eventBody });
-    jsonResponse(res, 200, { id: r.data.id, htmlLink: r.data.htmlLink, event: r.data });
-  } catch (e) {
-    var msg = (e && e.message) || '';
-    var isScope = /insufficient.*(permission|scope)|Request had insufficient authentication scopes|forbidden|unauthorized/i.test(msg);
-    if (isScope) { jsonResponse(res, 200, { error: 'INSUFFICIENT_SCOPE' }); return; }
-    jsonResponse(res, 200, { error: msg });
-  }
-}
-
-async function handleCalendarList(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
-  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', calendars: [] }); return; }
-  try {
-    const cal = google.calendar({ version: 'v3', auth: oauth2 });
-    const r = await cal.calendarList.list({ minAccessRole: 'reader' });
-    const calendars = (r.data.items || []).map(c => ({
-      id: c.id,
-      summary: c.summary,
-      description: c.description,
-      primary: c.primary || false,
-      backgroundColor: c.backgroundColor,
-      accessRole: c.accessRole,
-    }));
-    jsonResponse(res, 200, { calendars });
-  } catch (e) { jsonResponse(res, 200, { error: e.message, calendars: [] }); }
-}
-
-// ---- GA4 ----
-async function handleGA4Properties(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
-  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', properties: [] }); return; }
-  try {
-    const admin = google.analyticsadmin({ version: 'v1beta', auth: oauth2 });
-    const r = await admin.properties.list({ filter: 'parent:accounts/-' });
-    const properties = (r.data.properties || []).map(p => ({
-      id: p.name.replace('properties/', ''),
-      name: p.displayName,
-      timezone: p.timeZone,
-      currency: p.currencyCode,
-    }));
-    jsonResponse(res, 200, { properties });
-  } catch (e) { jsonResponse(res, 200, { error: e.message, properties: [] }); }
-}
-
-async function handleGA4Report(req, res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
-  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', rows: [] }); return; }
-  const propertyId = qs.propertyId;
-  if (!propertyId) { jsonResponse(res, 400, { error: 'MISSING_PROPERTY_ID' }); return; }
-  let body = {};
-  if (req.method === 'POST') {
-    try { const raw = await readRequestBody(req, 32 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) {}
-  }
-  try {
-    const data = google.analyticsdata({ version: 'v1beta', auth: oauth2 });
-    const r = await data.properties.runReport({
-      property: `properties/${propertyId}`,
-      requestBody: {
-        dateRanges: body.dateRanges || [{ startDate: '28daysAgo', endDate: 'today' }],
-        metrics: body.metrics || [
-          { name: 'sessions' },
-          { name: 'activeUsers' },
-          { name: 'newUsers' },
-          { name: 'bounceRate' },
-          { name: 'averageSessionDuration' },
-          { name: 'conversions' },
-        ],
-        dimensions: body.dimensions || [{ name: 'date' }],
-        orderBys: body.orderBys || [{ dimension: { dimensionName: 'date' } }],
-        limit: body.limit || 30,
-      },
-    });
-    jsonResponse(res, 200, {
-      rows: r.data.rows || [],
-      totals: r.data.totals || [],
-      rowCount: r.data.rowCount || 0,
-      dimensionHeaders: r.data.dimensionHeaders || [],
-      metricHeaders: r.data.metricHeaders || [],
-    });
-  } catch (e) { jsonResponse(res, 200, { error: e.message, rows: [] }); }
-}
-
-// ---- Gmail ----
-async function handleGmailMessages(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
-  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', messages: [] }); return; }
-  try {
-    const gmail = google.gmail({ version: 'v1', auth: oauth2 });
-    const listRes = await gmail.users.messages.list({
-      userId: 'me',
-      q: qs.q || '',
-      maxResults: parseInt(qs.maxResults) || 20,
-      pageToken: qs.pageToken || undefined,
-    });
-    const messageIds = (listRes.data.messages || []);
-    const messages = await Promise.all(
-      messageIds.map(async (m) => {
-        const msg = await gmail.users.messages.get({ userId: 'me', id: m.id, format: 'metadata', metadataHeaders: ['From', 'To', 'Subject', 'Date'] });
-        const headers = {};
-        (msg.data.payload.headers || []).forEach(h => { headers[h.name.toLowerCase()] = h.value; });
-        return {
-          id: m.id,
-          threadId: m.threadId,
-          snippet: msg.data.snippet,
-          subject: headers['subject'] || '(no subject)',
-          from: headers['from'] || '',
-          to: headers['to'] || '',
-          date: headers['date'] || '',
-          labelIds: msg.data.labelIds || [],
-        };
-      })
-    );
-    jsonResponse(res, 200, { messages, nextPageToken: listRes.data.nextPageToken || null, resultSizeEstimate: listRes.data.resultSizeEstimate || 0 });
-  } catch (e) { jsonResponse(res, 200, { error: e.message, messages: [] }); }
-}
-
-// ---- Google Sheets ----
-async function handleSheetsRead(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
-  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', values: [] }); return; }
-  const spreadsheetId = qs.spreadsheetId;
-  if (!spreadsheetId) { jsonResponse(res, 400, { error: 'MISSING_SPREADSHEET_ID' }); return; }
-  try {
-    const sheets = google.sheets({ version: 'v4', auth: oauth2 });
-    const range = qs.range || 'Sheet1';
-    const r = await sheets.spreadsheets.values.get({ spreadsheetId, range });
-    jsonResponse(res, 200, { values: r.data.values || [], range: r.data.range, majorDimension: r.data.majorDimension });
-  } catch (e) { jsonResponse(res, 200, { error: e.message, values: [] }); }
-}
-
-async function handleSheetsMetadata(res, qs) {
-  const companyId = (qs && qs.company) || 'default';
-  const oauth2 = await getGoogleAuthedClient(companyId);
-  if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED' }); return; }
-  const spreadsheetId = qs.spreadsheetId;
-  if (!spreadsheetId) { jsonResponse(res, 400, { error: 'MISSING_SPREADSHEET_ID' }); return; }
-  try {
-    const sheets = google.sheets({ version: 'v4', auth: oauth2 });
-    const r = await sheets.spreadsheets.get({ spreadsheetId, includeGridData: false });
-    jsonResponse(res, 200, {
-      title: r.data.properties.title,
-      sheets: (r.data.sheets || []).map(s => ({ title: s.properties.title, sheetId: s.properties.sheetId, rowCount: s.properties.gridProperties.rowCount, columnCount: s.properties.gridProperties.columnCount })),
-    });
-  } catch (e) { jsonResponse(res, 200, { error: e.message }); }
-}
-
-// ---- PageSpeed Insights ----
-async function handlePageSpeed(res, qs) {
-  const url = qs.url;
-  if (!url) { jsonResponse(res, 400, { error: 'MISSING_URL' }); return; }
-  const strategy = qs.strategy || 'mobile';
-  const apiKey = process.env.GOOGLE_API_KEY || process.env.PAGESPEED_API_KEY || '';
-  try {
-    const apiUrl = `https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=${encodeURIComponent(url)}&strategy=${strategy}&category=performance&category=accessibility&category=best-practices&category=seo${apiKey ? '&key=' + apiKey : ''}`;
-    const r = await fetch(apiUrl);
-    const data = await r.json();
-    if (data.error) { jsonResponse(res, 200, { error: data.error.message }); return; }
-    const cats = data.lighthouseResult.categories;
-    const audits = data.lighthouseResult.audits;
-    jsonResponse(res, 200, {
-      url,
-      strategy,
-      scores: {
-        performance: Math.round((cats.performance?.score || 0) * 100),
-        accessibility: Math.round((cats.accessibility?.score || 0) * 100),
-        bestPractices: Math.round((cats['best-practices']?.score || 0) * 100),
-        seo: Math.round((cats.seo?.score || 0) * 100),
-      },
-      metrics: {
-        fcp: audits['first-contentful-paint']?.displayValue,
-        lcp: audits['largest-contentful-paint']?.displayValue,
-        tbt: audits['total-blocking-time']?.displayValue,
-        cls: audits['cumulative-layout-shift']?.displayValue,
-        si: audits['speed-index']?.displayValue,
-        tti: audits['interactive']?.displayValue,
-      },
-      opportunities: Object.values(audits)
-        .filter(a => a.details?.type === 'opportunity' && a.score !== null && a.score < 0.9)
-        .map(a => ({ id: a.id, title: a.title, description: a.description, score: a.score, displayValue: a.displayValue }))
-        .slice(0, 10),
-    });
-  } catch (e) { jsonResponse(res, 200, { error: e.message }); }
-}
-
 // ============ STRIPE ============
 async function stripeApiRequest(method, path, body) {
   const key = (process.env.STRIPE_SECRET_KEY || '').replace(/[^\x20-\x7E]/g, '').trim();
@@ -1399,7 +748,7 @@ async function stripeApiRequest(method, path, body) {
     if (data) opts.headers['Content-Length'] = Buffer.byteLength(data);
     const r = require('https').request(opts, res2 => {
       let d = ''; res2.on('data', c => d += c);
-      res2.on('end', () => { try { resolve({ status: res2.statusCode, body: JSON.parse(d) }); } catch(e) { resolve({ status: res2.statusCode, body: {} }); } });
+      r.on('end', () => { try { resolve({ status: res2.statusCode, body: JSON.parse(d) }); } catch(e) { resolve({ status: res2.statusCode, body: {} }); } });
     });
     r.on('error', reject);
     if (data) r.write(data);
@@ -1408,96 +757,21 @@ async function stripeApiRequest(method, path, body) {
 }
 
 const STRIPE_TOKEN_FILE = path.join(__dirname, '.stripe-connect.json');
+function loadStripeConnect() { try { if (fs.existsSync(STRIPE_TOKEN_FILE)) return JSON.parse(fs.readFileSync(STRIPE_TOKEN_FILE, 'utf8')); } catch (e) {} return null; }
+function saveStripeConnect(data) { fs.writeFileSync(STRIPE_TOKEN_FILE, JSON.stringify(data, null, 2)); }
+function deleteStripeConnect() { try { if (fs.existsSync(STRIPE_TOKEN_FILE)) fs.unlinkSync(STRIPE_TOKEN_FILE); } catch (e) {} }
 
-// Read from local file cache (synchronous, fast)
-function loadStripeConnectFile() {
-  try { if (fs.existsSync(STRIPE_TOKEN_FILE)) return JSON.parse(fs.readFileSync(STRIPE_TOKEN_FILE, 'utf8')); } catch (e) {}
-  return null;
-}
-
-// Read from Replit PostgreSQL (durable, survives filesystem wipes)
-async function loadStripeConnectDb() {
-  try {
-    const res = await pgPool.query('SELECT account_id, email, country, connected_at FROM stripe_connection WHERE id = 1');
-    if (res.rows.length > 0) {
-      const row = res.rows[0];
-      return { accountId: row.account_id, email: row.email, country: row.country, connectedAt: row.connected_at };
+if (process.env.STRIPE_SECRET_KEY && !fs.existsSync(STRIPE_TOKEN_FILE)) {
+  stripeApiRequest('GET', '/v1/account', null).then(function(r) {
+    if (r.status === 200 && r.body && r.body.id) {
+      saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
+      console.log('[Stripe] Auto-seeded config for account', r.body.id);
+    } else {
+      console.warn('[Stripe] Auto-seed: unexpected response status', r.status);
     }
-  } catch (e) {}
-  return null;
-}
-
-// Write to both file cache and Replit PostgreSQL
-async function saveStripeConnect(data) {
-  try { fs.writeFileSync(STRIPE_TOKEN_FILE, JSON.stringify(data, null, 2)); } catch (e) {}
-  try {
-    await pgPool.query(
-      `INSERT INTO stripe_connection (id, account_id, email, country, connected_at)
-       VALUES (1, $1, $2, $3, $4)
-       ON CONFLICT (id) DO UPDATE SET account_id=$1, email=$2, country=$3, connected_at=$4`,
-      [data.accountId, data.email || null, data.country || null, data.connectedAt || Date.now()]
-    );
-  } catch (e) { console.error('[Stripe] Failed to persist to database:', e.message); }
-}
-
-// Remove from both file cache and Replit PostgreSQL
-async function deleteStripeConnect() {
-  try { if (fs.existsSync(STRIPE_TOKEN_FILE)) fs.unlinkSync(STRIPE_TOKEN_FILE); } catch (e) {}
-  try { await pgPool.query('DELETE FROM stripe_connection WHERE id = 1'); } catch (e) {}
-}
-
-// Auto-seed Stripe config on startup: file cache → PostgreSQL → Stripe API
-if (process.env.STRIPE_SECRET_KEY) {
-  (async () => {
-    // Ensure the table exists (idempotent)
-    try {
-      await pgPool.query(`CREATE TABLE IF NOT EXISTS stripe_connection (
-        id INTEGER PRIMARY KEY DEFAULT 1,
-        account_id TEXT NOT NULL,
-        email TEXT,
-        country TEXT,
-        connected_at BIGINT,
-        CONSTRAINT single_row CHECK (id = 1)
-      )`);
-    } catch (e) { console.error('[Stripe] Failed to ensure table:', e.message); }
-
-    const fileData = loadStripeConnectFile();
-    if (fileData) {
-      // File cache hit — sync to DB in background if missing there
-      const dbData = await loadStripeConnectDb();
-      if (!dbData) {
-        try {
-          await pgPool.query(
-            `INSERT INTO stripe_connection (id, account_id, email, country, connected_at)
-             VALUES (1, $1, $2, $3, $4)
-             ON CONFLICT (id) DO UPDATE SET account_id=$1, email=$2, country=$3, connected_at=$4`,
-            [fileData.accountId, fileData.email || null, fileData.country || null, fileData.connectedAt || Date.now()]
-          );
-          console.log('[Stripe] Synced existing config to database for account', fileData.accountId);
-        } catch (e) { console.error('[Stripe] Failed to sync to database:', e.message); }
-      }
-      return;
-    }
-    const fromDb = await loadStripeConnectDb();
-    if (fromDb) {
-      // Restore the local file cache from DB — no Stripe API call needed
-      try { fs.writeFileSync(STRIPE_TOKEN_FILE, JSON.stringify(fromDb, null, 2)); } catch (e) {}
-      console.log('[Stripe] Restored config from database for account', fromDb.accountId);
-      return;
-    }
-    // Neither file nor DB — hit the Stripe API as a last resort
-    try {
-      const r = await stripeApiRequest('GET', '/v1/account', null);
-      if (r.status === 200 && r.body && r.body.id) {
-        await saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
-        console.log('[Stripe] Auto-seeded config for account', r.body.id);
-      } else {
-        console.warn('[Stripe] Auto-seed: unexpected response status', r.status);
-      }
-    } catch (e) {
-      console.error('[Stripe] Auto-seed failed:', e.message);
-    }
-  })();
+  }).catch(function(e) {
+    console.error('[Stripe] Auto-seed failed:', e.message);
+  });
 }
 
 async function handleStripeConnect(req, res) {
@@ -1506,7 +780,7 @@ async function handleStripeConnect(req, res) {
   try {
     const r = await stripeApiRequest('GET', '/v1/account', null);
     if (r.status === 200 && r.body.id) {
-      await saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
+      saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
       jsonResponse(res, 200, { ok: true, accountId: r.body.id, email: r.body.email });
     } else {
       jsonResponse(res, 200, { ok: false, error: r.body.error?.message || 'Stripe connection failed' });
@@ -1520,10 +794,8 @@ async function handleStripeStatus(res) {
   try {
     const r = await stripeApiRequest('GET', '/v1/account', null);
     if (r.status === 200 && r.body.id) {
-      // Auto-save so future startups find data in Supabase and skip the API call
-      if (!loadStripeConnectFile()) {
-        await saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
-      }
+      const saved = loadStripeConnect();
+      if (!saved) saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
       jsonResponse(res, 200, { connected: true, configured: true, accountId: r.body.id, email: r.body.email, country: r.body.country });
     } else {
       jsonResponse(res, 200, { connected: false, configured: true, error: r.body.error?.message });
@@ -1556,11 +828,77 @@ async function handleStripeRevenue(res, qs) {
 }
 
 async function handleStripeDisconnect(res) {
-  await deleteStripeConnect();
+  deleteStripeConnect();
   jsonResponse(res, 200, { disconnected: true });
 }
 
-async function _legacyHandler(req, res) {
+// ============ NFC LANDING PAGE ============
+function nfcLandingHtml(name, reviewUrl) {
+  const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+  const safeReviewUrl = reviewUrl || `https://www.google.com/search?q=${encodeURIComponent(displayName + ' review')}`;
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Thanks for riding with ${displayName}!</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:linear-gradient(135deg,#1b3a6b 0%,#254a83 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#fff;border-radius:24px;padding:40px 32px;max-width:420px;width:100%;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3)}
+.logo{font-size:48px;margin-bottom:20px}
+h1{font-size:28px;font-weight:800;color:#1b3a6b;line-height:1.2;margin-bottom:8px}
+.sub{font-size:15px;color:#667085;margin-bottom:32px;line-height:1.5}
+.review-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:18px 24px;background:#c9a84c;color:#000;font-size:17px;font-weight:800;border-radius:14px;text-decoration:none;box-shadow:0 8px 24px rgba(201,168,76,.35);transition:transform .14s,box-shadow .14s}
+.review-btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(201,168,76,.45)}
+.star{font-size:22px}
+.footer{margin-top:28px;font-size:12px;color:#98a2b3}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">🚗</div>
+  <h1>Thank you for riding with ${displayName}!</h1>
+  <p class="sub">We hope you had a great experience. Your feedback helps us improve and means a lot to our team.</p>
+  <a href="${safeReviewUrl}" class="review-btn" target="_blank" rel="noopener">
+    <span class="star">⭐</span> Leave a Google Review
+  </a>
+  <p class="footer">Powered by CAL Marketing OS</p>
+</div>
+</body>
+</html>`;
+}
+
+// ============ REVIEW CONFIG HELPERS ============
+function buildReviewUrl(placeId, cidHex) {
+  if (cidHex) {
+    try {
+      const cidDecimal = BigInt(cidHex).toString();
+      return { reviewUrl: `https://www.google.com/maps?cid=${cidDecimal}`, cidDecimal };
+    } catch(e) {}
+  }
+  if (placeId) {
+    return { reviewUrl: `https://search.google.com/local/writereview?placeid=${placeId}`, cidDecimal: null };
+  }
+  return { reviewUrl: null, cidDecimal: null };
+}
+
+
+// ============================================================
+// CAL ADDITIONS SCRIPT — injected into every index.html response
+// Contains: account-scoped localStorage, NFC UI, Review Config UI
+// ============================================================
+const _CAL_ADDITIONS_B64 = 'LyogPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgIENBTCBPUyBBZGRpdGlvbnMg4oCUIEFjY291bnQgSXNvbGF0aW9uLCBORkMsIFJldmlldyBDb25maWcKICAgSW5qZWN0ZWQgYnkgc2VydmVyLmpzIGF0IHNlcnZlIHRpbWUKICAgPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09ICovCihmdW5jdGlvbigpIHsKICAndXNlIHN0cmljdCc7CgogIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogIC8vIEFDQ09VTlQtU0NPUEVEIExPQ0FMU1RPUkFHRQogIC8vIEFsbCBkYXRhIGtleXMgYXJlIHByZWZpeGVkIHdpdGggdGhlIGxvZ2dlZC1pbiBhY2NvdW50IGVtYWlsCiAgLy8gc28gc3dpdGNoaW5nIGFjY291bnRzIGF1dG9tYXRpY2FsbHkgc2NvcGVzIGFsbCBkYXRhLgogIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQoKICAvLyBQcmUtc2VlZCBrbm93biBhY2NvdW50cycgcmV2aWV3IGNvbmZpZ3Mgb24gZmlyc3QgbG9hZAogIGNvbnN0IEtOT1dOX1JFVklFV19DT05GSUdTID0gewogICAgJ2luZm9AdW5pdGVkc2V3ZXJzZXJ2aWNlLmNvbSc6IHsKICAgICAgY2lkSGV4OiAnMHgxNjAyYzYwMDQwYmM2Njc2JywKICAgICAgY2lkRGVjaW1hbDogJzE1ODYwNjE0MDYwNjAwMjEzNjYnLAogICAgICByZXZpZXdVcmw6ICdodHRwczovL3d3dy5nb29nbGUuY29tL21hcHM/Y2lkPTE1ODYwNjE0MDYwNjAwMjEzNjYnLAogICAgfSwKICAgIC8vIEdyZWVuIENvbGxhciBSb29maW5nIChjb25maXJtIGVtYWlsIGJlZm9yZSBhY3RpdmF0aW5nKToKICAgIC8vICdpbmZvQGdyZWVuY29sbGFycm9vZmluZy5jb20nOiB7CiAgICAvLyAgIGNpZEhleDogJzB4YjVhZGYxYjc5NjIyN2ZlZicsCiAgICAvLyAgIGNpZERlY2ltYWw6ICcxMzEwMTAxNDAxNDQ1NDQ4OTA3MScsCiAgICAvLyAgIHJldmlld1VybDogJ2h0dHBzOi8vd3d3Lmdvb2dsZS5jb20vbWFwcz9jaWQ9MTMxMDEwMTQwMTQ0NTQ0ODkwNzEnLAogICAgLy8gfSwKICB9OwoKICBmdW5jdGlvbiBnZXRDYWxBY2NvdW50KCkgewogICAgLy8gY3VycmVudFVzZXIgaXMgc2V0IGJ5IHRoZSBhcHAncyBsb2dpbiBmbG93CiAgICByZXR1cm4gKHdpbmRvdy5jdXJyZW50VXNlciB8fCB3aW5kb3cuX2NhbEN1cnJlbnRVc2VyIHx8ICcnKS50b0xvd2VyQ2FzZSgpLnRyaW0oKTsKICB9CgogIGZ1bmN0aW9uIGFjY3RLZXkoa2V5KSB7CiAgICBjb25zdCBhY2N0ID0gZ2V0Q2FsQWNjb3VudCgpOwogICAgaWYgKCFhY2N0KSByZXR1cm4ga2V5OwogICAgcmV0dXJuIGtleSArICdfXycgKyBhY2N0OwogIH0KCiAgLy8gV3JhcCBsb2NhbFN0b3JhZ2UgdG8gYmUgYWNjb3VudC1zY29wZWQgZm9yIGtub3duIENBTCBPUyBrZXlzCiAgY29uc3QgQ0FMX1NDT1BFRF9QUkVGSVhFUyA9IFsKICAgICdjYWxfbGVhZHMnLCAnY2FsX25vdGVzJywgJ2NhbF90b2RvcycsICdjYWxfY2FtcGFpZ25zJywKICAgICdjYWxfcmV2aWV3cycsICdjYWxfaW5ib3gnLCAnY2FsX2ZpbGVzJywgJ2NhbF9yZXBvcnRzJywKICAgICdjYWxfbmZjX2NvbmZpZycsICdjYWxfcmV2aWV3X2NvbmZpZycsICdjYWxfYWNjb3VudF9wcmVmcycsCiAgICAnY2FsLWxlYWRzJywgJ2NhbC1ub3RlcycsICdjYWwtdG9kb3MnLCAnY2FsLWNhbXBhaWducycsCiAgICAnY2FsLWthbmJhbicsICdjYWwtdGFza3MnLAogIF07CgogIGZ1bmN0aW9uIG5lZWRzU2NvcGUoa2V5KSB7CiAgICByZXR1cm4gQ0FMX1NDT1BFRF9QUkVGSVhFUy5zb21lKHAgPT4ga2V5LnN0YXJ0c1dpdGgocCkpOwogIH0KCiAgY29uc3QgX29yaWdHZXRJdGVtID0gU3RvcmFnZS5wcm90b3R5cGUuZ2V0SXRlbTsKICBjb25zdCBfb3JpZ1NldEl0ZW0gPSBTdG9yYWdlLnByb3RvdHlwZS5zZXRJdGVtOwogIGNvbnN0IF9vcmlnUmVtb3ZlSXRlbSA9IFN0b3JhZ2UucHJvdG90eXBlLnJlbW92ZUl0ZW07CgogIFN0b3JhZ2UucHJvdG90eXBlLmdldEl0ZW0gPSBmdW5jdGlvbihrZXkpIHsKICAgIGlmICh0aGlzID09PSBsb2NhbFN0b3JhZ2UgJiYgbmVlZHNTY29wZShrZXkpKSB7CiAgICAgIGNvbnN0IHNjb3BlZEtleSA9IGFjY3RLZXkoa2V5KTsKICAgICAgY29uc3Qgc2NvcGVkID0gX29yaWdHZXRJdGVtLmNhbGwodGhpcywgc2NvcGVkS2V5KTsKICAgICAgaWYgKHNjb3BlZCAhPT0gbnVsbCkgcmV0dXJuIHNjb3BlZDsKICAgICAgLy8gRmFsbCBiYWNrIHRvIHVuc2NvcGVkIGZvciBtaWdyYXRpb24KICAgICAgcmV0dXJuIF9vcmlnR2V0SXRlbS5jYWxsKHRoaXMsIGtleSk7CiAgICB9CiAgICByZXR1cm4gX29yaWdHZXRJdGVtLmNhbGwodGhpcywga2V5KTsKICB9OwoKICBTdG9yYWdlLnByb3RvdHlwZS5zZXRJdGVtID0gZnVuY3Rpb24oa2V5LCB2YWx1ZSkgewogICAgaWYgKHRoaXMgPT09IGxvY2FsU3RvcmFnZSAmJiBuZWVkc1Njb3BlKGtleSkpIHsKICAgICAgcmV0dXJuIF9vcmlnU2V0SXRlbS5jYWxsKHRoaXMsIGFjY3RLZXkoa2V5KSwgdmFsdWUpOwogICAgfQogICAgcmV0dXJuIF9vcmlnU2V0SXRlbS5jYWxsKHRoaXMsIGtleSwgdmFsdWUpOwogIH07CgogIFN0b3JhZ2UucHJvdG90eXBlLnJlbW92ZUl0ZW0gPSBmdW5jdGlvbihrZXkpIHsKICAgIGlmICh0aGlzID09PSBsb2NhbFN0b3JhZ2UgJiYgbmVlZHNTY29wZShrZXkpKSB7CiAgICAgIHJldHVybiBfb3JpZ1JlbW92ZUl0ZW0uY2FsbCh0aGlzLCBhY2N0S2V5KGtleSkpOwogICAgfQogICAgcmV0dXJuIF9vcmlnUmVtb3ZlSXRlbS5jYWxsKHRoaXMsIGtleSk7CiAgfTsKCiAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgLy8gTUVUQSBUT0tFTiBIRUxQRVJTIChzaGFyZWQgd2l0aCBleGlzdGluZyBhcHApCiAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgZnVuY3Rpb24gZ2V0TWV0YVRva2VuKCkgewogICAgcmV0dXJuIGxvY2FsU3RvcmFnZS5nZXRJdGVtKCdjYWwtbWV0YS10b2tlbicpIHx8IHNlc3Npb25TdG9yYWdlLmdldEl0ZW0oJ2NhbC1tZXRhLXRva2VuJykgfHwgJyc7CiAgfQoKICBmdW5jdGlvbiBhcGlIZWFkZXJzKGV4dHJhKSB7CiAgICByZXR1cm4gT2JqZWN0LmFzc2lnbih7CiAgICAgICdDb250ZW50LVR5cGUnOiAnYXBwbGljYXRpb24vanNvbicsCiAgICAgICdBdXRob3JpemF0aW9uJzogJ0JlYXJlciAnICsgZ2V0TWV0YVRva2VuKCksCiAgICB9LCBleHRyYSB8fCB7fSk7CiAgfQoKICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAvLyBSRVZJRVcgQ09ORklHIOKAlCBwcmUtc2VlZCBvbiBmaXJzdCBsb2FkCiAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgZnVuY3Rpb24gcHJlU2VlZFJldmlld0NvbmZpZ3MoKSB7CiAgICBjb25zdCB0b2tlbiA9IGdldE1ldGFUb2tlbigpOwogICAgaWYgKCF0b2tlbikgcmV0dXJuOyAvLyBub3QgbG9nZ2VkIGluIHlldAoKICAgIE9iamVjdC5rZXlzKEtOT1dOX1JFVklFV19DT05GSUdTKS5mb3JFYWNoKGZ1bmN0aW9uKGFjY291bnQpIHsKICAgICAgY29uc3QgY2ZnID0gS05PV05fUkVWSUVXX0NPTkZJR1NbYWNjb3VudF07CiAgICAgIC8vIE9ubHkgc2VlZCBpZiBub3QgYWxyZWFkeSBzYXZlZAogICAgICBmZXRjaCgnL2FwaS9yZXZpZXcvY29uZmlnP2FjY291bnQ9JyArIGVuY29kZVVSSUNvbXBvbmVudChhY2NvdW50KSwgeyBoZWFkZXJzOiBhcGlIZWFkZXJzKCkgfSkKICAgICAgICAudGhlbihmdW5jdGlvbihyKSB7IHJldHVybiByLmpzb24oKTsgfSkKICAgICAgICAudGhlbihmdW5jdGlvbihkYXRhKSB7CiAgICAgICAgICBpZiAoIWRhdGEuY29uZmlnKSB7CiAgICAgICAgICAgIC8vIFNlZWQgaXQKICAgICAgICAgICAgZmV0Y2goJy9hcGkvcmV2aWV3L2NvbmZpZycsIHsKICAgICAgICAgICAgICBtZXRob2Q6ICdQT1NUJywKICAgICAgICAgICAgICBoZWFkZXJzOiBhcGlIZWFkZXJzKCksCiAgICAgICAgICAgICAgYm9keTogSlNPTi5zdHJpbmdpZnkoeyBhY2NvdW50OiBhY2NvdW50LCBjaWRIZXg6IGNmZy5jaWRIZXggfSksCiAgICAgICAgICAgIH0pLmNhdGNoKGZ1bmN0aW9uKCkge30pOwogICAgICAgICAgfQogICAgICAgIH0pLmNhdGNoKGZ1bmN0aW9uKCkge30pOwogICAgfSk7CiAgfQoKICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICAvLyBORkMgU0VDVElPTiBFTkhBTkNFTUVOVFMKICAvLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KICBmdW5jdGlvbiByZW5kZXJOZmNBZGRpdGlvbnMoKSB7CiAgICBjb25zdCBuZmNTY3JlZW4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncy1uZmMnKTsKICAgIGlmICghbmZjU2NyZWVuKSByZXR1cm47CiAgICBpZiAoZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ2NhbC1uZmMtYWRkaXRpb25zJykpIHJldHVybjsgLy8gYWxyZWFkeSBpbmplY3RlZAoKICAgIGNvbnN0IHRva2VuID0gZ2V0TWV0YVRva2VuKCk7CiAgICBjb25zdCBhZGRpdGlvbnNEaXYgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdkaXYnKTsKICAgIGFkZGl0aW9uc0Rpdi5pZCA9ICdjYWwtbmZjLWFkZGl0aW9ucyc7CiAgICBhZGRpdGlvbnNEaXYuc3R5bGUubWFyZ2luVG9wID0gJzI0cHgnOwoKICAgIGFkZGl0aW9uc0Rpdi5pbm5lckhUTUwgPSBgCjxkaXYgY2xhc3M9ImNhcmQgY2FyZC1wYWQiIHN0eWxlPSJtYXJnaW4tYm90dG9tOjE0cHgiPgogIDxkaXYgY2xhc3M9ImNhcmQtaGVhZCI+CiAgICA8c3BhbiBjbGFzcz0iY2FyZC10aXRsZSI+TkZDIFJldmlldyBVUkwgQ29uZmlnPC9zcGFuPgogIDwvZGl2PgogIDxwIHN0eWxlPSJmb250LXNpemU6MTJweDtjb2xvcjp2YXIoLS1tdXRlZCk7bWFyZ2luLWJvdHRvbToxNHB4Ij5TZXQgdGhlIEdvb2dsZSBSZXZpZXcgVVJMIGVhY2ggTkZDIGNhcmQgcmVkaXJlY3RzIHRvLiBMZWF2ZSBibGFuayB0byB1c2UgdGhlIGFjY291bnQgcmV2aWV3IFVSTC48L3A+CiAgPGRpdiBzdHlsZT0iZGlzcGxheTpncmlkO2dhcDoxMHB4Ij4KICAgIDxkaXYgc3R5bGU9ImRpc3BsYXk6Z3JpZDtnYXA6NnB4Ij4KICAgICAgPGxhYmVsIHN0eWxlPSJmb250LXNpemU6MTJweDtmb250LXdlaWdodDo4MDA7Y29sb3I6dmFyKC0tbXV0ZWQpO3RleHQtdHJhbnNmb3JtOnVwcGVyY2FzZTtsZXR0ZXItc3BhY2luZzouMDRlbSI+TmFtZSAoZS5nLiBqYW1lcywgY2hyaXMpPC9sYWJlbD4KICAgICAgPGlucHV0IGlkPSJuZmMtdXJsLW5hbWUiIGNsYXNzPSJpbnB1dC1zdGQiIHBsYWNlaG9sZGVyPSJqYW1lcyIgc3R5bGU9ImhlaWdodDo0MHB4Ij4KICAgIDwvZGl2PgogICAgPGRpdiBzdHlsZT0iZGlzcGxheTpncmlkO2dhcDo2cHgiPgogICAgICA8bGFiZWwgc3R5bGU9ImZvbnQtc2l6ZToxMnB4O2ZvbnQtd2VpZ2h0OjgwMDtjb2xvcjp2YXIoLS1tdXRlZCk7dGV4dC10cmFuc2Zvcm06dXBwZXJjYXNlO2xldHRlci1zcGFjaW5nOi4wNGVtIj5Hb29nbGUgUmV2aWV3IFVSTDwvbGFiZWw+CiAgICAgIDxpbnB1dCBpZD0ibmZjLXVybC12YWx1ZSIgY2xhc3M9ImlucHV0LXN0ZCIgcGxhY2Vob2xkZXI9Imh0dHBzOi8vd3d3Lmdvb2dsZS5jb20vbWFwcz9jaWQ9Li4uIiBzdHlsZT0iaGVpZ2h0OjQwcHgiPgogICAgPC9kaXY+CiAgICA8YnV0dG9uIG9uY2xpY2s9ImNhbFNhdmVOZmNSZXZpZXdVcmwoKSIgY2xhc3M9ImJ0bi1wcmltYXJ5IiBzdHlsZT0id2lkdGg6YXV0bztoZWlnaHQ6MzhweDtwYWRkaW5nOjAgMjBweDtib3JkZXItcmFkaXVzOjEwcHgiPlNhdmUgTkZDIFVSTDwvYnV0dG9uPgogICAgPGRpdiBpZD0ibmZjLXVybC1zdGF0dXMiIHN0eWxlPSJmb250LXNpemU6MTJweDtmb250LXdlaWdodDo3MDA7ZGlzcGxheTpub25lIj48L2Rpdj4KICA8L2Rpdj4KPC9kaXY+Cgo8ZGl2IGNsYXNzPSJjYXJkIiBzdHlsZT0ibWFyZ2luLWJvdHRvbToxNHB4Ij4KICA8ZGl2IGNsYXNzPSJjYXJkLXBhZCIgc3R5bGU9InBhZGRpbmctYm90dG9tOjhweCI+CiAgICA8ZGl2IGNsYXNzPSJjYXJkLWhlYWQiPgogICAgICA8c3BhbiBjbGFzcz0iY2FyZC10aXRsZSI+TkZDIFRhcCBMb2c8L3NwYW4+CiAgICAgIDxidXR0b24gb25jbGljaz0iY2FsTG9hZE5mY1RhcHMoKSIgY2xhc3M9ImJ0bi12aWV3IiBzdHlsZT0iaGVpZ2h0OjMwcHgiPlJlZnJlc2g8L2J1dHRvbj4KICAgIDwvZGl2PgogIDwvZGl2PgogIDxkaXYgY2xhc3M9Im5mYy10YWJsZS13cmFwIj4KICAgIDx0YWJsZSBjbGFzcz0idGJsIiBpZD0ibmZjLXRhcC10YWJsZSI+CiAgICAgIDx0aGVhZD4KICAgICAgICA8dHI+CiAgICAgICAgICA8dGg+TmFtZTwvdGg+CiAgICAgICAgICA8dGg+VGltZTwvdGg+CiAgICAgICAgICA8dGg+VXNlciBBZ2VudDwvdGg+CiAgICAgICAgPC90cj4KICAgICAgPC90aGVhZD4KICAgICAgPHRib2R5IGlkPSJuZmMtdGFwLXRib2R5Ij4KICAgICAgICA8dHI+PHRkIGNvbHNwYW49IjMiIHN0eWxlPSJ0ZXh0LWFsaWduOmNlbnRlcjtjb2xvcjp2YXIoLS1tdXRlZCk7cGFkZGluZzoyMHB4Ij5DbGljayBSZWZyZXNoIHRvIGxvYWQgdGFwIGxvZzwvdGQ+PC90cj4KICAgICAgPC90Ym9keT4KICAgIDwvdGFibGU+CiAgPC9kaXY+CjwvZGl2PgpgOwogICAgbmZjU2NyZWVuLmFwcGVuZENoaWxkKGFkZGl0aW9uc0Rpdik7CiAgfQoKICB3aW5kb3cuY2FsU2F2ZU5mY1Jldmlld1VybCA9IGZ1bmN0aW9uKCkgewogICAgY29uc3QgbmFtZSA9IChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbmZjLXVybC1uYW1lJykgfHwge30pLnZhbHVlIHx8ICcnOwogICAgY29uc3QgdXJsID0gKGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCduZmMtdXJsLXZhbHVlJykgfHwge30pLnZhbHVlIHx8ICcnOwogICAgY29uc3Qgc3RhdHVzRWwgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbmZjLXVybC1zdGF0dXMnKTsKICAgIGlmICghbmFtZSB8fCAhdXJsKSB7CiAgICAgIGlmIChzdGF0dXNFbCkgeyBzdGF0dXNFbC50ZXh0Q29udGVudCA9ICdQbGVhc2UgZmlsbCBpbiBib3RoIG5hbWUgYW5kIFVSTC4nOyBzdGF0dXNFbC5zdHlsZS5jb2xvciA9ICd2YXIoLS1yZWQpJzsgc3RhdHVzRWwuc3R5bGUuZGlzcGxheSA9ICdibG9jayc7IH0KICAgICAgcmV0dXJuOwogICAgfQogICAgZmV0Y2goJy9hcGkvbmZjL3NldC1yZXZpZXctdXJsJywgewogICAgICBtZXRob2Q6ICdQT1NUJywKICAgICAgaGVhZGVyczogYXBpSGVhZGVycygpLAogICAgICBib2R5OiBKU09OLnN0cmluZ2lmeSh7IG5hbWU6IG5hbWUudHJpbSgpLnRvTG93ZXJDYXNlKCksIHJldmlld1VybDogdXJsLnRyaW0oKSB9KSwKICAgIH0pLnRoZW4oZnVuY3Rpb24ocikgeyByZXR1cm4gci5qc29uKCk7IH0pLnRoZW4oZnVuY3Rpb24oZCkgewogICAgICBpZiAoZC5vaykgewogICAgICAgIGlmIChzdGF0dXNFbCkgeyBzdGF0dXNFbC50ZXh0Q29udGVudCA9ICdTYXZlZCEgTkZDIHRhcCBmb3IgIicgKyBkLm5hbWUgKyAnIiB3aWxsIG5vdyByZWRpcmVjdCB0bzogJyArIGQucmV2aWV3VXJsOyBzdGF0dXNFbC5zdHlsZS5jb2xvciA9ICd2YXIoLS1ncmVlbiknOyBzdGF0dXNFbC5zdHlsZS5kaXNwbGF5ID0gJ2Jsb2NrJzsgfQogICAgICB9IGVsc2UgewogICAgICAgIGlmIChzdGF0dXNFbCkgeyBzdGF0dXNFbC50ZXh0Q29udGVudCA9ICdFcnJvcjogJyArIChkLmVycm9yIHx8ICdVbmtub3duIGVycm9yJyk7IHN0YXR1c0VsLnN0eWxlLmNvbG9yID0gJ3ZhcigtLXJlZCknOyBzdGF0dXNFbC5zdHlsZS5kaXNwbGF5ID0gJ2Jsb2NrJzsgfQogICAgICB9CiAgICB9KS5jYXRjaChmdW5jdGlvbihlKSB7CiAgICAgIGlmIChzdGF0dXNFbCkgeyBzdGF0dXNFbC50ZXh0Q29udGVudCA9ICdOZXR3b3JrIGVycm9yOiAnICsgZS5tZXNzYWdlOyBzdGF0dXNFbC5zdHlsZS5jb2xvciA9ICd2YXIoLS1yZWQpJzsgc3RhdHVzRWwuc3R5bGUuZGlzcGxheSA9ICdibG9jayc7IH0KICAgIH0pOwogIH07CgogIHdpbmRvdy5jYWxMb2FkTmZjVGFwcyA9IGZ1bmN0aW9uKCkgewogICAgY29uc3QgdGJvZHkgPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnbmZjLXRhcC10Ym9keScpOwogICAgaWYgKCF0Ym9keSkgcmV0dXJuOwogICAgdGJvZHkuaW5uZXJIVE1MID0gJzx0cj48dGQgY29sc3Bhbj0iMyIgc3R5bGU9InRleHQtYWxpZ246Y2VudGVyO2NvbG9yOnZhcigtLW11dGVkKTtwYWRkaW5nOjIwcHgiPkxvYWRpbmcuLi48L3RkPjwvdHI+JzsKICAgIGZldGNoKCcvYXBpL25mYy90YXBzJywgeyBoZWFkZXJzOiBhcGlIZWFkZXJzKCkgfSkKICAgICAgLnRoZW4oZnVuY3Rpb24ocikgeyByZXR1cm4gci5qc29uKCk7IH0pCiAgICAgIC50aGVuKGZ1bmN0aW9uKGRhdGEpIHsKICAgICAgICBjb25zdCB0YXBzID0gKGRhdGEudGFwcyB8fCBbXSkuc2xpY2UoKS5yZXZlcnNlKCk7CiAgICAgICAgaWYgKCF0YXBzLmxlbmd0aCkgewogICAgICAgICAgdGJvZHkuaW5uZXJIVE1MID0gJzx0cj48dGQgY29sc3Bhbj0iMyIgc3R5bGU9InRleHQtYWxpZ246Y2VudGVyO2NvbG9yOnZhcigtLW11dGVkKTtwYWRkaW5nOjIwcHgiPk5vIHRhcHMgcmVjb3JkZWQgeWV0PC90ZD48L3RyPic7CiAgICAgICAgICByZXR1cm47CiAgICAgICAgfQogICAgICAgIHRib2R5LmlubmVySFRNTCA9IHRhcHMubWFwKGZ1bmN0aW9uKHQpIHsKICAgICAgICAgIGNvbnN0IHVhID0gKHQudXNlckFnZW50IHx8ICcnKS5zbGljZSgwLCA2MCkgKyAodC51c2VyQWdlbnQgJiYgdC51c2VyQWdlbnQubGVuZ3RoID4gNjAgPyAn4oCmJyA6ICcnKTsKICAgICAgICAgIGNvbnN0IHRzID0gdC50aW1lc3RhbXAgPyBuZXcgRGF0ZSh0LnRpbWVzdGFtcCkudG9Mb2NhbGVTdHJpbmcoKSA6ICcnOwogICAgICAgICAgcmV0dXJuICc8dHI+PHRkIHN0eWxlPSJmb250LXdlaWdodDo4MDAiPicgKyAodC5uYW1lIHx8ICcnKSArICc8L3RkPjx0ZD4nICsgdHMgKyAnPC90ZD48dGQgc3R5bGU9ImZvbnQtc2l6ZToxMXB4O2NvbG9yOnZhcigtLW11dGVkKSI+JyArIHVhICsgJzwvdGQ+PC90cj4nOwogICAgICAgIH0pLmpvaW4oJycpOwogICAgICB9KS5jYXRjaChmdW5jdGlvbihlKSB7CiAgICAgICAgdGJvZHkuaW5uZXJIVE1MID0gJzx0cj48dGQgY29sc3Bhbj0iMyIgc3R5bGU9InRleHQtYWxpZ246Y2VudGVyO2NvbG9yOnZhcigtLXJlZCk7cGFkZGluZzoyMHB4Ij5FcnJvcjogJyArIGUubWVzc2FnZSArICc8L3RkPjwvdHI+JzsKICAgICAgfSk7CiAgfTsKCiAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgLy8gUkVWSUVXIENPTkZJRyBTRUNUSU9OIEVOSEFOQ0VNRU5UUwogIC8vID09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQogIGZ1bmN0aW9uIHJlbmRlclJldmlld0NvbmZpZ1BhbmVsKCkgewogICAgLy8gVHJ5IG11bHRpcGxlIGtub3duIElEcyBmb3IgdGhlIHJldmlld3Mgc2NyZWVuCiAgICBjb25zdCByZXZpZXdTY3JlZW4gPSBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncy1yZXZpZXdzJykgfHwgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3MtcmVwdXRhdGlvbicpIHx8IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdzLXJldmlldycpOwogICAgaWYgKCFyZXZpZXdTY3JlZW4pIHJldHVybjsKICAgIGlmIChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgnY2FsLXJldmlldy1jb25maWctcGFuZWwnKSkgcmV0dXJuOwoKICAgIGNvbnN0IHBhbmVsID0gZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgnZGl2Jyk7CiAgICBwYW5lbC5pZCA9ICdjYWwtcmV2aWV3LWNvbmZpZy1wYW5lbCc7CiAgICBwYW5lbC5zdHlsZS5tYXJnaW5Cb3R0b20gPSAnMjBweCc7CgogICAgY29uc3QgYWNjb3VudCA9IGdldENhbEFjY291bnQoKTsKCiAgICBwYW5lbC5pbm5lckhUTUwgPSBgCjxkaXYgY2xhc3M9ImNhcmQgY2FyZC1wYWQiPgogIDxkaXYgY2xhc3M9ImNhcmQtaGVhZCI+CiAgICA8c3BhbiBjbGFzcz0iY2FyZC10aXRsZSI+R29vZ2xlIFJldmlldyBMaW5rPC9zcGFuPgogIDwvZGl2PgogIDxwIHN0eWxlPSJmb250LXNpemU6MTJweDtjb2xvcjp2YXIoLS1tdXRlZCk7bWFyZ2luLWJvdHRvbToxNnB4Ij5Db25maWd1cmUgeW91ciBHb29nbGUgcmV2aWV3IGxpbmsuIFN0YWZmIGNhbiBjb3B5IGFuZCBzaGFyZSBpdCB0byBjb2xsZWN0IG1vcmUgcmV2aWV3cy48L3A+CgogIDxkaXYgc3R5bGU9ImRpc3BsYXk6Z3JpZDtnYXA6MTBweDttYXJnaW4tYm90dG9tOjE2cHgiPgogICAgPGRpdiBzdHlsZT0iZGlzcGxheTpncmlkO2dhcDo2cHgiPgogICAgICA8bGFiZWwgc3R5bGU9ImZvbnQtc2l6ZToxMnB4O2ZvbnQtd2VpZ2h0OjgwMDtjb2xvcjp2YXIoLS1tdXRlZCk7dGV4dC10cmFuc2Zvcm06dXBwZXJjYXNlO2xldHRlci1zcGFjaW5nOi4wNGVtIj5Hb29nbGUgUGxhY2UgSUQ8L2xhYmVsPgogICAgICA8aW5wdXQgaWQ9InJ2LXBsYWNlLWlkIiBjbGFzcz0iaW5wdXQtc3RkIiBwbGFjZWhvbGRlcj0iQ2hJSi4uLiIgc3R5bGU9ImhlaWdodDo0MHB4Ij4KICAgICAgPHNwYW4gc3R5bGU9ImZvbnQtc2l6ZToxMXB4O2NvbG9yOnZhcigtLW11dGVkMikiPkZpbmQgaW4gR29vZ2xlIE1hcHMg4oaSIFNoYXJlIOKGkiBFbWJlZCDihpIgUGxhY2UgSUQuIEZvcm1hdDogQ2hJSi4uLjwvc3Bhbj4KICAgIDwvZGl2PgogICAgPGRpdiBzdHlsZT0iZGlzcGxheTpncmlkO2dhcDo2cHgiPgogICAgICA8bGFiZWwgc3R5bGU9ImZvbnQtc2l6ZToxMnB4O2ZvbnQtd2VpZ2h0OjgwMDtjb2xvcjp2YXIoLS1tdXRlZCk7dGV4dC10cmFuc2Zvcm06dXBwZXJjYXNlO2xldHRlci1zcGFjaW5nOi4wNGVtIj5Hb29nbGUgQ0lEIChoZXgsIGZyb20gTWFwcyBVUkwpPC9sYWJlbD4KICAgICAgPGlucHV0IGlkPSJydi1jaWQtaGV4IiBjbGFzcz0iaW5wdXQtc3RkIiBwbGFjZWhvbGRlcj0iMHgxNjAyYzYwMDQwYmM2Njc2IiBzdHlsZT0iaGVpZ2h0OjQwcHgiPgogICAgICA8c3BhbiBzdHlsZT0iZm9udC1zaXplOjExcHg7Y29sb3I6dmFyKC0tbXV0ZWQyKSI+RnJvbSBHb29nbGUgTWFwcyBVUkw6ID9jaWQ9MTIzNC4uLiBvciBoZXggZm9ybWF0IDB4Li4uIENJRCBnaXZlcyBhIGRpcmVjdCByZXZpZXcgbGluay4gVGFrZXMgcHJpb3JpdHkgb3ZlciBQbGFjZSBJRC48L3NwYW4+CiAgICA8L2Rpdj4KICAgIDxidXR0b24gb25jbGljaz0iY2FsU2F2ZVJldmlld0NvbmZpZygpIiBjbGFzcz0iYnRuLXByaW1hcnkiIHN0eWxlPSJ3aWR0aDphdXRvO2hlaWdodDozOHB4O3BhZGRpbmc6MCAyMHB4O2JvcmRlci1yYWRpdXM6MTBweCI+U2F2ZSAmIEdlbmVyYXRlIExpbms8L2J1dHRvbj4KICA8L2Rpdj4KCiAgPGRpdiBpZD0icnYtbGluay1kaXNwbGF5IiBzdHlsZT0iZGlzcGxheTpub25lO3BhZGRpbmc6MTRweDtiYWNrZ3JvdW5kOnZhcigtLXBhZ2UpO2JvcmRlci1yYWRpdXM6MTBweDtib3JkZXI6MXB4IHNvbGlkIHZhcigtLWJvcmRlcikiPgogICAgPGRpdiBzdHlsZT0iZm9udC1zaXplOjExcHg7Zm9udC13ZWlnaHQ6OTAwO3RleHQtdHJhbnNmb3JtOnVwcGVyY2FzZTtsZXR0ZXItc3BhY2luZzouMDZlbTtjb2xvcjp2YXIoLS1tdXRlZCk7bWFyZ2luLWJvdHRvbTo4cHgiPllvdXIgR29vZ2xlIFJldmlldyBMaW5rPC9kaXY+CiAgICA8ZGl2IHN0eWxlPSJkaXNwbGF5OmZsZXg7YWxpZ24taXRlbXM6Y2VudGVyO2dhcDo4cHgiPgogICAgICA8YSBpZD0icnYtbGluay1hbmNob3IiIGhyZWY9IiMiIHRhcmdldD0iX2JsYW5rIiByZWw9Im5vb3BlbmVyIgogICAgICAgICBzdHlsZT0iZmxleDoxO2ZvbnQtc2l6ZToxM3B4O2ZvbnQtd2VpZ2h0OjcwMDtjb2xvcjp2YXIoLS1ibHVlKTt3b3JkLWJyZWFrOmJyZWFrLWFsbDt0ZXh0LWRlY29yYXRpb246dW5kZXJsaW5lIj48L2E+CiAgICAgIDxidXR0b24gb25jbGljaz0iY2FsQ29weVJldmlld0xpbmsoKSIgY2xhc3M9ImJ0bi12aWV3IiBzdHlsZT0id2hpdGUtc3BhY2U6bm93cmFwO2ZsZXgtc2hyaW5rOjAiPkNvcHk8L2J1dHRvbj4KICAgIDwvZGl2PgogICAgPGRpdiBzdHlsZT0ibWFyZ2luLXRvcDoxMHB4O2ZvbnQtc2l6ZToxMXB4O2NvbG9yOnZhcigtLW11dGVkKSI+U2hhcmUgdGhpcyBsaW5rIHdpdGggY3VzdG9tZXJzIHZpYSB0ZXh0LCBlbWFpbCwgb3IgTkZDIGNhcmQuIENsaWNraW5nIGl0IG9wZW5zIHRoZSBHb29nbGUgcmV2aWV3IGZvcm0gZGlyZWN0bHkuPC9kaXY+CiAgPC9kaXY+CiAgPGRpdiBpZD0icnYtY29uZmlnLXN0YXR1cyIgc3R5bGU9ImZvbnQtc2l6ZToxMnB4O2ZvbnQtd2VpZ2h0OjcwMDttYXJnaW4tdG9wOjhweDtkaXNwbGF5Om5vbmUiPjwvZGl2Pgo8L2Rpdj4KYDsKCiAgICAvLyBJbnNlcnQgYXQgdGhlIHRvcCBvZiB0aGUgcmV2aWV3IHNjcmVlbgogICAgcmV2aWV3U2NyZWVuLmluc2VydEJlZm9yZShwYW5lbCwgcmV2aWV3U2NyZWVuLmZpcnN0Q2hpbGQpOwoKICAgIC8vIExvYWQgZXhpc3RpbmcgY29uZmlnCiAgICBjYWxMb2FkUmV2aWV3Q29uZmlnKCk7CiAgfQoKICB3aW5kb3cuY2FsTG9hZFJldmlld0NvbmZpZyA9IGZ1bmN0aW9uKCkgewogICAgY29uc3QgYWNjb3VudCA9IGdldENhbEFjY291bnQoKTsKICAgIGlmICghYWNjb3VudCkgcmV0dXJuOwogICAgZmV0Y2goJy9hcGkvcmV2aWV3L2NvbmZpZz9hY2NvdW50PScgKyBlbmNvZGVVUklDb21wb25lbnQoYWNjb3VudCksIHsgaGVhZGVyczogYXBpSGVhZGVycygpIH0pCiAgICAgIC50aGVuKGZ1bmN0aW9uKHIpIHsgcmV0dXJuIHIuanNvbigpOyB9KQogICAgICAudGhlbihmdW5jdGlvbihkYXRhKSB7CiAgICAgICAgaWYgKGRhdGEuY29uZmlnICYmIGRhdGEuY29uZmlnLnJldmlld1VybCkgewogICAgICAgICAgY2FsU2hvd1Jldmlld0xpbmsoZGF0YS5jb25maWcucmV2aWV3VXJsKTsKICAgICAgICAgIGlmIChkYXRhLmNvbmZpZy5wbGFjZUlkICYmIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdydi1wbGFjZS1pZCcpKSB7CiAgICAgICAgICAgIGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdydi1wbGFjZS1pZCcpLnZhbHVlID0gZGF0YS5jb25maWcucGxhY2VJZDsKICAgICAgICAgIH0KICAgICAgICAgIGlmIChkYXRhLmNvbmZpZy5jaWRIZXggJiYgZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3J2LWNpZC1oZXgnKSkgewogICAgICAgICAgICBkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncnYtY2lkLWhleCcpLnZhbHVlID0gZGF0YS5jb25maWcuY2lkSGV4OwogICAgICAgICAgfQogICAgICAgIH0KICAgICAgfSkuY2F0Y2goZnVuY3Rpb24oKSB7fSk7CiAgfTsKCiAgd2luZG93LmNhbFNhdmVSZXZpZXdDb25maWcgPSBmdW5jdGlvbigpIHsKICAgIGNvbnN0IGFjY291bnQgPSBnZXRDYWxBY2NvdW50KCk7CiAgICBjb25zdCBwbGFjZUlkID0gKGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdydi1wbGFjZS1pZCcpIHx8IHt9KS52YWx1ZSB8fCAnJzsKICAgIGNvbnN0IGNpZEhleCA9IChkb2N1bWVudC5nZXRFbGVtZW50QnlJZCgncnYtY2lkLWhleCcpIHx8IHt9KS52YWx1ZSB8fCAnJzsKICAgIGNvbnN0IHN0YXR1c0VsID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3J2LWNvbmZpZy1zdGF0dXMnKTsKCiAgICBpZiAoIWFjY291bnQpIHsKICAgICAgaWYgKHN0YXR1c0VsKSB7IHN0YXR1c0VsLnRleHRDb250ZW50ID0gJ05vdCBsb2dnZWQgaW4uJzsgc3RhdHVzRWwuc3R5bGUuY29sb3IgPSAndmFyKC0tcmVkKSc7IHN0YXR1c0VsLnN0eWxlLmRpc3BsYXkgPSAnYmxvY2snOyB9CiAgICAgIHJldHVybjsKICAgIH0KICAgIGlmICghcGxhY2VJZCAmJiAhY2lkSGV4KSB7CiAgICAgIGlmIChzdGF0dXNFbCkgeyBzdGF0dXNFbC50ZXh0Q29udGVudCA9ICdQbGVhc2UgZW50ZXIgYSBQbGFjZSBJRCBvciBDSUQgaGV4IHZhbHVlLic7IHN0YXR1c0VsLnN0eWxlLmNvbG9yID0gJ3ZhcigtLXJlZCknOyBzdGF0dXNFbC5zdHlsZS5kaXNwbGF5ID0gJ2Jsb2NrJzsgfQogICAgICByZXR1cm47CiAgICB9CgogICAgZmV0Y2goJy9hcGkvcmV2aWV3L2NvbmZpZycsIHsKICAgICAgbWV0aG9kOiAnUE9TVCcsCiAgICAgIGhlYWRlcnM6IGFwaUhlYWRlcnMoKSwKICAgICAgYm9keTogSlNPTi5zdHJpbmdpZnkoeyBhY2NvdW50OiBhY2NvdW50LCBwbGFjZUlkOiBwbGFjZUlkIHx8IG51bGwsIGNpZEhleDogY2lkSGV4IHx8IG51bGwgfSksCiAgICB9KS50aGVuKGZ1bmN0aW9uKHIpIHsgcmV0dXJuIHIuanNvbigpOyB9KS50aGVuKGZ1bmN0aW9uKGQpIHsKICAgICAgaWYgKGQub2sgJiYgZC5jb25maWcgJiYgZC5jb25maWcucmV2aWV3VXJsKSB7CiAgICAgICAgY2FsU2hvd1Jldmlld0xpbmsoZC5jb25maWcucmV2aWV3VXJsKTsKICAgICAgICBpZiAoc3RhdHVzRWwpIHsgc3RhdHVzRWwudGV4dENvbnRlbnQgPSAnU2F2ZWQhJzsgc3RhdHVzRWwuc3R5bGUuY29sb3IgPSAndmFyKC0tZ3JlZW4pJzsgc3RhdHVzRWwuc3R5bGUuZGlzcGxheSA9ICdibG9jayc7IH0KICAgICAgICBzZXRUaW1lb3V0KGZ1bmN0aW9uKCkgeyBpZiAoc3RhdHVzRWwpIHN0YXR1c0VsLnN0eWxlLmRpc3BsYXkgPSAnbm9uZSc7IH0sIDMwMDApOwogICAgICB9IGVsc2UgewogICAgICAgIGlmIChzdGF0dXNFbCkgeyBzdGF0dXNFbC50ZXh0Q29udGVudCA9ICdFcnJvcjogJyArIChkLmVycm9yIHx8ICdVbmtub3duIGVycm9yJyk7IHN0YXR1c0VsLnN0eWxlLmNvbG9yID0gJ3ZhcigtLXJlZCknOyBzdGF0dXNFbC5zdHlsZS5kaXNwbGF5ID0gJ2Jsb2NrJzsgfQogICAgICB9CiAgICB9KS5jYXRjaChmdW5jdGlvbihlKSB7CiAgICAgIGlmIChzdGF0dXNFbCkgeyBzdGF0dXNFbC50ZXh0Q29udGVudCA9ICdOZXR3b3JrIGVycm9yOiAnICsgZS5tZXNzYWdlOyBzdGF0dXNFbC5zdHlsZS5jb2xvciA9ICd2YXIoLS1yZWQpJzsgc3RhdHVzRWwuc3R5bGUuZGlzcGxheSA9ICdibG9jayc7IH0KICAgIH0pOwogIH07CgogIGZ1bmN0aW9uIGNhbFNob3dSZXZpZXdMaW5rKHVybCkgewogICAgY29uc3QgZGlzcGxheSA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdydi1saW5rLWRpc3BsYXknKTsKICAgIGNvbnN0IGFuY2hvciA9IGRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdydi1saW5rLWFuY2hvcicpOwogICAgaWYgKGRpc3BsYXkpIGRpc3BsYXkuc3R5bGUuZGlzcGxheSA9ICdibG9jayc7CiAgICBpZiAoYW5jaG9yKSB7IGFuY2hvci5ocmVmID0gdXJsOyBhbmNob3IudGV4dENvbnRlbnQgPSB1cmw7IH0KICB9CgogIHdpbmRvdy5jYWxDb3B5UmV2aWV3TGluayA9IGZ1bmN0aW9uKCkgewogICAgY29uc3QgYW5jaG9yID0gZG9jdW1lbnQuZ2V0RWxlbWVudEJ5SWQoJ3J2LWxpbmstYW5jaG9yJyk7CiAgICBpZiAoIWFuY2hvciB8fCAhYW5jaG9yLmhyZWYgfHwgYW5jaG9yLmhyZWYgPT09ICcjJykgcmV0dXJuOwogICAgbmF2aWdhdG9yLmNsaXBib2FyZC53cml0ZVRleHQoYW5jaG9yLmhyZWYpLnRoZW4oZnVuY3Rpb24oKSB7CiAgICAgIGNvbnN0IGJ0biA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJ1tvbmNsaWNrPSJjYWxDb3B5UmV2aWV3TGluaygpIl0nKTsKICAgICAgaWYgKGJ0bikgeyBjb25zdCBvcmlnID0gYnRuLnRleHRDb250ZW50OyBidG4udGV4dENvbnRlbnQgPSAnQ29waWVkISc7IHNldFRpbWVvdXQoZnVuY3Rpb24oKSB7IGJ0bi50ZXh0Q29udGVudCA9IG9yaWc7IH0sIDIwMDApOyB9CiAgICB9KS5jYXRjaChmdW5jdGlvbigpIHsKICAgICAgY29uc3QgdGEgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCd0ZXh0YXJlYScpOwogICAgICB0YS52YWx1ZSA9IGFuY2hvci5ocmVmOwogICAgICBkb2N1bWVudC5ib2R5LmFwcGVuZENoaWxkKHRhKTsKICAgICAgdGEuc2VsZWN0KCk7CiAgICAgIGRvY3VtZW50LmV4ZWNDb21tYW5kKCdjb3B5Jyk7CiAgICAgIGRvY3VtZW50LmJvZHkucmVtb3ZlQ2hpbGQodGEpOwogICAgfSk7CiAgfTsKCiAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgLy8gSE9PSyBJTlRPIEFQUCBOQVYgLyBBQ0NPVU5UIFNXSVRDSEVTCiAgLy8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09CiAgZnVuY3Rpb24gb25DYWxOYXZDaGFuZ2Uoc2NyZWVuSWQpIHsKICAgIGlmIChzY3JlZW5JZCA9PT0gJ25mYycpIHsKICAgICAgc2V0VGltZW91dChmdW5jdGlvbigpIHsgcmVuZGVyTmZjQWRkaXRpb25zKCk7IH0sIDEwMCk7CiAgICB9CiAgICBpZiAoc2NyZWVuSWQgPT09ICdyZXZpZXdzJyB8fCBzY3JlZW5JZCA9PT0gJ3JlcHV0YXRpb24nIHx8IHNjcmVlbklkID09PSAncmV2aWV3JykgewogICAgICBzZXRUaW1lb3V0KGZ1bmN0aW9uKCkgeyByZW5kZXJSZXZpZXdDb25maWdQYW5lbCgpOyB9LCAxMDApOwogICAgfQogIH0KCiAgLy8gV3JhcCB3aW5kb3cubmF2IGlmIGl0IGV4aXN0cwogIHZhciBfb3JpZ05hdiA9IHdpbmRvdy5uYXY7CiAgd2luZG93Lm5hdiA9IGZ1bmN0aW9uKGlkKSB7CiAgICB2YXIgcmVzdWx0ID0gX29yaWdOYXYgPyBfb3JpZ05hdihpZCkgOiB1bmRlZmluZWQ7CiAgICBvbkNhbE5hdkNoYW5nZShpZCk7CiAgICByZXR1cm4gcmVzdWx0OwogIH07CgogIC8vIEFsc28gbGlzdGVuIGZvciBhY2NvdW50IGNoYW5nZXMg4oCUIHJlLXJlbmRlciBVSSB3aGVuIGFjY291bnQgc3dpdGNoZXMKICB2YXIgX3ByZXZDYWxBY2NvdW50ID0gJyc7CiAgc2V0SW50ZXJ2YWwoZnVuY3Rpb24oKSB7CiAgICB2YXIgY3VycmVudCA9IGdldENhbEFjY291bnQoKTsKICAgIGlmIChjdXJyZW50ICYmIGN1cnJlbnQgIT09IF9wcmV2Q2FsQWNjb3VudCkgewogICAgICBfcHJldkNhbEFjY291bnQgPSBjdXJyZW50OwogICAgICAvLyBSZS1yZW5kZXIgYWRkaXRpb25zIGZvciBjdXJyZW50IHNjcmVlbgogICAgICB2YXIgYWN0aXZlU2NyZWVuID0gZG9jdW1lbnQucXVlcnlTZWxlY3RvcignLnNjcmVlbi5hY3RpdmUnKTsKICAgICAgaWYgKGFjdGl2ZVNjcmVlbikgewogICAgICAgIHZhciBpZCA9IGFjdGl2ZVNjcmVlbi5pZCA/IGFjdGl2ZVNjcmVlbi5pZC5yZXBsYWNlKCdzLScsICcnKSA6ICcnOwogICAgICAgIG9uQ2FsTmF2Q2hhbmdlKGlkKTsKICAgICAgfQogICAgICAvLyBQcmUtc2VlZCByZXZpZXcgY29uZmlncyBmb3IgdGhpcyBhY2NvdW50CiAgICAgIHByZVNlZWRSZXZpZXdDb25maWdzKCk7CiAgICB9CiAgfSwgMTAwMCk7CgogIC8vIFJ1biBvbiBET01Db250ZW50TG9hZGVkCiAgZG9jdW1lbnQuYWRkRXZlbnRMaXN0ZW5lcignRE9NQ29udGVudExvYWRlZCcsIGZ1bmN0aW9uKCkgewogICAgLy8gVHJ5IHRvIGluamVjdCBvbiBjdXJyZW50IHNjcmVlbgogICAgc2V0VGltZW91dChmdW5jdGlvbigpIHsKICAgICAgdmFyIGFjdGl2ZVNjcmVlbiA9IGRvY3VtZW50LnF1ZXJ5U2VsZWN0b3IoJy5zY3JlZW4uYWN0aXZlJyk7CiAgICAgIGlmIChhY3RpdmVTY3JlZW4pIHsKICAgICAgICB2YXIgaWQgPSBhY3RpdmVTY3JlZW4uaWQgPyBhY3RpdmVTY3JlZW4uaWQucmVwbGFjZSgncy0nLCAnJykgOiAnJzsKICAgICAgICBvbkNhbE5hdkNoYW5nZShpZCk7CiAgICAgIH0KICAgICAgcHJlU2VlZFJldmlld0NvbmZpZ3MoKTsKICAgIH0sIDIwMDApOwogIH0pOwoKICAvLyBBbHNvIHRyeSBpbW1lZGlhdGVseSBpZiBET00gaXMgYWxyZWFkeSBsb2FkZWQKICBpZiAoZG9jdW1lbnQucmVhZHlTdGF0ZSA9PT0gJ2NvbXBsZXRlJyB8fCBkb2N1bWVudC5yZWFkeVN0YXRlID09PSAnaW50ZXJhY3RpdmUnKSB7CiAgICBzZXRUaW1lb3V0KGZ1bmN0aW9uKCkgewogICAgICBwcmVTZWVkUmV2aWV3Q29uZmlncygpOwogICAgfSwgMjUwMCk7CiAgfQoKICBjb25zb2xlLmxvZygnW0NBTCBBZGRpdGlvbnNdIExvYWRlZDogYWNjb3VudCBpc29sYXRpb24sIE5GQywgcmV2aWV3IGNvbmZpZycpOwp9KSgpOwo=';
+const _CAL_ADDITIONS_SCRIPT = '<script>' + Buffer.from(_CAL_ADDITIONS_B64, 'base64').toString('utf8') + '<\/script>';
+
+function injectCalAdditions(html) {
+  const closeBody = '</body>';
+  const idx = html.lastIndexOf(closeBody);
+  if (idx === -1) return html + _CAL_ADDITIONS_SCRIPT;
+  return html.slice(0, idx) + _CAL_ADDITIONS_SCRIPT + html.slice(idx);
+}
+
+const server = http.createServer(async (req, res) => {
   const urlPath = req.url.split('?')[0];
   const qs = parseQueryString(req.url);
 
@@ -1570,8 +908,128 @@ async function _legacyHandler(req, res) {
     return;
   }
 
-  if (urlPath === '/api/health' && req.method === 'GET') {
-    await handleHealth(res);
+  // ============ NFC TAP LANDING PAGE ============
+  // GET /tap/:name — public, no auth required
+  if (req.method === 'GET' && urlPath.startsWith('/tap/')) {
+    const name = decodeURIComponent(urlPath.slice(5)).toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (!name) { res.writeHead(404); res.end('Not found'); return; }
+
+    // Log the tap
+    const tapEntry = {
+      name,
+      timestamp: new Date().toISOString(),
+      userAgent: req.headers['user-agent'] || '',
+      ip: req.headers['x-forwarded-for'] || req.socket.remoteAddress || '',
+    };
+    appendNfcTap(tapEntry);
+    console.log(`[NFC] Tap logged for: ${name}`);
+
+    // Get review URL from meta store
+    const store = loadMetaStore();
+    const reviewUrl = store[`nfc_review_url_${name}`] || null;
+
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(nfcLandingHtml(name, reviewUrl));
+    return;
+  }
+
+  // ============ NFC API: get tap log ============
+  // GET /api/nfc/taps — requires Bearer token
+  if (urlPath === '/api/nfc/taps' && req.method === 'GET') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    const taps = loadNfcTaps();
+    jsonResponse(res, 200, { taps });
+    return;
+  }
+
+  // ============ NFC API: set review URL ============
+  // POST /api/nfc/set-review-url — requires Bearer token
+  if (urlPath === '/api/nfc/set-review-url' && req.method === 'POST') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    let body;
+    try { const raw = await readRequestBody(req, 64 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+    const { name, reviewUrl } = body || {};
+    if (!name || !reviewUrl) { jsonResponse(res, 400, { error: 'MISSING_FIELDS', required: ['name', 'reviewUrl'] }); return; }
+    const safeName = String(name).toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    const store = loadMetaStore();
+    store[`nfc_review_url_${safeName}`] = reviewUrl;
+    saveMetaStore(store);
+    jsonResponse(res, 200, { ok: true, name: safeName, reviewUrl });
+    return;
+  }
+
+  // ============ REVIEW CONFIG: get ============
+  // GET /api/review/config?account=EMAIL
+  if (urlPath === '/api/review/config' && req.method === 'GET') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    const account = qs.account;
+    if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
+    if (!isKeyAllowed(account, payload)) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
+    const store = loadMetaStore();
+    const config = store[`review_config_${account}`] || null;
+    jsonResponse(res, 200, { config });
+    return;
+  }
+
+  // ============ REVIEW CONFIG: save ============
+  // POST /api/review/config — body: {account, placeId, cidHex}
+  if (urlPath === '/api/review/config' && req.method === 'POST') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    let body;
+    try { const raw = await readRequestBody(req, 64 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+    const { account, placeId, cidHex } = body || {};
+    if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
+    if (!isKeyAllowed(account, payload)) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
+    const { reviewUrl, cidDecimal } = buildReviewUrl(placeId, cidHex);
+    const config = { account, placeId: placeId || null, cidHex: cidHex || null, cidDecimal, reviewUrl, updatedAt: new Date().toISOString() };
+    const store = loadMetaStore();
+    store[`review_config_${account}`] = config;
+    saveMetaStore(store);
+    jsonResponse(res, 200, { ok: true, config });
+    return;
+  }
+
+  // ============ ACCOUNT-SCOPED DATA: get ============
+  // GET /api/account-data?account=EMAIL&section=SECTION
+  if (urlPath === '/api/account-data' && req.method === 'GET') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    const { account, section } = qs;
+    if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
+    if (!isKeyAllowed(account, payload)) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
+    const data = loadAccountData(account);
+    jsonResponse(res, 200, { data: section ? (data[section] || null) : data });
+    return;
+  }
+
+  // ============ ACCOUNT-SCOPED DATA: save ============
+  // PUT /api/account-data?account=EMAIL&section=SECTION
+  if (urlPath === '/api/account-data' && req.method === 'PUT') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    const { account, section } = qs;
+    if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
+    if (!isKeyAllowed(account, payload)) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
+    let body;
+    try { const raw = await readRequestBody(req, 2 * 1024 * 1024); body = JSON.parse(raw.toString('utf8')); } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+    const data = loadAccountData(account);
+    if (section) {
+      data[section] = body;
+    } else {
+      Object.assign(data, body);
+    }
+    saveAccountData(account, data);
+    jsonResponse(res, 200, { ok: true });
     return;
   }
 
@@ -1609,24 +1067,12 @@ async function _legacyHandler(req, res) {
     await handleMetaLogin(req, res);
     return;
   }
-  if (urlPath === '/api/auth/change-password' && req.method === 'POST') {
-    await handleChangePassword(req, res);
-    return;
-  }
   if (urlPath === '/api/meta' && req.method === 'GET') {
     await handleMetaGet(req, res, qs);
     return;
   }
   if (urlPath === '/api/meta' && req.method === 'PUT') {
     await handleMetaPut(req, res, qs);
-    return;
-  }
-  if (urlPath === '/api/logo' && req.method === 'GET') {
-    await handleLogoGet(req, res, qs);
-    return;
-  }
-  if (urlPath === '/api/logo' && req.method === 'POST') {
-    await handleLogoPut(req, res, qs);
     return;
   }
 
@@ -1639,47 +1085,37 @@ async function _legacyHandler(req, res) {
     return;
   }
 
-  if (urlPath === '/api/auth/google/start' && req.method === 'GET') { await handleAuthGoogleStart(res); return; }
-  if (urlPath === '/api/auth/google/callback' && req.method === 'GET') { await handleAuthGoogleCallback(res, qs); return; }
-  if (urlPath === '/api/google/connect' && req.method === 'GET') { await handleGoogleConnect(res, qs); return; }
+  if (urlPath === '/api/google/connect' && req.method === 'GET') { await handleGoogleConnect(res); return; }
   if (urlPath === '/api/google/callback' && req.method === 'GET') { await handleGoogleCallback(res, qs); return; }
-  if (urlPath === '/api/google/status' && req.method === 'GET') { await handleGoogleStatus(res, qs); return; }
-  if (urlPath === '/api/google/disconnect' && req.method === 'POST') { await handleGoogleDisconnect(res, qs); return; }
-  if (urlPath === '/api/companies/status' && req.method === 'GET') { await handleCompaniesStatus(res); return; }
-  if (urlPath === '/api/gbp/accounts' && req.method === 'GET') { await handleGBPAccounts(res, qs); return; }
+  if (urlPath === '/api/google/status' && req.method === 'GET') { await handleGoogleStatus(res); return; }
+  if (urlPath === '/api/google/disconnect' && req.method === 'POST') { await handleGoogleDisconnect(res); return; }
+  if (urlPath === '/api/gbp/accounts' && req.method === 'GET') { await handleGBPAccounts(res); return; }
   if (urlPath === '/api/gbp/locations' && req.method === 'GET') { await handleGBPLocations(res, qs); return; }
   if (urlPath === '/api/gbp/reviews' && req.method === 'GET') { await handleGBPReviews(res, qs); return; }
-  if (urlPath === '/api/gbp/insights' && req.method === 'GET') { await handleGBPInsights(res, qs); return; }
-  if (urlPath === '/api/gbp/reply' && req.method === 'POST') { await handleGBPReply(req, res, qs); return; }
-  if (urlPath === '/api/gsc/sites' && req.method === 'GET') { await handleGSCSites(res, qs); return; }
+  if (urlPath === '/api/gbp/reply' && req.method === 'POST') { await handleGBPReply(req, res); return; }
+  if (urlPath === '/api/gsc/sites' && req.method === 'GET') { await handleGSCSites(res); return; }
   if (urlPath === '/api/gsc/analytics') { await handleGSCAnalytics(req, res, qs); return; }
-  if (urlPath === '/api/gsc/performance') { await handleGSCAnalytics(req, res, qs); return; }
-  if (urlPath === '/api/ga4/properties' && req.method === 'GET') { await handleGA4Properties(res, qs); return; }
-  if (urlPath === '/api/ga4/report') { await handleGA4Report(req, res, qs); return; }
-  if (urlPath === '/api/gmail/messages' && req.method === 'GET') { await handleGmailMessages(res, qs); return; }
-  if (urlPath === '/api/sheets/read' && req.method === 'GET') { await handleSheetsRead(res, qs); return; }
-  if (urlPath === '/api/sheets/metadata' && req.method === 'GET') { await handleSheetsMetadata(res, qs); return; }
-  if (urlPath === '/api/pagespeed' && req.method === 'GET') { await handlePageSpeed(res, qs); return; }
   if (urlPath === '/api/calendar/events' && req.method === 'GET') { await handleCalendarEvents(res, qs); return; }
-  if (urlPath === '/api/calendar/events' && req.method === 'POST') { await handleCalendarCreateEvent(req, res, qs); return; }
-  if (urlPath === '/api/calendar/list' && req.method === 'GET') { await handleCalendarList(res, qs); return; }
   if (urlPath === '/api/stripe/connect' && req.method === 'POST') { await handleStripeConnect(req, res); return; }
   if (urlPath === '/api/stripe/status' && req.method === 'GET') { await handleStripeStatus(res); return; }
   if (urlPath === '/api/stripe/revenue' && req.method === 'GET') { await handleStripeRevenue(res, qs); return; }
   if (urlPath === '/api/stripe/disconnect' && req.method === 'POST') { await handleStripeDisconnect(res); return; }
 
   const filePath = path.join(__dirname, 'index.html');
-  fs.readFile(filePath, (err, data) => {
+  fs.readFile(filePath, 'utf8', (err, html) => {
     if (err) { res.writeHead(500); res.end('Error loading page'); return; }
+    const patched = injectCalAdditions(html);
+    const buf = Buffer.from(patched, 'utf8');
     res.writeHead(200, {
       'Content-Type': 'text/html',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
-      'Expires': '0'
+      'Expires': '0',
+      'Content-Length': buf.length
     });
-    res.end(data);
+    res.end(buf);
   });
-}
+});
 
 // ============ GITHUB PUSH ============
 async function handleGithubStatus(req, res) {
@@ -1735,10 +1171,8 @@ async function handleGithubPush(req, res) {
   const repo = 'cal-marketing-app';
   const branch = 'main';
   try {
-    // Sync full-code.html first
     fs.copyFileSync(path.join(__dirname, 'index.html'), path.join(__dirname, 'full-code.html'));
 
-    // Files to push via GitHub API
     const filesToPush = ['index.html', 'full-code.html', 'server.js'];
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
     const commitMessage = 'CAL OS update — ' + now + ' UTC';
@@ -1750,11 +1184,9 @@ async function handleGithubPush(req, res) {
       const content = fs.readFileSync(filePath);
       const b64 = content.toString('base64');
 
-      // Get current SHA of file (needed for update)
       const existing = await githubApiRequest('GET', '/repos/' + owner + '/' + repo + '/contents/' + filename + '?ref=' + branch, pat, null);
       const sha = existing.status === 200 ? existing.body.sha : undefined;
 
-      // Push file
       const pushBody = { message: commitMessage, content: b64, branch };
       if (sha) pushBody.sha = sha;
       const result = await githubApiRequest('PUT', '/repos/' + owner + '/' + repo + '/contents/' + filename, pat, pushBody);
@@ -1770,53 +1202,6 @@ async function handleGithubPush(req, res) {
   }
 }
 
-(async () => {
-  const app = express();
-
-  await setupAuth(app, SERVER_USERS);
-
-  app.get('/api/auth/user', isAuthenticated, (req, res) => {
-    const claims = req.user && req.user.claims;
-    const email = ((claims && claims.email) || '').toLowerCase();
-    const user = SERVER_USERS[email];
-    if (!user) {
-      return res.status(403).json({ error: 'ACCESS_NOT_GRANTED', message: 'Access not granted. Contact your administrator.' });
-    }
-    const profile = SERVER_USER_PROFILES[email] || {};
-    const firstName = (claims && claims.first_name) || '';
-    const lastName = (claims && claims.last_name) || '';
-    const oidcName = [firstName, lastName].filter(Boolean).join(' ');
-    const name = profile.name || oidcName || email;
-    const initials = profile.initials || name.split(' ').map(w => w[0] || '').join('').toUpperCase().slice(0, 2) || email.slice(0, 2).toUpperCase();
-    return res.json({
-      email,
-      role: user.role,
-      name,
-      initials,
-      companyId: profile.companyId || 'default',
-      title: profile.title || '',
-      profileImageUrl: (claims && claims.profile_image_url) || '',
-    });
-  });
-
-  app.post('/api/meta/login', isAuthenticated, (req, res) => {
-    const claims = req.user && req.user.claims;
-    const email = ((claims && claims.email) || '').toLowerCase();
-    const user = SERVER_USERS[email];
-    if (!user) {
-      return res.status(403).json({ error: 'ACCESS_NOT_GRANTED', message: 'Access not granted. Contact your administrator.' });
-    }
-    const token = signMetaToken({ email, role: user.role, exp: Date.now() + TOKEN_TTL_MS });
-    return res.json({ token });
-  });
-
-  app.use((req, res) => _legacyHandler(req, res));
-
-  const server = http.createServer(app);
-  server.listen(PORT, HOST, () => {
-    console.log(`[CAL] Server running at http://${HOST}:${PORT}/`);
-  });
-})().catch(err => {
-  console.error('[CAL] Fatal startup error:', err);
-  process.exit(1);
+server.listen(PORT, HOST, () => {
+  console.log(`Server running at http://${HOST}:${PORT}/`);
 });
