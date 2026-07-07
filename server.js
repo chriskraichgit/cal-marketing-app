@@ -844,6 +844,28 @@ async function handleNfcCardsGet(req, res, qs) {
   jsonResponse(res, 200, { cards });
 }
 
+function handleNfcTapsGet(req, res, qs) {
+  const rawToken = extractBearerToken(req);
+  const payload = rawToken ? verifyMetaToken(rawToken) : null;
+  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+  const account = qs.account || payload.email;
+  try {
+    const tapLog = path.join(__dirname, '.nfc-taps.json');
+    let taps = [];
+    try { taps = JSON.parse(fs.readFileSync(tapLog, 'utf8')); } catch(e) {}
+    // Filter taps to those belonging to cards registered under this account
+    const store = loadMetaStore();
+    const cards = store[`nfc_cards_${account}`] || [];
+    const cardNames = new Set(cards.map(c => c.name.toLowerCase()));
+    const filtered = taps.filter(t => cardNames.has((t.person || '').toLowerCase()));
+    // Return with tapped_at field name matching what the client expects
+    const result = filtered.map(t => ({ person: t.person, tapped_at: t.ts, ip: t.ip || '' }));
+    jsonResponse(res, 200, { taps: result });
+  } catch(e) {
+    jsonResponse(res, 500, { error: e.message, taps: [] });
+  }
+}
+
 async function handleNfcCardsPost(req, res) {
   const rawToken = extractBearerToken(req);
   const payload = rawToken ? verifyMetaToken(rawToken) : null;
@@ -1017,6 +1039,7 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/reviews/places' && req.method === 'GET') { await handlePlacesReviews(res, qs); return; }
 
   // ── NFC Card Registry ──
+  if (urlPath === '/api/nfc/taps' && req.method === 'GET') { await handleNfcTapsGet(req, res, qs); return; }
   if (urlPath === '/api/nfc/cards' && req.method === 'GET') { await handleNfcCardsGet(req, res, qs); return; }
   if (urlPath === '/api/nfc/cards' && req.method === 'POST') { await handleNfcCardsPost(req, res); return; }
 
