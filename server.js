@@ -28,6 +28,14 @@ const ACCOUNT_PLACE_IDS = {
   'willydiamond': { placeId: 'ChIJqcP1Ry7XwokRmaR_t8kedZM', name: 'Willy Diamond Property Management' },
 };
 
+// ── Per-account feature flags ──
+const ACCOUNT_FEATURES = {
+  'info@unitedsewerservice.com': { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false },
+  'greencollар':                 { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false },
+  'willydiamond':                { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false },
+};
+const DEFAULT_FEATURES = { nfc: true, reviews: true, drive: true, calendar: true, stripe: true, searchConsole: true };
+
 // Known users for server-side meta token issuance.
 // Passwords are stored as SHA-256 hashes only — never plaintext.
 // Agency/test roles may access any account key; admin/user roles may only access their own email key.
@@ -997,6 +1005,16 @@ const server = http.createServer(async (req, res) => {
   }
   if (urlPath === '/api/meta' && req.method === 'PUT') {
     await handleMetaPut(req, res, qs);
+    return;
+  }
+
+  if (urlPath === '/api/account/config' && req.method === 'GET') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    const account = (qs.account || '').trim().toLowerCase();
+    const features = ACCOUNT_FEATURES[account] || Object.assign({}, DEFAULT_FEATURES);
+    jsonResponse(res, 200, features);
     return;
   }
 
