@@ -970,19 +970,45 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     });
   }
 
-  function clearStaleAccountUi(){
+  function clearAccountState(){
+    // Cancel any in-flight fetch requests
+    if(window.__calFetchController){
+      try { window.__calFetchController.abort(); } catch(e){}
+    }
+    window.__calFetchController = new AbortController();
+
+    // Clear cached per-account data
     window._rvAllReviews = [];
+    window._calNfcTapsCache = null;
+    window._calNfcCardsCache = null;
+    window._calGdriveCache = null;
+    window._calStripeCache = null;
+    window._calCalendarCache = null;
+    window.acctFeatures = null;
+
+    // Set all data-display containers to loading state
+    var LOADING_HTML = '<p style="font-size:13px;color:var(--muted,#64748b);font-weight:700;text-align:center;padding:20px 0">Refreshing account data...</p>';
     [
       'rv-reviews-list',
       'rv-leaderboard-list',
       'gbp-reviews-content',
       'gbp-insights-kpis',
       'gbp-selector-body',
-      'settings-integrations-grid'
-    ].forEach(function(id){
-      var el = document.getElementById(id);
-      if(el) el.innerHTML = '<p style="font-size:13px;color:var(--muted,#64748b);font-weight:700;text-align:center;padding:20px 0">Refreshing account data...</p>';
+      'settings-integrations-grid',
+      'nfcTapList',
+      'nfcCardList',
+      'gdrive-files-section',
+      'gcal-view-month',
+      'gcal-view-week',
+      'gcal-view-day'
+    ].forEach(function(elId){
+      var el = document.getElementById(elId);
+      if(el) el.innerHTML = LOADING_HTML;
     });
+  }
+
+  function clearStaleAccountUi(){
+    clearAccountState();
   }
 
   function showSwitchOverlay(id){
@@ -1007,6 +1033,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       '</div>';
 
     el.style.display = 'flex';
+  }
+
+  function hideSwitchOverlay(){
+    var el = document.getElementById('cal-final-switch-overlay');
+    if(!el) return;
+    el.style.transition = 'opacity .4s ease';
+    el.style.opacity = '0';
+    setTimeout(function(){ el.style.display = 'none'; el.style.opacity = ''; el.style.transition = ''; }, 420);
   }
 
   function refreshCurrentAccountAfterBoot(){
@@ -1060,9 +1094,23 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     if(!window.__calBootRestoring && old && old !== id){
       clearStaleAccountUi();
       showSwitchOverlay(id);
+
+      // Fetch per-account feature flags then fire all data loaders
       setTimeout(function(){
-        window.location.reload();
-      }, 850);
+        applyAccountFeatureFlags(id, function(){
+          try { if(typeof loadNfcTaps === 'function') loadNfcTaps(); } catch(e){}
+          try { if(typeof loadNfcCards === 'function') loadNfcCards(); } catch(e){}
+          try { if(typeof loadGoogleReviews === 'function') loadGoogleReviews(); } catch(e){}
+          try { if(typeof loadGBPLocations === 'function') loadGBPLocations(); } catch(e){}
+          try { if(typeof loadGBPInsightsWidget === 'function') loadGBPInsightsWidget(); } catch(e){}
+          try { if(typeof loadGBPReviewsWidget === 'function') loadGBPReviewsWidget(); } catch(e){}
+          try { if(typeof loadGDriveFiles === 'function') loadGDriveFiles(); } catch(e){}
+          try { if(typeof loadGoogleCalendarEvents === 'function') loadGoogleCalendarEvents(); } catch(e){}
+          try { if(typeof loadLiveReviewsForReviewsScreen === 'function') loadLiveReviewsForReviewsScreen(); } catch(e){}
+          // Fade out the overlay after loaders are kicked off
+          hideSwitchOverlay();
+        });
+      }, 500);
     }
 
     return result;
@@ -1090,6 +1138,70 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     return result;
   };
 
+  // ── Feature Flag Application ──
+  function applyAccountFeatureFlags(acctId, cb){
+    var token = (typeof getMeta === 'function') ? null : null;
+    try { token = window.__calMetaToken || localStorage.getItem('cal-meta-token') || ''; } catch(e){}
+
+    var url = '/api/account/config?account=' + encodeURIComponent(acctId);
+    var headers = { 'Content-Type': 'application/json' };
+    if(token) headers['Authorization'] = 'Bearer ' + token;
+
+    var ctrl = window.__calFetchController || new AbortController();
+    fetch(url, { headers: headers, signal: ctrl.signal })
+      .then(function(r){ return r.json(); })
+      .then(function(cfg){
+        window.acctFeatures = cfg;
+        applyFeatureVisibility(cfg);
+        if(typeof cb === 'function') cb();
+      })
+      .catch(function(e){
+        if(e && e.name === 'AbortError') return;
+        // On error: default to all-visible
+        window.acctFeatures = null;
+        applyFeatureVisibility(null);
+        if(typeof cb === 'function') cb();
+      });
+  }
+
+  function applyFeatureVisibility(cfg){
+    var f = cfg || { nfc: true, reviews: true, drive: true, calendar: true, stripe: true, searchConsole: true };
+
+    // Reviews & NFC screen nav buttons
+    var reviewsNav = document.querySelectorAll('.nav-btn[onclick*="nav(\'reviews\')"]');
+    reviewsNav.forEach(function(el){ el.closest('[data-feat-reviews]') || (el.style.display = (f.reviews || f.nfc) ? '' : 'none'); });
+
+    // Files/Drive nav
+    document.querySelectorAll('.nav-btn[onclick*="nav(\'files\')"]').forEach(function(el){
+      el.style.display = f.drive ? '' : 'none';
+    });
+
+    // Schedule/Calendar nav
+    document.querySelectorAll('.nav-btn[onclick*="nav(\'schedule\')"]').forEach(function(el){
+      el.style.display = f.calendar ? '' : 'none';
+    });
+
+    // Billing/Stripe nav
+    document.querySelectorAll('.nav-btn[onclick*="nav(\'billing\')"]').forEach(function(el){
+      el.style.display = f.stripe ? '' : 'none';
+    });
+
+    // Hide the s-reviews screen sections conditionally
+    var reviewsScreen = document.getElementById('s-reviews');
+    if(reviewsScreen){
+      // NFC sub-sections
+      var nfcSections = reviewsScreen.querySelectorAll('[id*="nfc"], [id*="Nfc"]');
+      nfcSections.forEach(function(el){ el.style.display = f.nfc ? '' : 'none'; });
+    }
+
+    // Search Console elements
+    var gscEls = document.querySelectorAll('[onclick*="google-search-console"], [id*="gsc"]');
+    gscEls.forEach(function(el){ el.style.display = f.searchConsole ? '' : 'none'; });
+
+    // Store on window for other code to read
+    window.acctFeatures = f;
+  }
+
   document.addEventListener('DOMContentLoaded', function(){
     var saved = getSavedAcct();
     if(saved){
@@ -1098,6 +1210,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       setTimeout(function(){
         refreshCurrentAccountAfterBoot();
         window.__calBootRestoring = false;
+        // Apply feature flags on initial load too
+        applyAccountFeatureFlags(saved, null);
       }, 500);
     }
   });
@@ -2267,21 +2381,19 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div id="nfcTapList" style="font-size:13px;color:var(--muted);font-weight:600">Loading…</div>
     </div>
 
+    <!-- NFC Card Manager — bottom of Reviews section -->
+    <div style="background:#1e293b;border-radius:12px;padding:20px;margin-top:14px;margin-bottom:0">
+      <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:#f1f5f9;">Register NFC Card</h3>
+      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+        <input type="text" id="nfcCardName" placeholder="Driver name (e.g. James)" style="flex:1;min-width:120px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
+        <input type="text" id="nfcCardPlaceId" placeholder="Place ID (optional)" style="flex:1;min-width:120px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
+        <button onclick="registerNfcCard()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px;white-space:nowrap;font-weight:600;">+ Add Card</button>
+      </div>
+      <div id="nfcCardList" style="font-size:13px;color:#94a3b8;margin-top:8px;"></div>
+    </div>
+
   </div>
 
-</div>
-
-
-
-<!-- NFC Card Manager -->
-<div style="background:#1e293b;border-radius:12px;padding:20px;margin-top:14px;margin-bottom:0">
-  <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:#f1f5f9;">Register NFC Card</h3>
-  <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-    <input type="text" id="nfcCardName" placeholder="Driver name (e.g. James)" style="flex:1;min-width:120px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
-    <input type="text" id="nfcCardPlaceId" placeholder="Place ID (optional)" style="flex:1;min-width:120px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
-    <button onclick="registerNfcCard()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px;white-space:nowrap;font-weight:600;">+ Add Card</button>
-  </div>
-  <div id="nfcCardList" style="font-size:13px;color:#94a3b8;margin-top:8px;"></div>
 </div>
 
 <!-- NFC Register Card Modal -->
