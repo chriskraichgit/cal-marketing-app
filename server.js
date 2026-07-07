@@ -5,6 +5,15 @@ const crypto = require('crypto');
 const { google } = require('googleapis');
 const { URL } = require('url');
 
+function htmlEscape(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 const PORT = 5000;
 const HOST = '0.0.0.0';
 
@@ -890,7 +899,7 @@ function buildTapPage(person, reviewUrl) {
 <body>
   <div class="card">
     <div class="avatar">👷</div>
-    <h1>This was your driver, ${person}</h1>
+    <h1>This was your driver, ${htmlEscape(person)}</h1>
     <div class="stars">⭐⭐⭐⭐⭐</div>
     <p>Enjoyed your service? A quick Google review means the world to our small team.</p>
     <a class="btn" href="${safeUrl}" id="review-btn">Leave a Google Review →</a>
@@ -907,7 +916,7 @@ function buildTapPage(person, reviewUrl) {
     }
     // Log that the review button was clicked
     btn.addEventListener('click', function() {
-      fetch('/api/nfc/click', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person: '${person}', ts: new Date().toISOString() }) }).catch(() => {});
+      fetch('/api/nfc/click', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person: ${JSON.stringify(person)}, ts: new Date().toISOString() }) }).catch(() => {});
     });
   </script>
 </body>
@@ -925,6 +934,8 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (urlPath === '/api/config' && req.method === 'GET') {
+    // SECURITY NOTE (C-5): The Maps API key returned here should be restricted to this app's
+    // domain in Google Cloud Console -> APIs & Services -> Credentials to prevent key abuse.
     jsonResponse(res, 200, { mapsKey: process.env.GOOGLE_MAPS_API_KEY || '' });
     return;
   }
@@ -968,10 +979,20 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (urlPath === '/api/github/push' && req.method === 'POST') {
+    const _pushToken = extractBearerToken(req);
+    const _pushPayload = _pushToken ? verifyMetaToken(_pushToken) : null;
+    if (!_pushPayload || (_pushPayload.role !== 'agency' && _pushPayload.role !== 'test')) {
+      jsonResponse(res, 403, { error: 'FORBIDDEN' }); return;
+    }
     await handleGithubPush(req, res);
     return;
   }
   if (urlPath === '/api/github/status' && req.method === 'GET') {
+    const _statToken = extractBearerToken(req);
+    const _statPayload = _statToken ? verifyMetaToken(_statToken) : null;
+    if (!_statPayload || (_statPayload.role !== 'agency' && _statPayload.role !== 'test')) {
+      jsonResponse(res, 403, { error: 'FORBIDDEN' }); return;
+    }
     await handleGithubStatus(req, res);
     return;
   }
