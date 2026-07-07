@@ -7243,6 +7243,10 @@ function nav(screen){
 function initHomeScreen(){
   // ROI calculator null-check init
   updateROI();
+  // Reload account-specific panels so switching accounts always shows fresh data
+  if(typeof loadNfcTaps === 'function') try{ loadNfcTaps(); }catch(e){}
+  if(typeof loadNfcCards === 'function') try{ loadNfcCards(); }catch(e){}
+  if(typeof loadGoogleReviews === 'function') try{ loadGoogleReviews(); }catch(e){}
 }
 
 // ============ UNIFIED TAB SWITCHING ============
@@ -11254,6 +11258,12 @@ function sendWaReply() {
     if(window.currentScreen==='onboarding'){
       if(window.currentRole==='admin' && typeof renderOnboardingScreen==='function') try{ renderOnboardingScreen(); }catch(e){}
       else if(typeof renderOnboarding==='function') try{ renderOnboarding(); }catch(e){}
+    }
+    if(window.currentScreen==='reviews' && typeof renderReviewsScreen==='function') try{ renderReviewsScreen(); }catch(e){}
+    if(window.currentScreen==='home'){
+      if(typeof loadNfcTaps==='function') try{ loadNfcTaps(); }catch(e){}
+      if(typeof loadNfcCards==='function') try{ loadNfcCards(); }catch(e){}
+      if(typeof loadGoogleReviews==='function') try{ loadGoogleReviews(); }catch(e){}
     }
   };
 
