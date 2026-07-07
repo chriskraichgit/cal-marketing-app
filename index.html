@@ -5591,17 +5591,11 @@ function fpTogglePw(inputId,btn){
 }
 
 function fpSavePassword(){
-  var pw1=(document.getElementById('fp-pw1')||{value:''}).value;
-  var pw2=(document.getElementById('fp-pw2')||{value:''}).value;
   var err=document.getElementById('fp-err3');
-  if(!pw1||pw1!==pw2){if(err)err.classList.add('show');return;}
   if(err) err.classList.remove('show');
-  showToast('Password updated successfully!','green');
-  setTimeout(function(){
-    fpBack(1);
-    var li=document.getElementById('login-identifier'); if(li) li.value=_fpIdentifier;
-    _fpIdentifier='';
-  },2000);
+  // H-5 FIX: Password reset is not implemented server-side. Don't show a fake success.
+  showToast('Contact your administrator to reset your password.','orange');
+  setTimeout(function(){ fpBack(1); },2000);
 }
 
 function submitForgotPassword(){
@@ -13989,7 +13983,7 @@ function sendWaReply() {
   function _metaAuthHeader(){ var t=_getMetaToken(); return t?{'Authorization':'Bearer '+t}:{}; }
   function _loginToMetaServer(email,password,cb){
     try{
-      fetch('/api/meta/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({})})
+      fetch('/api/meta/login',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email,password:password})})
         .then(function(r){ return r.json(); }).then(function(data){
           if(data&&data.token){ _setMetaToken(data.token); _flushPushQueue(); }
           if(typeof cb==='function') cb(!!(data&&data.token));
@@ -15402,7 +15396,7 @@ async function loadNfcTaps() {
   var el = document.getElementById('nfcTapList');
   if (!el) return;
   try {
-    var token = localStorage.getItem('cal_meta_token');
+    var token = localStorage.getItem('cal-meta-session-token');
     var headers = {};
     if (token) headers['Authorization'] = 'Bearer ' + token;
     var r = await fetch('/api/nfc/taps', { headers: headers });
@@ -15425,8 +15419,8 @@ async function registerNfcCard() {
   var name = (document.getElementById('nfcCardName') ? document.getElementById('nfcCardName').value : '').trim();
   var placeId = (document.getElementById('nfcCardPlaceId') ? document.getElementById('nfcCardPlaceId').value : '').trim();
   if (!name) { alert('Enter a driver name'); return; }
-  var token = localStorage.getItem('cal_meta_token');
-  var account = localStorage.getItem('cal_current_account') || '';
+  var token = localStorage.getItem('cal-meta-session-token');
+  var account = localStorage.getItem('cal-current-acct') || '';
   try {
     var r = await fetch('/api/nfc/cards', {
       method: 'POST',
@@ -15448,8 +15442,8 @@ async function registerNfcCard() {
 async function loadNfcCards() {
   var el = document.getElementById('nfcCardList');
   if (!el) return;
-  var token = localStorage.getItem('cal_meta_token');
-  var account = localStorage.getItem('cal_current_account') || '';
+  var token = localStorage.getItem('cal-meta-session-token');
+  var account = localStorage.getItem('cal-current-acct') || '';
   try {
     var r = await fetch('/api/nfc/cards?account=' + encodeURIComponent(account), {
       headers: token ? {'Authorization': 'Bearer ' + token} : {}
@@ -15472,7 +15466,7 @@ async function loadGoogleReviews() {
   var alertBanner = document.getElementById('lowStarAlertBanner');
   if (!el) return;
   el.innerHTML = '<span style="color:#64748b;">Loading...</span>';
-  var account = localStorage.getItem('cal_current_account') || '';
+  var account = localStorage.getItem('cal-current-acct') || '';
   try {
     var r = await fetch('/api/reviews/places?account=' + encodeURIComponent(account));
     var data = await r.json();
