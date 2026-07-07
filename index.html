@@ -2245,6 +2245,19 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
     </div>
 
+    <!-- Google Review Wall -->
+    <div id="reviewWallPanel" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+        <div>
+          <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0;letter-spacing:.2px;">Google Reviews</p>
+          <div id="reviewRatingSummary" style="font-size:13px;color:var(--muted);margin-top:4px;font-weight:600;"></div>
+        </div>
+        <button onclick="loadGoogleReviews()" style="background:rgba(27,58,107,.08);color:var(--blue);border:none;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:700;">Refresh</button>
+      </div>
+      <div id="lowStarAlertBanner" style="display:none;background:#7f1d1d;border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#fca5a5;"></div>
+      <div id="googleReviewList" style="font-size:13px;color:var(--muted);font-weight:600;">Click Refresh to load reviews.</div>
+    </div>
+
     <!-- NFC Card Tap Log -->
     <div class="nfc-tap-log" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -2258,6 +2271,18 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 </div>
 
+
+
+<!-- NFC Card Manager -->
+<div style="background:#1e293b;border-radius:12px;padding:20px;margin-top:14px;margin-bottom:0">
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:#f1f5f9;">Register NFC Card</h3>
+  <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+    <input type="text" id="nfcCardName" placeholder="Driver name (e.g. James)" style="flex:1;min-width:120px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
+    <input type="text" id="nfcCardPlaceId" placeholder="Place ID (optional)" style="flex:1;min-width:120px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
+    <button onclick="registerNfcCard()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px;white-space:nowrap;font-weight:600;">+ Add Card</button>
+  </div>
+  <div id="nfcCardList" style="font-size:13px;color:#94a3b8;margin-top:8px;"></div>
+</div>
 
 <!-- NFC Register Card Modal -->
 
@@ -15392,6 +15417,89 @@ async function loadNfcTaps() {
         + '</div>';
     }).join('');
   } catch(e) { el.textContent = 'Error loading taps.'; }
+}
+
+
+// ── NFC Card Management ──
+async function registerNfcCard() {
+  var name = (document.getElementById('nfcCardName') ? document.getElementById('nfcCardName').value : '').trim();
+  var placeId = (document.getElementById('nfcCardPlaceId') ? document.getElementById('nfcCardPlaceId').value : '').trim();
+  if (!name) { alert('Enter a driver name'); return; }
+  var token = localStorage.getItem('cal_meta_token');
+  var account = localStorage.getItem('cal_current_account') || '';
+  try {
+    var r = await fetch('/api/nfc/cards', {
+      method: 'POST',
+      headers: Object.assign({'Content-Type': 'application/json'}, token ? {'Authorization': 'Bearer ' + token} : {}),
+      body: JSON.stringify({ name: name, placeId: placeId || null, account: account }),
+    });
+    var data = await r.json();
+    if (data.ok) {
+      document.getElementById('nfcCardName').value = '';
+      document.getElementById('nfcCardPlaceId').value = '';
+      loadNfcCards();
+      alert('Card registered! Tap URL: ' + location.origin + data.tapUrl);
+    } else {
+      alert(data.error || 'Failed to register card');
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function loadNfcCards() {
+  var el = document.getElementById('nfcCardList');
+  if (!el) return;
+  var token = localStorage.getItem('cal_meta_token');
+  var account = localStorage.getItem('cal_current_account') || '';
+  try {
+    var r = await fetch('/api/nfc/cards?account=' + encodeURIComponent(account), {
+      headers: token ? {'Authorization': 'Bearer ' + token} : {}
+    });
+    var data = await r.json();
+    if (!data.cards || data.cards.length === 0) { el.textContent = 'No cards registered yet.'; return; }
+    el.innerHTML = data.cards.map(function(c) {
+      var tapUrl = location.origin + '/tap/' + encodeURIComponent(c.name);
+      return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #0f172a;">'
+        + '<span>👷 ' + c.name + '</span>'
+        + '<a href="' + tapUrl + '" target="_blank" style="color:#3b82f6;font-size:12px;">' + tapUrl + '</a>'
+        + '</div>';
+    }).join('');
+  } catch(e) { if (el) el.textContent = 'Error loading cards.'; }
+}
+
+async function loadGoogleReviews() {
+  var el = document.getElementById('googleReviewList');
+  var summary = document.getElementById('reviewRatingSummary');
+  var alertBanner = document.getElementById('lowStarAlertBanner');
+  if (!el) return;
+  el.innerHTML = '<span style="color:#64748b;">Loading...</span>';
+  var account = localStorage.getItem('cal_current_account') || '';
+  try {
+    var r = await fetch('/api/reviews/places?account=' + encodeURIComponent(account));
+    var data = await r.json();
+    if (data.error) { el.textContent = data.error; return; }
+    if (summary) summary.textContent = '⭐ ' + (data.rating || '—') + ' · ' + (data.total || 0) + ' reviews';
+    if (alertBanner) {
+      if (data.lowStarAlerts && data.lowStarAlerts.length > 0) {
+        alertBanner.style.display = 'block';
+        alertBanner.textContent = '⚠️ ' + data.lowStarAlerts.length + ' low-star review(s) need attention!';
+      } else {
+        alertBanner.style.display = 'none';
+      }
+    }
+    if (!data.reviews || data.reviews.length === 0) { el.textContent = 'No reviews found.'; return; }
+    el.innerHTML = data.reviews.map(function(rev) {
+      var stars = '⭐'.repeat(rev.rating || 0);
+      var lowStar = rev.rating <= 2;
+      return '<div style="padding:12px 0;border-bottom:1px solid var(--border);' + (lowStar ? 'background:#1a0a0a;border-radius:8px;padding:12px;margin-bottom:8px;' : '') + '">'
+        + '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
+        + '<span style="font-weight:600;color:var(--ink);">' + (rev.author_name || 'Anonymous') + '</span>'
+        + '<span style="color:#64748b;font-size:12px;">' + (rev.relative_time_description || '') + '</span>'
+        + '</div>'
+        + '<div style="margin-bottom:6px;">' + stars + (lowStar ? ' <span style="color:#f87171;font-size:11px;margin-left:6px;">⚠️ Needs response</span>' : '') + '</div>'
+        + '<div style="color:#cbd5e1;font-size:13px;line-height:1.5;">' + (rev.text || '') + '</div>'
+        + '</div>';
+    }).join('');
+  } catch(e) { if (el) el.textContent = 'Error loading reviews: ' + e.message; }
 }
 
 </script>
