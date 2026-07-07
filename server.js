@@ -11,6 +11,14 @@ const HOST = '0.0.0.0';
 const TOKEN_FILE = path.join(__dirname, '.gdrive-tokens.json');
 const GOOGLE_TOKEN_FILE = path.join(__dirname, '.google-tokens.json');
 const META_STORE_FILE = path.join(__dirname, '.cal-meta-store.json');
+
+// ── Place IDs per account (no OAuth needed — uses Places API) ──
+const ACCOUNT_PLACE_IDS = {
+  'info@unitedsewerservice.com': { placeId: 'ChIJvX0LSNPQ3IkRdma8QADGAhY', name: 'United Sewer and Septic' },
+  'greencollар': { placeId: 'ChIJJ8-biosyw4kR738ilrfxrbU', name: 'Green Collar Roofing & Exteriors' },
+  'willydiamond': { placeId: 'ChIJqcP1Ry7XwokRmaR_t8kedZM', name: 'Willy Diamond Property Management' },
+};
+
 // Known users for server-side meta token issuance.
 // Passwords are stored as SHA-256 hashes only — never plaintext.
 // Agency/test roles may access any account key; admin/user roles may only access their own email key.
@@ -29,105 +37,6 @@ const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 // Secret is sourced from the environment (set CAL_META_SECRET in production for persistence).
 // If absent, a random ephemeral secret is generated at startup — tokens will not survive a restart.
 const META_SECRET = process.env.CAL_META_SECRET || crypto.randomBytes(32).toString('hex');
-
-// ============ NFC TAP HELPERS ============
-function buildTapPage(person) {
-  // Green Collar and United Sewer are the two initial accounts
-  // The NFC card name will be the driver's first name (e.g. "James" or "Chris")
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Leave a Review</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
-  .card { background: #1e293b; border-radius: 20px; padding: 40px 32px; max-width: 420px; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
-  .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
-  h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-  p { color: #94a3b8; font-size: 15px; line-height: 1.5; margin-bottom: 28px; }
-  .btn { display: block; background: #2563eb; color: white; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-size: 16px; font-weight: 600; transition: background 0.2s; }
-  .btn:hover { background: #1d4ed8; }
-  .stars { font-size: 28px; margin-bottom: 16px; }
-</style>
-</head>
-<body>
-  <div class="card">
-    <div class="avatar">👷</div>
-    <h1>Your driver was ${person}</h1>
-    <div class="stars">⭐⭐⭐⭐⭐</div>
-    <p>How was your experience? A quick Google review means the world to our small team.</p>
-    <a class="btn" href="REVIEW_LINK_PLACEHOLDER" id="review-btn">Leave a Google Review →</a>
-  </div>
-  <script>
-    // The review link can be overridden via query param ?cid=DECIMAL_CID
-    const params = new URLSearchParams(location.search);
-    const cid = params.get('cid');
-    const placeid = params.get('placeid');
-    const btn = document.getElementById('review-btn');
-    if (placeid) {
-      btn.href = 'https://search.google.com/local/writereview?placeid=' + placeid;
-    } else if (cid) {
-      btn.href = 'https://www.google.com/maps?cid=' + cid;
-    }
-    // else href stays as placeholder — account admins should always pass cid or placeid
-  </script>
-</body>
-</html>`;
-}
-
-async function logNfcTap(person, req) {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseKey) return;
-  try {
-    const body = JSON.stringify({
-      person_name: person,
-      user_agent: req.headers['user-agent'] || null,
-      ip: req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null,
-      tapped_at: new Date().toISOString(),
-    });
-    const parsed = new (require('url').URL)(supabaseUrl);
-    require('https').request({
-      hostname: parsed.hostname,
-      path: '/rest/v1/nfc_taps',
-      method: 'POST',
-      headers: {
-        'apikey': supabaseKey,
-        'Authorization': 'Bearer ' + supabaseKey,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-        'Content-Length': Buffer.byteLength(body),
-      }
-    }, () => {}).end(body);
-  } catch(e) { /* fire and forget */ }
-}
-
-async function handleNfcTaps(req, res) {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!supabaseUrl || !supabaseKey) { jsonResponse(res, 200, { taps: [], error: 'Supabase not configured' }); return; }
-  try {
-    const r = await new Promise((resolve, reject) => {
-      const parsed = new (require('url').URL)(supabaseUrl);
-      const opts = {
-        hostname: parsed.hostname,
-        path: '/rest/v1/nfc_taps?select=*&order=tapped_at.desc&limit=50',
-        headers: {
-          'apikey': supabaseKey,
-          'Authorization': 'Bearer ' + supabaseKey,
-          'Accept': 'application/json',
-        }
-      };
-      require('https').get(opts, res2 => {
-        let d = ''; res2.on('data', c => d += c);
-        res2.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { resolve([]); } });
-      }).on('error', reject);
-    });
-    jsonResponse(res, 200, { taps: Array.isArray(r) ? r : [] });
-  } catch(e) { jsonResponse(res, 200, { taps: [], error: e.message }); }
-}
 
 function signMetaToken(payload) {
   const b64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
@@ -456,12 +365,10 @@ function parseMultipart(buffer, contentType) {
   if (start === -1) return parts;
   start += boundaryBuf.length;
   while (start < buffer.length) {
-    // After a boundary we expect either "--" (end) or "\r\n" then part data
-    if (buffer[start] === 0x2d && buffer[start + 1] === 0x2d) break; // closing "--"
+    if (buffer[start] === 0x2d && buffer[start + 1] === 0x2d) break;
     if (buffer[start] === 0x0d && buffer[start + 1] === 0x0a) start += 2;
     const next = buffer.indexOf(boundaryBuf, start);
     if (next === -1) break;
-    // Part is buffer[start .. next], strip trailing \r\n
     let end = next;
     if (buffer[end - 2] === 0x0d && buffer[end - 1] === 0x0a) end -= 2;
     const partBuf = buffer.slice(start, end);
@@ -823,7 +730,6 @@ if (process.env.STRIPE_SECRET_KEY && !fs.existsSync(STRIPE_TOKEN_FILE)) {
 }
 
 async function handleStripeConnect(req, res) {
-  // For now: validate the secret key works and store a connected flag
   const key = process.env.STRIPE_SECRET_KEY;
   if (!key) { jsonResponse(res, 200, { ok: false, error: 'STRIPE_SECRET_KEY not set' }); return; }
   try {
@@ -843,7 +749,6 @@ async function handleStripeStatus(res) {
   try {
     const r = await stripeApiRequest('GET', '/v1/account', null);
     if (r.status === 200 && r.body.id) {
-      // Auto-save on first successful status check so future calls stay fast
       const saved = loadStripeConnect();
       if (!saved) saveStripeConnect({ accountId: r.body.id, email: r.body.email, country: r.body.country, connectedAt: Date.now() });
       jsonResponse(res, 200, { connected: true, configured: true, accountId: r.body.id, email: r.body.email, country: r.body.country });
@@ -880,6 +785,133 @@ async function handleStripeRevenue(res, qs) {
 async function handleStripeDisconnect(res) {
   deleteStripeConnect();
   jsonResponse(res, 200, { disconnected: true });
+}
+
+// ============ GOOGLE PLACES REVIEWS (no OAuth) ============
+async function handlePlacesReviews(res, qs) {
+  const account = qs.account || '';
+  const accountData = ACCOUNT_PLACE_IDS[account];
+  if (!accountData) { jsonResponse(res, 400, { error: 'Unknown account' }); return; }
+  const placeId = accountData.placeId;
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) { jsonResponse(res, 200, { error: 'GOOGLE_MAPS_API_KEY not set', reviews: [] }); return; }
+  try {
+    const r = await new Promise((resolve, reject) => {
+      const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=name,rating,user_ratings_total,reviews&key=${apiKey}`;
+      const parsed = new (require('url').URL)(url);
+      require('https').get({ hostname: parsed.hostname, path: parsed.pathname + parsed.search }, res2 => {
+        let d = ''; res2.on('data', c => d += c);
+        res2.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { resolve({}); } });
+      }).on('error', reject);
+    });
+    const result = r.result || {};
+    const reviews = (result.reviews || []).map(rev => ({
+      author_name: rev.author_name,
+      rating: rev.rating,
+      text: rev.text,
+      time: rev.time,
+      relative_time_description: rev.relative_time_description,
+      profile_photo_url: rev.profile_photo_url,
+    }));
+    const lowStarAlerts = reviews.filter(r => r.rating <= 2);
+    jsonResponse(res, 200, {
+      name: result.name || accountData.name,
+      rating: result.rating || null,
+      total: result.user_ratings_total || 0,
+      reviews,
+      lowStarAlerts,
+    });
+  } catch(e) { jsonResponse(res, 200, { error: e.message, reviews: [] }); }
+}
+
+// ============ NFC CARD REGISTRY ============
+async function handleNfcCardsGet(req, res, qs) {
+  const rawToken = extractBearerToken(req);
+  const payload = rawToken ? verifyMetaToken(rawToken) : null;
+  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+  const account = qs.account || payload.email;
+  const store = loadMetaStore();
+  const cards = store[`nfc_cards_${account}`] || [];
+  jsonResponse(res, 200, { cards });
+}
+
+async function handleNfcCardsPost(req, res) {
+  const rawToken = extractBearerToken(req);
+  const payload = rawToken ? verifyMetaToken(rawToken) : null;
+  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+  let body;
+  try { const raw = await readRequestBody(req, 32*1024); body = JSON.parse(raw.toString('utf8')); } catch(e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+  const { name, account, placeId, cid } = body || {};
+  if (!name) { jsonResponse(res, 400, { error: 'MISSING_NAME' }); return; }
+  const acct = account || payload.email;
+  const store = loadMetaStore();
+  const key = `nfc_cards_${acct}`;
+  const cards = store[key] || [];
+  if (cards.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+    jsonResponse(res, 409, { error: 'Card with this name already exists' }); return;
+  }
+  cards.push({ name, placeId: placeId || null, cid: cid || null, createdAt: new Date().toISOString() });
+  store[key] = cards;
+  saveMetaStore(store);
+  jsonResponse(res, 200, { ok: true, card: cards[cards.length - 1], tapUrl: `/tap/${encodeURIComponent(name)}` });
+}
+
+// ============ NFC TAP LANDING PAGE ============
+function logNfcTap(person, req) {
+  try {
+    const tapLog = path.join(__dirname, '.nfc-taps.json');
+    let taps = [];
+    try { taps = JSON.parse(fs.readFileSync(tapLog, 'utf8')); } catch(e) {}
+    taps.push({ person, ts: new Date().toISOString(), ip: req.socket?.remoteAddress || '' });
+    if (taps.length > 1000) taps = taps.slice(-1000);
+    fs.writeFileSync(tapLog, JSON.stringify(taps));
+  } catch(e) {}
+}
+
+function buildTapPage(person, reviewUrl) {
+  const safeUrl = reviewUrl || '#';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leave a Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
+  .card { background: #1e293b; border-radius: 20px; padding: 40px 32px; max-width: 420px; width: 100%; box-shadow: 0 25px 50px rgba(0,0,0,0.4); }
+  .avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #3b82f6, #1d4ed8); display: flex; align-items: center; justify-content: center; font-size: 32px; margin: 0 auto 20px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  p { color: #94a3b8; font-size: 15px; line-height: 1.5; margin-bottom: 28px; }
+  .btn { display: block; background: #2563eb; color: white; text-decoration: none; padding: 16px 24px; border-radius: 12px; font-size: 16px; font-weight: 600; }
+  .stars { font-size: 28px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="avatar">👷</div>
+    <h1>This was your driver, ${person}</h1>
+    <div class="stars">⭐⭐⭐⭐⭐</div>
+    <p>Enjoyed your service? A quick Google review means the world to our small team.</p>
+    <a class="btn" href="${safeUrl}" id="review-btn">Leave a Google Review →</a>
+  </div>
+  <script>
+    // Override via query params if needed
+    const params = new URLSearchParams(location.search);
+    const cid = params.get('cid');
+    const placeid = params.get('placeid');
+    const btn = document.getElementById('review-btn');
+    if (btn.getAttribute('href') === '#') {
+      if (placeid) btn.href = 'https://search.google.com/local/writereview?placeid=' + placeid;
+      else if (cid) btn.href = 'https://www.google.com/maps?cid=' + cid;
+    }
+    // Log that the review button was clicked
+    btn.addEventListener('click', function() {
+      fetch('/api/nfc/click', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person: '${person}', ts: new Date().toISOString() }) }).catch(() => {});
+    });
+  </script>
+</body>
+</html>`;
 }
 
 const server = http.createServer(async (req, res) => {
@@ -960,19 +992,51 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/stripe/revenue' && req.method === 'GET') { await handleStripeRevenue(res, qs); return; }
   if (urlPath === '/api/stripe/disconnect' && req.method === 'POST') { await handleStripeDisconnect(res); return; }
 
-  // ============ NFC TAP LANDING PAGES ============
-  // Must be BEFORE the catch-all that serves index.html
-  if (urlPath.startsWith('/tap/')) {
-    const person = decodeURIComponent(urlPath.slice(5)) || 'Your Driver';
-    logNfcTap(person, req); // fire and forget
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(buildTapPage(person));
+  // ── Places Reviews (no OAuth) ──
+  if (urlPath === '/api/reviews/places' && req.method === 'GET') { await handlePlacesReviews(res, qs); return; }
+
+  // ── NFC Card Registry ──
+  if (urlPath === '/api/nfc/cards' && req.method === 'GET') { await handleNfcCardsGet(req, res, qs); return; }
+  if (urlPath === '/api/nfc/cards' && req.method === 'POST') { await handleNfcCardsPost(req, res); return; }
+
+  // ── NFC Click Tracking ──
+  if (urlPath === '/api/nfc/click' && req.method === 'POST') {
+    try {
+      const raw = await readRequestBody(req, 8*1024);
+      const body = JSON.parse(raw.toString('utf8'));
+      const clickLog = path.join(__dirname, '.nfc-clicks.json');
+      let clicks = [];
+      try { clicks = JSON.parse(fs.readFileSync(clickLog, 'utf8')); } catch(e) {}
+      clicks.push({ person: body.person, ts: body.ts || new Date().toISOString() });
+      if (clicks.length > 500) clicks = clicks.slice(-500);
+      fs.writeFileSync(clickLog, JSON.stringify(clicks));
+    } catch(e) {}
+    jsonResponse(res, 200, { ok: true });
     return;
   }
 
-  // NFC tap log API (for dashboard)
-  if (urlPath === '/api/nfc/taps' && req.method === 'GET') {
-    await handleNfcTaps(req, res);
+  // ── NFC Tap Landing Page ──
+  if (urlPath.startsWith('/tap/')) {
+    const person = decodeURIComponent(urlPath.slice(5)) || 'Your Driver';
+    logNfcTap(person, req);
+    // Look up review URL from registered cards
+    let reviewUrl = null;
+    try {
+      const store = loadMetaStore();
+      for (const key of Object.keys(store)) {
+        if (key.startsWith('nfc_cards_')) {
+          const cards = store[key] || [];
+          const card = cards.find(c => c.name.toLowerCase() === person.toLowerCase());
+          if (card) {
+            if (card.placeId) reviewUrl = 'https://search.google.com/local/writereview?placeid=' + card.placeId;
+            else if (card.cid) reviewUrl = 'https://www.google.com/maps?cid=' + card.cid;
+            break;
+          }
+        }
+      }
+    } catch(e) {}
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(buildTapPage(person, reviewUrl));
     return;
   }
 
@@ -1046,7 +1110,6 @@ async function handleGithubPush(req, res) {
     // Sync full-code.html first
     fs.copyFileSync(path.join(__dirname, 'index.html'), path.join(__dirname, 'full-code.html'));
 
-    // Files to push via GitHub API
     const filesToPush = ['index.html', 'full-code.html', 'server.js'];
     const now = new Date().toISOString().replace('T', ' ').slice(0, 16);
     const commitMessage = 'CAL OS update — ' + now + ' UTC';
@@ -1058,11 +1121,9 @@ async function handleGithubPush(req, res) {
       const content = fs.readFileSync(filePath);
       const b64 = content.toString('base64');
 
-      // Get current SHA of file (needed for update)
       const existing = await githubApiRequest('GET', '/repos/' + owner + '/' + repo + '/contents/' + filename + '?ref=' + branch, pat, null);
       const sha = existing.status === 200 ? existing.body.sha : undefined;
 
-      // Push file
       const pushBody = { message: commitMessage, content: b64, branch };
       if (sha) pushBody.sha = sha;
       const result = await githubApiRequest('PUT', '/repos/' + owner + '/' + repo + '/contents/' + filename, pat, pushBody);
