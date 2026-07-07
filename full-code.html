@@ -2179,6 +2179,17 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </p>
   </div>
 
+
+  <!-- ── Google Place ID & Review Link Setup ── -->
+  <div class="review-link-setup" style="background:#1e293b;border-radius:12px;padding:16px;margin-top:14px;max-width:520px;margin-left:auto;margin-right:auto">
+    <label style="font-size:13px;color:#94a3b8;display:block;margin-bottom:8px;font-weight:600">Google Place ID (for NFC review link)</label>
+    <div style="display:flex;gap:8px;">
+      <input type="text" id="googlePlaceIdInput" placeholder="ChIJ... or paste CID decimal" style="flex:1;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
+      <button onclick="saveGooglePlaceId()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px;font-weight:600;">Save</button>
+    </div>
+    <div id="reviewLinkDisplay" style="margin-top:8px;font-size:12px;color:#64748b;"></div>
+  </div>
+
   <!-- ── SECTION 2: Dashboard ── -->
   <div id="rv-dashboard" style="margin-top:28px;display:none">
 
@@ -2233,6 +2244,16 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </div>
 
     </div>
+
+    <!-- NFC Card Tap Log -->
+    <div class="nfc-tap-log" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0;letter-spacing:.2px">NFC Card Taps</p>
+        <button onclick="loadNfcTaps()" style="background:rgba(27,58,107,.08);color:var(--blue);border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:700;">Refresh</button>
+      </div>
+      <div id="nfcTapList" style="font-size:13px;color:var(--muted);font-weight:600">Loading…</div>
+    </div>
+
   </div>
 
 </div>
@@ -15323,6 +15344,56 @@ function openOAuthFor(platform){
   var title=modal.querySelector('h2,#oauth-title'); if(title) title.textContent='Connect '+platform;
   openModal('oauth-modal');
 }
+
+// ── Google Place ID helpers (Change C) ──
+function getCurrentAccount() {
+  try { return (window.currentMeta && window.currentMeta.email) || localStorage.getItem('cal_meta_email') || 'default'; } catch(e) { return 'default'; }
+}
+function saveGooglePlaceId() {
+  var val = document.getElementById('googlePlaceIdInput').value.trim();
+  if (!val) return;
+  var account = getCurrentAccount();
+  localStorage.setItem('googlePlaceId_' + account, val);
+  updateReviewLinkDisplay();
+}
+function updateReviewLinkDisplay() {
+  var account = getCurrentAccount();
+  var val = localStorage.getItem('googlePlaceId_' + account) || '';
+  var display = document.getElementById('reviewLinkDisplay');
+  var input = document.getElementById('googlePlaceIdInput');
+  if (!display) return;
+  if (val) {
+    if (input) input.value = val;
+    var isPlaceId = val.startsWith('Ch');
+    var link = isPlaceId
+      ? 'https://search.google.com/local/writereview?placeid=' + val
+      : 'https://www.google.com/maps?cid=' + val;
+    display.innerHTML = 'Review link: <a href="' + link + '" target="_blank" style="color:#3b82f6;">' + link + '</a>';
+  }
+}
+
+// ── NFC tap log (Change D) ──
+async function loadNfcTaps() {
+  var el = document.getElementById('nfcTapList');
+  if (!el) return;
+  try {
+    var token = localStorage.getItem('cal_meta_token');
+    var headers = {};
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    var r = await fetch('/api/nfc/taps', { headers: headers });
+    var data = await r.json();
+    if (!data.taps || data.taps.length === 0) { el.textContent = 'No taps recorded yet.'; return; }
+    el.innerHTML = data.taps.map(function(t) {
+      var d = new Date(t.tapped_at);
+      var timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">'
+        + '<span>👷 ' + (t.person_name || 'Unknown') + '</span>'
+        + '<span style="color:var(--muted);">' + timeStr + '</span>'
+        + '</div>';
+    }).join('');
+  } catch(e) { el.textContent = 'Error loading taps.'; }
+}
+
 </script>
 
 </body>
