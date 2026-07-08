@@ -3962,12 +3962,57 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
 </div>
 <div class="screen" id="s-permissions">
-  <div class="sec-head"><div><h2>Permissions</h2><p>Invite team members and manage access by account and role</p></div><button class="btn-primary" onclick="openModal('perm-invite-modal')">+ Invite Member</button></div>
-  <div class="card card-pad" style="margin-bottom:14px">
-    <label class="form-label" style="display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Filter by Account</label>
-    <select class="input-std" id="perm-acct-select" onchange="renderPermForAccount(this.value)" style="max-width:380px"></select>
+  <div class="sec-head">
+    <div><h2>Permissions</h2><p>Control what each account, role, and user can access</p></div>
+    <button class="btn-primary" onclick="openModal('perm-invite-modal')">+ Invite Member</button>
   </div>
-  <div id="perm-acct-users"></div>
+
+  <!-- Account selector -->
+  <div class="card card-pad" style="margin-bottom:14px">
+    <label class="form-label" style="display:block;font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Client Account</label>
+    <select class="input-std" id="perm-acct-select" onchange="renderPermEditor(this.value)" style="max-width:380px"></select>
+  </div>
+
+  <!-- Tab bar -->
+  <div class="tabs-row" style="margin-bottom:16px">
+    <button class="tab-btn active" id="ptab-screens" onclick="switchPermTab('screens')">Account Screens</button>
+    <button class="tab-btn" id="ptab-roles"   onclick="switchPermTab('roles')">Role Defaults</button>
+    <button class="tab-btn" id="ptab-users"   onclick="switchPermTab('users')">User Overrides</button>
+  </div>
+
+  <!-- Tab: Account screen blocks -->
+  <div id="perm-tab-screens">
+    <div class="card card-pad" style="margin-bottom:12px">
+      <p style="font-size:13px;font-weight:700;color:var(--muted);line-height:1.5">Toggle screens on or off for this account. A disabled screen is hidden from <strong>all</strong> users in this account regardless of their role.</p>
+    </div>
+    <div id="perm-screen-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px"></div>
+  </div>
+
+  <!-- Tab: Role defaults -->
+  <div id="perm-tab-roles" style="display:none">
+    <div class="card card-pad" style="margin-bottom:12px">
+      <p style="font-size:13px;font-weight:700;color:var(--muted);line-height:1.5">Set which screens each role can see within this account. Overrides the system defaults for this account only.</p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px" id="perm-role-tabs">
+      <button class="btn-gold" style="font-size:12px;padding:6px 14px" onclick="switchPermRole('owner')">Owner</button>
+      <button class="btn-ghost" style="font-size:12px;padding:6px 14px" onclick="switchPermRole('operator')">Operator</button>
+      <button class="btn-ghost" style="font-size:12px;padding:6px 14px" onclick="switchPermRole('driver')">Driver</button>
+      <button class="btn-ghost" style="font-size:12px;padding:6px 14px" onclick="switchPermRole('admin')">Admin</button>
+      <button class="btn-ghost" style="font-size:12px;padding:6px 14px" onclick="switchPermRole('client')">Client</button>
+    </div>
+    <div id="perm-role-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px"></div>
+  </div>
+
+  <!-- Tab: User overrides -->
+  <div id="perm-tab-users" style="display:none">
+    <div class="card card-pad" style="margin-bottom:12px">
+      <p style="font-size:13px;font-weight:700;color:var(--muted);line-height:1.5">Grant or deny specific screens for individual users — overrides both account and role settings.</p>
+    </div>
+    <div id="perm-user-list"></div>
+  </div>
+
+  <!-- Legacy user card container (kept for old renderPermForAccount calls) -->
+  <div id="perm-acct-users" style="display:none"></div>
 </div>
 
 <!-- ============ SCREEN: POS BUILDER ============ -->
@@ -5675,18 +5720,61 @@ function getPermissions(role, email){
   }
   return [];
 }
+/* ================================================================
+   CAL OS PERMISSION ENGINE — 4-layer check
+   Layer 1: CAL Marketing master (agency/superadmin always passes)
+   Layer 2: Account-level screen block
+   Layer 3: Role-level permission
+   Layer 4: Per-user override (allow or deny)
+   ================================================================ */
+
+/* Account-level screen blocks: cal-account-screen-blocks-{acctId}
+   Format: { screenName: false }  →  false = blocked for ALL roles in this account */
+function _getAcctScreenBlocks(acctId){
+  try{ return JSON.parse(localStorage.getItem('cal-account-screen-blocks-'+(acctId||'local'))||'{}'); }catch(e){ return {}; }
+}
+function _saveAcctScreenBlocks(acctId, blocks){
+  try{ localStorage.setItem('cal-account-screen-blocks-'+(acctId||'local'), JSON.stringify(blocks)); }catch(e){}
+}
+
+/* Per-user overrides: cal-user-overrides-{acctId}
+   Format: { email: { screen: true|false } }
+   true = explicitly GRANTED even if role denies
+   false = explicitly DENIED even if role allows */
+function _getUserOverrides(acctId){
+  try{ return JSON.parse(localStorage.getItem('cal-user-overrides-'+(acctId||'local'))||'{}'); }catch(e){ return {}; }
+}
+function _saveUserOverrides(acctId, overrides){
+  try{ localStorage.setItem('cal-user-overrides-'+(acctId||'local'), JSON.stringify(overrides)); }catch(e){}
+}
+
 function hasPermission(screen){
-  // Agency always has full access
-  if(currentRole==='agency') return true;
-  // Get account-scoped permissions if available
+  /* Layer 1: agency/superadmin always passes */
+  if(currentRole==='agency'||currentRole==='superadmin'||currentRole==='test') return true;
+
   var acctId = window.currentAcctId || 'a1';
+  var email  = currentUser ? currentUser.email : '';
+
+  /* Layer 2: account-level screen block — if blocked, nobody in this account sees it */
+  var blocks = _getAcctScreenBlocks(acctId);
+  if(blocks[screen] === false) return false;
+
+  /* Layer 3: role-level permission */
   var perms;
   if(ACCOUNT_PERMISSIONS[acctId] && ACCOUNT_PERMISSIONS[acctId][currentRole]){
     perms = ACCOUNT_PERMISSIONS[acctId][currentRole];
   } else {
-    perms = getPermissions(currentRole, currentUser?currentUser.email:'');
+    perms = getPermissions(currentRole, email);
   }
-  return perms.indexOf(screen)>=0;
+  var roleAllows = perms.indexOf(screen) >= 0;
+
+  /* Layer 4: per-user override */
+  var overrides = _getUserOverrides(acctId);
+  if(email && overrides[email] && typeof overrides[email][screen] !== 'undefined'){
+    return overrides[email][screen]; /* true = force allow, false = force deny */
+  }
+
+  return roleAllows;
 }
 
 // ============ STATE ============
@@ -17744,6 +17832,263 @@ function showDriverDetail(driver) {
   document.addEventListener('DOMContentLoaded', function(){
     setTimeout(_refreshAgencyUI, 500);
   });
+
+})();
+</script>
+
+
+<script>
+/* ================================================================
+   CAL OS PERMISSION EDITOR ENGINE
+   Full 4-layer permission management for CAL Marketing
+   ================================================================ */
+(function(){
+
+  /* All screens with friendly labels */
+  var ALL_SCREENS = [
+    ['home','Home'],['analytics','Analytics'],['roi','ROI'],['campaigns','Campaigns'],
+    ['reviews','Reviews'],['leads','Leads'],['content','Content'],['seo','SEO'],
+    ['social','Social'],['schedule','Schedule'],['inbox','Inbox'],['notes','Notes'],
+    ['todos','Todos'],['files','Files'],['billing','Billing'],['reports','Reports'],
+    ['goals','Goals'],['projects','Projects'],['nps','NPS'],['referrals','Referrals'],
+    ['booking','Booking'],['invoicing','Invoicing'],['proposals','Proposals'],
+    ['pos','POS Builder'],['revenue','Revenue'],['leaderboard','Leaderboard'],
+    ['job-logging','Job Logging'],['team','Team'],['settings','Settings'],
+    ['profile','Profile'],['notifications','Notifications'],['help','Help'],
+    ['permissions','Permissions'],['whitelabel','Whitelabel'],['agency-admin','Agency Admin'],
+    ['agency-todos','Agency Todos'],['client-projects','Client Projects'],
+    ['sales','Sales'],['drivers','Drivers'],['plans','Plans']
+  ];
+
+  var _permAcctId   = null;   /* currently selected account id */
+  var _permTab      = 'screens';
+  var _permRole     = 'owner';
+
+  /* ── Helper: get account id from name ── */
+  function _acctIdByName(name){
+    var accts = window.DEFAULT_ACCOUNTS||[];
+    var a = accts.find(function(a){ return a.name===name || a.id===name; });
+    return a ? a.id : name;
+  }
+  function _acctNameById(id){
+    var accts = window.DEFAULT_ACCOUNTS||[];
+    var a = accts.find(function(a){ return a.id===id; });
+    return a ? a.name : id;
+  }
+
+  /* ── Init: populate account dropdown and render ── */
+  window.renderPermAccounts = function(){
+    var sel = document.getElementById('perm-acct-select'); if(!sel) return;
+    var accts = window.DEFAULT_ACCOUNTS||[];
+    sel.innerHTML = accts.map(function(a){
+      return '<option value="'+a.id+'">'+a.name+'</option>';
+    }).join('');
+    /* Pre-select the current viewed account if not agency-home */
+    if(window.currentAcctId && window.currentAcctId !== 'local'){
+      sel.value = window.currentAcctId;
+    }
+    _permAcctId = sel.value || (accts[0] && accts[0].id);
+    renderPermEditor(_permAcctId);
+  };
+
+  /* ── Main render dispatcher ── */
+  window.renderPermEditor = function(acctIdOrName){
+    _permAcctId = acctIdOrName || _permAcctId;
+    if(_permTab === 'screens') renderPermScreenTab(_permAcctId);
+    if(_permTab === 'roles')   renderPermRoleTab(_permAcctId, _permRole);
+    if(_permTab === 'users')   renderPermUserTab(_permAcctId);
+  };
+
+  /* ── Tab switcher ── */
+  window.switchPermTab = function(tab){
+    _permTab = tab;
+    ['screens','roles','users'].forEach(function(t){
+      var pane = document.getElementById('perm-tab-'+t);
+      var btn  = document.getElementById('ptab-'+t);
+      if(pane) pane.style.display = (t===tab) ? '' : 'none';
+      if(btn)  btn.classList.toggle('active', t===tab);
+    });
+    renderPermEditor(_permAcctId);
+  };
+
+  /* ── Role tab switcher ── */
+  window.switchPermRole = function(role){
+    _permRole = role;
+    var roleTabs = document.getElementById('perm-role-tabs');
+    if(roleTabs){
+      roleTabs.querySelectorAll('button').forEach(function(btn){
+        var isActive = btn.textContent.toLowerCase() === role.toLowerCase()
+          || btn.getAttribute('onclick').indexOf("'"+role+"'") >= 0;
+        btn.className = isActive ? 'btn-gold' : 'btn-ghost';
+        btn.style.fontSize='12px'; btn.style.padding='6px 14px';
+      });
+    }
+    renderPermRoleTab(_permAcctId, role);
+  };
+
+  /* ── TAB 1: Account screen blocks ── */
+  function renderPermScreenTab(acctId){
+    var grid = document.getElementById('perm-screen-grid'); if(!grid) return;
+    var blocks = typeof _getAcctScreenBlocks === 'function' ? _getAcctScreenBlocks(acctId) : {};
+
+    grid.innerHTML = ALL_SCREENS.map(function(pair){
+      var screen = pair[0], label = pair[1];
+      var enabled = blocks[screen] !== false; /* default: enabled */
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface)">'
+        +'<span style="font-size:13px;font-weight:800;color:var(--ink)">'+label+'</span>'
+        +'<button class="sw '+(enabled?'':'off')+'" data-screen="'+screen+'" onclick="toggleAcctScreen(''+acctId+'',''+screen+'',this)"></button>'
+        +'</div>';
+    }).join('');
+  }
+
+  window.toggleAcctScreen = function(acctId, screen, btn){
+    var blocks = typeof _getAcctScreenBlocks === 'function' ? _getAcctScreenBlocks(acctId) : {};
+    if(blocks[screen] === false){
+      delete blocks[screen];
+      btn.classList.remove('off');
+    } else {
+      blocks[screen] = false;
+      btn.classList.add('off');
+    }
+    if(typeof _saveAcctScreenBlocks === 'function') _saveAcctScreenBlocks(acctId, blocks);
+    /* Re-apply nav if we're currently viewing that account */
+    if(typeof setupRoleUI === 'function' && window.currentAcctId === acctId) setupRoleUI();
+    showToast(screen.replace(/-/g,' ')+' '+(blocks[screen]===false?'disabled':'enabled')+' for '+_acctNameById(acctId), blocks[screen]===false?'gold':'green');
+  };
+
+  /* ── TAB 2: Role defaults per account ── */
+  function renderPermRoleTab(acctId, role){
+    var grid = document.getElementById('perm-role-grid'); if(!grid) return;
+    var AP = window.ACCOUNT_PERMISSIONS || {};
+    var DP = window.DEFAULT_PERMISSIONS || {};
+    var current = (AP[acctId] && AP[acctId][role])
+      ? AP[acctId][role].slice()
+      : (DP[role] ? DP[role].slice() : []);
+
+    grid.innerHTML = ALL_SCREENS.map(function(pair){
+      var screen = pair[0], label = pair[1];
+      var enabled = current.indexOf(screen) >= 0;
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface)">'
+        +'<span style="font-size:13px;font-weight:800;color:var(--ink)">'+label+'</span>'
+        +'<button class="sw '+(enabled?'':'off')+'" onclick="toggleRolePerm(''+acctId+'',''+role+'',''+screen+'',this)"></button>'
+        +'</div>';
+    }).join('');
+  }
+
+  window.toggleRolePerm = function(acctId, role, screen, btn){
+    var AP = window.ACCOUNT_PERMISSIONS || {};
+    var DP = window.DEFAULT_PERMISSIONS || {};
+    if(!AP[acctId]) AP[acctId] = {};
+    var current = (AP[acctId][role])
+      ? AP[acctId][role].slice()
+      : (DP[role] ? DP[role].slice() : []);
+
+    var idx = current.indexOf(screen);
+    if(idx >= 0){ current.splice(idx,1); btn.classList.add('off'); }
+    else         { current.push(screen); btn.classList.remove('off'); }
+
+    AP[acctId][role] = current;
+    window.ACCOUNT_PERMISSIONS = AP;
+    if(typeof saveAccountPermissions === 'function') saveAccountPermissions();
+    if(typeof setupRoleUI === 'function' && window.currentAcctId === acctId) setupRoleUI();
+    showToast(role+' › '+screen.replace(/-/g,' ')+(idx>=0?' removed':' added'), idx>=0?'gold':'green');
+  };
+
+  /* ── TAB 3: Per-user overrides ── */
+  function renderPermUserTab(acctId){
+    var host = document.getElementById('perm-user-list'); if(!host) return;
+    var USERS = window.USERS || {};
+    var acctName = _acctNameById(acctId);
+
+    /* Find users in this account */
+    var members = Object.keys(USERS).filter(function(email){
+      var u = USERS[email];
+      return u && (u.company === acctName || u.acctId === acctId);
+    });
+
+    if(!members.length){
+      host.innerHTML = '<div class="card card-pad"><p style="font-size:13px;font-weight:700;color:var(--muted)">No users found for this account. Add users via Team or Settings → Users.</p></div>';
+      return;
+    }
+
+    var overrides = typeof _getUserOverrides === 'function' ? _getUserOverrides(acctId) : {};
+
+    host.innerHTML = members.map(function(email){
+      var u = USERS[email];
+      var userOv = overrides[email] || {};
+      var rows = ALL_SCREENS.map(function(pair){
+        var screen = pair[0], label = pair[1];
+        var ov = userOv[screen];
+        /* Three states: inherited (undefined), granted (true), denied (false) */
+        var stateLabel = ov === true ? '✓ Granted' : ov === false ? '✗ Denied' : '—';
+        var stateColor = ov === true ? 'var(--green)' : ov === false ? 'var(--red)' : 'var(--muted)';
+        return '<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border:1px solid var(--border);border-radius:8px">'
+          +'<span style="font-size:12px;font-weight:800;color:var(--ink)">'+label+'</span>'
+          +'<div style="display:flex;gap:4px">'
+            +'<button onclick="setUserOverride(''+acctId+'',''+email+'',''+screen+'',true,this)" style="font-size:10px;padding:3px 7px;border-radius:6px;border:1.5px solid '+(ov===true?'var(--green)':'var(--border)')+';background:'+(ov===true?'var(--green)':'transparent')+';color:'+(ov===true?'#fff':'var(--muted)')+';font-weight:800;cursor:pointer">Grant</button>'
+            +'<button onclick="setUserOverride(''+acctId+'',''+email+'',''+screen+'',false,this)" style="font-size:10px;padding:3px 7px;border-radius:6px;border:1.5px solid '+(ov===false?'var(--red)':'var(--border)')+';background:'+(ov===false?'var(--red)':'transparent')+';color:'+(ov===false?'#fff':'var(--muted)')+';font-weight:800;cursor:pointer">Deny</button>'
+            +'<button onclick="clearUserOverride(''+acctId+'',''+email+'',''+screen+'')" style="font-size:10px;padding:3px 7px;border-radius:6px;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-weight:800;cursor:pointer">Clear</button>'
+          +'</div>'
+          +'</div>';
+      }).join('');
+
+      return '<div class="card card-pad" style="margin-bottom:14px">'
+        +'<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">'
+          +'<div style="width:38px;height:38px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:900">'
+            +((u.name||email).slice(0,2).toUpperCase())
+          +'</div>'
+          +'<div>'
+            +'<p style="font-size:14px;font-weight:900;color:var(--ink);margin:0">'+(u.name||email)+'</p>'
+            +'<p style="font-size:11px;color:var(--muted);font-weight:700;margin:0">'+email+' · '+( u.role||'user')+'</p>'
+          +'</div>'
+          +'<button class="btn-ghost" style="margin-left:auto;font-size:11px;padding:5px 10px;color:var(--red)" onclick="clearAllUserOverrides(''+acctId+'',''+email+'')">Clear All Overrides</button>'
+        +'</div>'
+        +'<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:6px">'+rows+'</div>'
+        +'</div>';
+    }).join('');
+  }
+
+  window.setUserOverride = function(acctId, email, screen, allow, btn){
+    var overrides = typeof _getUserOverrides === 'function' ? _getUserOverrides(acctId) : {};
+    if(!overrides[email]) overrides[email] = {};
+    overrides[email][screen] = allow;
+    if(typeof _saveUserOverrides === 'function') _saveUserOverrides(acctId, overrides);
+    /* Refresh the UI for this user */
+    renderPermUserTab(acctId);
+    showToast((allow?'Granted':'Denied')+' '+screen.replace(/-/g,' ')+' for '+email, allow?'green':'gold');
+  };
+
+  window.clearUserOverride = function(acctId, email, screen){
+    var overrides = typeof _getUserOverrides === 'function' ? _getUserOverrides(acctId) : {};
+    if(overrides[email]) delete overrides[email][screen];
+    if(typeof _saveUserOverrides === 'function') _saveUserOverrides(acctId, overrides);
+    renderPermUserTab(acctId);
+  };
+
+  window.clearAllUserOverrides = function(acctId, email){
+    var overrides = typeof _getUserOverrides === 'function' ? _getUserOverrides(acctId) : {};
+    delete overrides[email];
+    if(typeof _saveUserOverrides === 'function') _saveUserOverrides(acctId, overrides);
+    renderPermUserTab(acctId);
+    showToast('All overrides cleared for '+email, 'gold');
+  };
+
+  /* ── Hook into nav('permissions') ── */
+  var _origNav = window.nav;
+  if(typeof _origNav === 'function'){
+    window.nav = function(screen){
+      _origNav.apply(this, arguments);
+      if(screen === 'permissions') setTimeout(renderPermAccounts, 50);
+    };
+  }
+
+  /* ── Also apply account-level screen blocks to nav buttons on account switch ── */
+  var _origRefresh = window.refreshTenantContext;
+  if(typeof _origRefresh === 'function'){
+    window.refreshTenantContext = function(id){
+      _origRefresh.apply(this, arguments);
+    };
+  }
 
 })();
 </script>
