@@ -2664,7 +2664,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div style="display:flex;gap:8px;align-items:center">
       <button class="btn-view" onclick="openModal('add-event-modal')">+ Add Event</button>
       <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="loadGoogleCalendarEvents()">↻ Refresh</button>
+      <button id="push-event-btn" class="btn-ghost" style="font-size:11px;padding:5px 10px;color:var(--blue);border-color:rgba(0,82,204,.3);display:none" onclick="openPushEventModal()">↑ Push to Client</button>
     </div>
+  </div>
+
+  <!-- Agency pushed events (client view only) -->
+  <div id="agency-events-section" style="display:none;margin-bottom:16px">
+    <p style="font-size:11px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">📌 From Your Agency</p>
+    <div id="agency-events-list" style="display:flex;flex-direction:column;gap:8px"></div>
   </div>
 
   <!-- Google Calendar connect banner -->
@@ -2744,8 +2751,16 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div style="padding:8px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
         <input class="input-std" style="height:34px;flex:1;font-size:12px" placeholder="Search messages…" id="inbox-search" oninput="filterInboxSearch()">
         <button class="btn-gold" style="height:34px;padding:0 14px;font-size:12px;white-space:nowrap;flex-shrink:0;border-radius:20px" onclick="openComposeModal()">+ New</button>
+        <button id="agency-msg-btn" class="btn-ghost" style="height:34px;padding:0 12px;font-size:12px;white-space:nowrap;flex-shrink:0;border-radius:20px;display:none;color:var(--blue);border-color:rgba(0,82,204,.3)" onclick="openAgencyMessageModal()">↑ Agency Msg</button>
       </div>
       <div id="inbox-thread-list" style="overflow-y:auto"></div>
+      <!-- Agency messages pinned above regular threads -->
+      <div id="agency-msg-pin" style="border-top:2px solid var(--blue);display:none">
+        <div style="padding:6px 10px;background:rgba(0,82,204,.06)">
+          <p style="font-size:10px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin:0">Agency Updates</p>
+        </div>
+        <div id="agency-msg-list"></div>
+      </div>
     </div>
     <div class="chat-wrap" id="inbox-msg-pane" style="min-height:420px;height:calc(100vh - 200px);max-height:700px">
       <div id="inbox-empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);gap:10px;padding:40px">
@@ -3636,6 +3651,13 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <p class="note-item-date">Jun 10, 2026 · 6 min read</p>
         </div>
       </div>
+      <!-- Agency shared notes (client view) -->
+      <div id="shared-notes-section" style="display:none;border-top:2px solid var(--blue)">
+        <div style="padding:6px 10px;background:rgba(0,82,204,.06)">
+          <p style="font-size:10px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin:0">From Agency</p>
+        </div>
+        <div id="shared-notes-list"></div>
+      </div>
     </div>
     <div class="note-editor-panel" id="note-editor">
       <input class="note-title-input" id="note-title" value="Q3 Strategy Notes" oninput="startNoteSave()">
@@ -3646,6 +3668,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <button class="toolbar-btn" onclick="execCmd('insertUnorderedList')">• List</button>
         <button class="toolbar-btn" onclick="execCmd('insertOrderedList')">1. List</button>
         <button class="toolbar-btn" style="margin-left:auto;color:var(--gold);border-color:rgba(201,168,76,.4)" onclick="createTaskFromNote()">+ Create Task</button>
+        <button class="toolbar-btn" id="share-note-btn" style="color:var(--blue);border-color:rgba(0,82,204,.3);display:none" onclick="openShareNoteModal()">↑ Share with Client</button>
       </div>
       <div class="note-body" id="note-body" contenteditable="true" oninput="startNoteSave()">
         <p><strong>Q3 Strategy Planning</strong></p>
@@ -17247,6 +17270,480 @@ function showDriverDetail(driver) {
       if(screen === 'reports') renderReportsScreen();
     };
   }
+
+})();
+</script>
+
+
+<!-- ============ PHASE 2 PUBLISH MODALS ============ -->
+
+<!-- Share Note Modal -->
+<div class="modal-overlay" id="share-note-modal" style="display:none;align-items:center;justify-content:center">
+  <div class="modal-box" style="max-width:480px;width:100%;padding:26px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 style="font-size:16px;font-weight:900;color:var(--ink)">Share Note with Client</h3>
+      <button onclick="closeModal('share-note-modal')" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="form-field">
+        <label class="form-label">Share with Account</label>
+        <select class="input-std" id="sn-acct-sel"><option value="">Select account…</option></select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Note Title</label>
+        <input class="input-std" id="sn-title" readonly style="background:var(--page)">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Optional Message to Client</label>
+        <textarea class="input-std" id="sn-message" rows="3" style="resize:vertical" placeholder="Add a note for the client (optional)…"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+        <button class="btn-ghost" onclick="closeModal('share-note-modal')">Cancel</button>
+        <button class="btn-gold" onclick="submitShareNote()">Share Note →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Agency Message Modal -->
+<div class="modal-overlay" id="agency-msg-modal" style="display:none;align-items:center;justify-content:center">
+  <div class="modal-box" style="max-width:500px;width:100%;padding:26px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 style="font-size:16px;font-weight:900;color:var(--ink)">Send Agency Message</h3>
+      <button onclick="closeModal('agency-msg-modal')" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="form-field">
+        <label class="form-label">Send to Account</label>
+        <select class="input-std" id="am-acct-sel"><option value="">Select account…</option></select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Subject</label>
+        <input class="input-std" id="am-subject" placeholder="e.g. Campaign Update – July 2026">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Message</label>
+        <textarea class="input-std" id="am-body" rows="5" style="resize:vertical" placeholder="Write your message to the client…"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+        <button class="btn-ghost" onclick="closeModal('agency-msg-modal')">Cancel</button>
+        <button class="btn-gold" onclick="submitAgencyMessage()">Send Message →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Push Event Modal -->
+<div class="modal-overlay" id="push-event-modal" style="display:none;align-items:center;justify-content:center">
+  <div class="modal-box" style="max-width:500px;width:100%;padding:26px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <h3 style="font-size:16px;font-weight:900;color:var(--ink)">Push Event to Client</h3>
+      <button onclick="closeModal('push-event-modal')" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="form-field">
+        <label class="form-label">Client Account</label>
+        <select class="input-std" id="pe-acct-sel"><option value="">Select account…</option></select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Event Title</label>
+        <input class="input-std" id="pe-title" placeholder="e.g. Monthly Strategy Call">
+      </div>
+      <div class="grid g2" style="gap:10px">
+        <div class="form-field">
+          <label class="form-label">Date</label>
+          <input class="input-std" id="pe-date" type="date">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Time</label>
+          <input class="input-std" id="pe-time" type="time" value="10:00">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Event Type</label>
+        <select class="input-std" id="pe-type">
+          <option value="meeting">Meeting</option>
+          <option value="deadline">Deadline</option>
+          <option value="campaign">Campaign Launch</option>
+          <option value="review">Review / Report Due</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Notes / Details</label>
+        <textarea class="input-std" id="pe-notes" rows="3" style="resize:vertical" placeholder="Any details the client should know…"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:4px">
+        <button class="btn-ghost" onclick="closeModal('push-event-modal')">Cancel</button>
+        <button class="btn-gold" onclick="submitPushEvent()">Push to Client →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   CAL OS PUBLISHING ENGINE — PHASE 2
+   Extends cal-published-content with types: note, message, schedule-item
+   ================================================================ */
+(function(){
+
+  var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  /* ── Agency-visibility helpers ── */
+  function _isAgency(){
+    return (window.currentRole==='agency'||window.currentRole==='test'||window.currentRole==='superadmin');
+  }
+
+  function _acctName(id){
+    var a=(window.DEFAULT_ACCOUNTS||[]).find(function(a){return a.id===id;});
+    return a?a.name:id;
+  }
+
+  function _populateAcctSel(selId){
+    var sel=document.getElementById(selId); if(!sel) return;
+    var accts=window.DEFAULT_ACCOUNTS||[];
+    sel.innerHTML='<option value="">Select account…</option>';
+    accts.forEach(function(a){
+      var o=document.createElement('option');
+      o.value=a.id; o.textContent=a.name;
+      sel.appendChild(o);
+    });
+    if(window.currentAcctId&&window.currentAcctId!=='local') sel.value=window.currentAcctId;
+  }
+
+  function _clientAcctId(){
+    /* When an agency user is viewing a client account, return that account id */
+    return window.currentAcctId||'local';
+  }
+
+  /* ── Show/hide agency-only UI elements ── */
+  function _refreshAgencyUI(){
+    var agency = _isAgency();
+    var shareBtn   = document.getElementById('share-note-btn');
+    var agencyMsgBtn = document.getElementById('agency-msg-btn');
+    var pushEvtBtn = document.getElementById('push-event-btn');
+    if(shareBtn)     shareBtn.style.display    = agency ? '' : 'none';
+    if(agencyMsgBtn) agencyMsgBtn.style.display = agency ? '' : 'none';
+    if(pushEvtBtn)   pushEvtBtn.style.display   = agency ? '' : 'none';
+  }
+
+  /* ── SHARE NOTE ── */
+  window.openShareNoteModal = function(){
+    _populateAcctSel('sn-acct-sel');
+    var titleEl = document.getElementById('note-title');
+    var snTitle = document.getElementById('sn-title');
+    if(snTitle && titleEl) snTitle.value = titleEl.value||'Untitled Note';
+    var snMsg = document.getElementById('sn-message');
+    if(snMsg) snMsg.value = '';
+    openModal('share-note-modal');
+  };
+
+  window.submitShareNote = function(){
+    var acctId  = (document.getElementById('sn-acct-sel')||{}).value;
+    var title   = ((document.getElementById('sn-title')||{}).value||'').trim();
+    var message = ((document.getElementById('sn-message')||{}).value||'').trim();
+    if(!acctId){ showToast('Please select an account.','gold'); return; }
+
+    /* Grab current note body */
+    var bodyEl = document.getElementById('note-body');
+    var bodyHtml = bodyEl ? bodyEl.innerHTML : '';
+
+    var item = {
+      id:        'note-'+Date.now(),
+      type:      'note',
+      accountId: acctId,
+      title:     title,
+      content:   bodyHtml,
+      message:   message,
+      status:    'published',
+      createdBy: (window.currentUser&&window.currentUser.email)||'agency',
+      createdAt: Date.now(),
+      publishedAt: Date.now()
+    };
+
+    if(typeof window.savePublishedItem==='function') window.savePublishedItem(acctId, item);
+    closeModal('share-note-modal');
+    showToast('Note shared with '+_acctName(acctId)+'!','green');
+  };
+
+  /* ── AGENCY MESSAGE ── */
+  window.openAgencyMessageModal = function(){
+    _populateAcctSel('am-acct-sel');
+    ['am-subject','am-body'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.value='';
+    });
+    openModal('agency-msg-modal');
+  };
+
+  window.submitAgencyMessage = function(){
+    var acctId  = (document.getElementById('am-acct-sel')||{}).value;
+    var subject = ((document.getElementById('am-subject')||{}).value||'').trim();
+    var body    = ((document.getElementById('am-body')||{}).value||'').trim();
+    if(!acctId)  { showToast('Please select an account.','gold'); return; }
+    if(!subject) { showToast('Please enter a subject.','gold'); return; }
+    if(!body)    { showToast('Please write a message.','gold'); return; }
+
+    var item = {
+      id:        'msg-'+Date.now(),
+      type:      'message',
+      accountId: acctId,
+      subject:   subject,
+      body:      body,
+      status:    'published',
+      read:      false,
+      createdBy: (window.currentUser&&window.currentUser.email)||'agency',
+      createdAt: Date.now(),
+      publishedAt: Date.now()
+    };
+
+    if(typeof window.savePublishedItem==='function') window.savePublishedItem(acctId, item);
+    closeModal('agency-msg-modal');
+    showToast('Message sent to '+_acctName(acctId)+'!','green');
+
+    /* Refresh inbox if we're looking at the target account */
+    if(_clientAcctId()===acctId && window.currentScreen==='inbox') renderAgencyInboxMessages(acctId);
+  };
+
+  /* ── PUSH EVENT ── */
+  window.openPushEventModal = function(){
+    _populateAcctSel('pe-acct-sel');
+    ['pe-title','pe-notes'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.value='';
+    });
+    /* Default date = today */
+    var dateEl = document.getElementById('pe-date');
+    if(dateEl){ var d=new Date(); dateEl.value=d.toISOString().slice(0,10); }
+    openModal('push-event-modal');
+  };
+
+  window.submitPushEvent = function(){
+    var acctId = (document.getElementById('pe-acct-sel')||{}).value;
+    var title  = ((document.getElementById('pe-title')||{}).value||'').trim();
+    var date   = (document.getElementById('pe-date')||{}).value;
+    var time   = (document.getElementById('pe-time')||{}).value||'00:00';
+    var type   = (document.getElementById('pe-type')||{}).value||'meeting';
+    var notes  = ((document.getElementById('pe-notes')||{}).value||'').trim();
+    if(!acctId){ showToast('Please select an account.','gold'); return; }
+    if(!title) { showToast('Please enter an event title.','gold'); return; }
+    if(!date)  { showToast('Please select a date.','gold'); return; }
+
+    var item = {
+      id:        'evt-'+Date.now(),
+      type:      'schedule-item',
+      accountId: acctId,
+      title:     title,
+      date:      date,
+      time:      time,
+      eventType: type,
+      notes:     notes,
+      status:    'published',
+      createdBy: (window.currentUser&&window.currentUser.email)||'agency',
+      createdAt: Date.now(),
+      publishedAt: Date.now()
+    };
+
+    if(typeof window.savePublishedItem==='function') window.savePublishedItem(acctId, item);
+    closeModal('push-event-modal');
+    showToast('Event pushed to '+_acctName(acctId)+'!','green');
+
+    /* Refresh schedule if visible */
+    if(_clientAcctId()===acctId && window.currentScreen==='schedule') renderAgencyScheduleEvents(acctId);
+  };
+
+  /* ── CLIENT: Render shared notes in sidebar ── */
+  window.renderSharedNotes = function(acctId){
+    var section = document.getElementById('shared-notes-section');
+    var list    = document.getElementById('shared-notes-list');
+    if(!section||!list) return;
+    if(!acctId||_isAgency()){ section.style.display='none'; return; }
+
+    var items = typeof window.getPublishedContent==='function'
+      ? window.getPublishedContent(acctId,'note','published')
+      : [];
+
+    if(!items.length){ section.style.display='none'; return; }
+    section.style.display='';
+    list.innerHTML = items.map(function(item){
+      var d = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+      return '<div class="note-list-item" onclick="openSharedNote(''+item.id+'')" data-shared-id="'+item.id+'">'
+        +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
+          +'<div style="width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0"></div>'
+          +'<p class="note-item-title">'+item.title+'</p>'
+        +'</div>'
+        +(item.message ? '<p class="note-item-preview">'+item.message.slice(0,60)+'</p>' : '')
+        +'<p class="note-item-date">'+d+' · From Agency</p>'
+        +'</div>';
+    }).join('');
+  };
+
+  window.openSharedNote = function(itemId){
+    var acctId = _clientAcctId();
+    var items = typeof window.getPublishedContent==='function'
+      ? window.getPublishedContent(acctId,'note','published')
+      : [];
+    var item = items.find(function(i){ return i.id===itemId; });
+    if(!item) return;
+    /* Load into the note editor as read-only */
+    var titleEl = document.getElementById('note-title');
+    var bodyEl  = document.getElementById('note-body');
+    if(titleEl){ titleEl.value=item.title; titleEl.readOnly=true; }
+    if(bodyEl){ bodyEl.innerHTML=item.content; bodyEl.contentEditable='false'; }
+    document.querySelectorAll('.note-list-item').forEach(function(el){ el.classList.remove('active'); });
+    var sharedEl = document.querySelector('[data-shared-id="'+itemId+'"]');
+    if(sharedEl) sharedEl.classList.add('active');
+    var ind=document.getElementById('note-save-ind'); if(ind) ind.textContent='Shared by Agency · Read-only';
+    /* Show message banner if present */
+    if(item.message){
+      var existingBanner = document.getElementById('shared-note-banner');
+      if(existingBanner) existingBanner.remove();
+      var banner = document.createElement('div');
+      banner.id='shared-note-banner';
+      banner.style.cssText='padding:10px 14px;background:rgba(0,82,204,.08);border-radius:8px;margin-bottom:10px;border-left:3px solid var(--blue)';
+      banner.innerHTML='<p style="font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Agency Note</p><p style="font-size:13px;color:var(--ink);font-weight:600">'+item.message+'</p>';
+      var noteBody = document.getElementById('note-body');
+      if(noteBody && noteBody.parentNode) noteBody.parentNode.insertBefore(banner, noteBody);
+    }
+  };
+
+  /* Restore editor to editable when user opens their own note */
+  var _origOpenNote = window.openNote;
+  if(typeof _origOpenNote==='function'){
+    window.openNote = function(idx){
+      _origOpenNote.apply(this, arguments);
+      var titleEl=document.getElementById('note-title');
+      var bodyEl=document.getElementById('note-body');
+      if(titleEl) titleEl.readOnly=false;
+      if(bodyEl) bodyEl.contentEditable='true';
+      var banner=document.getElementById('shared-note-banner');
+      if(banner) banner.remove();
+      var ind=document.getElementById('note-save-ind'); if(ind) ind.textContent='All changes saved';
+    };
+  }
+
+  /* ── CLIENT: Render agency inbox messages ── */
+  window.renderAgencyInboxMessages = function(acctId){
+    var pin  = document.getElementById('agency-msg-pin');
+    var list = document.getElementById('agency-msg-list');
+    if(!pin||!list) return;
+    if(!acctId||_isAgency()){ pin.style.display='none'; return; }
+
+    var items = typeof window.getPublishedContent==='function'
+      ? window.getPublishedContent(acctId,'message','published')
+      : [];
+
+    if(!items.length){ pin.style.display='none'; return; }
+    pin.style.display='';
+    list.innerHTML = items.map(function(item){
+      var d = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
+      var unread = !item.read;
+      return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border)'+(unread?';background:rgba(0,82,204,.04)':'')+'" onclick="openAgencyMessage(''+item.id+'')">'
+        +'<div style="width:8px;height:8px;border-radius:50%;background:'+(unread?'var(--blue)':'transparent')+';flex-shrink:0;margin-top:5px"></div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<p style="font-size:12px;font-weight:'+(unread?'900':'700')+';color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+item.subject+'</p>'
+          +'<p style="font-size:11px;color:var(--muted);font-weight:600;margin:2px 0 0">'+item.body.slice(0,50)+'…</p>'
+        +'</div>'
+        +'<span style="font-size:10px;color:var(--muted);flex-shrink:0;margin-top:2px">'+d+'</span>'
+        +'</div>';
+    }).join('');
+  };
+
+  window.openAgencyMessage = function(itemId){
+    var acctId = _clientAcctId();
+    var db;
+    try{ db=JSON.parse(localStorage.getItem('cal-published-content')||'{}'); }catch(e){ db={}; }
+    var items = db[acctId]||[];
+    var item  = items.find(function(i){ return i.id===itemId; });
+    if(!item) return;
+
+    /* Mark as read */
+    item.read=true;
+    try{ localStorage.setItem('cal-published-content',JSON.stringify(db)); }catch(e){}
+
+    /* Render in the message pane */
+    var pane = document.getElementById('inbox-msg-pane');
+    if(!pane) return;
+    var d = item.publishedAt ? new Date(item.publishedAt).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}) : '';
+    pane.innerHTML = '<div style="display:flex;flex-direction:column;height:100%;overflow-y:auto;padding:20px">'
+      +'<div style="padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:16px">'
+        +'<p style="font-size:16px;font-weight:900;color:var(--ink);margin:0 0 4px">'+item.subject+'</p>'
+        +'<p style="font-size:11px;font-weight:700;color:var(--blue);margin:0">From: Your Agency · '+d+'</p>'
+      +'</div>'
+      +'<div style="font-size:14px;font-weight:600;color:var(--ink);line-height:1.7;white-space:pre-wrap">'+item.body+'</div>'
+      +'</div>';
+
+    /* Refresh list to clear unread dot */
+    renderAgencyInboxMessages(acctId);
+  };
+
+  /* ── CLIENT: Render pushed schedule events ── */
+  var EVENT_ICONS = { meeting:'📅', deadline:'⏰', campaign:'🚀', review:'📋', other:'📌' };
+
+  window.renderAgencyScheduleEvents = function(acctId){
+    var section = document.getElementById('agency-events-section');
+    var list    = document.getElementById('agency-events-list');
+    if(!section||!list) return;
+    if(!acctId||_isAgency()){ section.style.display='none'; return; }
+
+    var items = typeof window.getPublishedContent==='function'
+      ? window.getPublishedContent(acctId,'schedule-item','published')
+      : [];
+
+    /* Only show upcoming (date >= today) */
+    var today = new Date().toISOString().slice(0,10);
+    items = items.filter(function(i){ return (i.date||'') >= today; });
+    items.sort(function(a,b){ return (a.date+a.time)<(b.date+b.time)?-1:1; });
+
+    if(!items.length){ section.style.display='none'; return; }
+    section.style.display='';
+    list.innerHTML = items.map(function(item){
+      var icon = EVENT_ICONS[item.eventType]||'📌';
+      var d = item.date ? new Date(item.date+'T'+item.time).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) : '';
+      var t = item.time ? new Date('1970-01-01T'+item.time).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}) : '';
+      return '<div class="card card-pad" style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px">'
+        +'<div style="font-size:22px;flex-shrink:0;line-height:1">'+icon+'</div>'
+        +'<div style="flex:1">'
+          +'<p style="font-size:14px;font-weight:900;color:var(--ink);margin:0">'+item.title+'</p>'
+          +'<p style="font-size:12px;font-weight:700;color:var(--blue);margin:3px 0 0">'+d+(t?' · '+t:'')+'</p>'
+          +(item.notes?'<p style="font-size:12px;color:var(--muted);font-weight:600;margin:5px 0 0;line-height:1.5">'+item.notes+'</p>':'')
+        +'</div>'
+        +'</div>';
+    }).join('');
+  };
+
+  /* ── Hook into nav() to refresh Phase 2 content ── */
+  var _p2OrigNav = window.nav;
+  if(typeof _p2OrigNav==='function'){
+    window.nav = function(screen){
+      _p2OrigNav.apply(this, arguments);
+      var acctId = _clientAcctId();
+      _refreshAgencyUI();
+      if(screen==='notes')    renderSharedNotes(acctId);
+      if(screen==='inbox')    renderAgencyInboxMessages(acctId);
+      if(screen==='schedule') renderAgencyScheduleEvents(acctId);
+    };
+  }
+
+  /* ── Also refresh on role/account switch ── */
+  var _p2OrigRefresh = window.refreshTenantContext;
+  if(typeof _p2OrigRefresh==='function'){
+    window.refreshTenantContext = function(id){
+      _p2OrigRefresh.apply(this, arguments);
+      setTimeout(function(){
+        _refreshAgencyUI();
+        var acctId = _clientAcctId();
+        var scr = window.currentScreen;
+        if(scr==='notes')    renderSharedNotes(acctId);
+        if(scr==='inbox')    renderAgencyInboxMessages(acctId);
+        if(scr==='schedule') renderAgencyScheduleEvents(acctId);
+      }, 100);
+    };
+  }
+
+  /* Run once on load */
+  document.addEventListener('DOMContentLoaded', function(){
+    setTimeout(_refreshAgencyUI, 500);
+  });
 
 })();
 </script>
