@@ -3058,30 +3058,35 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
 <!-- ============ SCREEN: REPORTS ============ -->
 <div class="screen" id="s-reports">
-  <div class="sec-head"><div><h2>Reports</h2><p>Monthly performance summaries</p></div></div>
-
-  <!-- KPI Row — clean, no descriptions -->
-  <div class="kpi-row" style="margin-top:0;margin-bottom:18px">
-    <div class="kpi-card" style="border-left-color:var(--green)"><div class="kpi-val" style="color:var(--green)">248</div><div class="kpi-label">Leads This Month</div><div style="font-size:10px;font-weight:700;color:var(--green);margin-top:4px">▲ 5% vs May</div></div>
-    <div class="kpi-card" style="border-left-color:var(--gold)"><div class="kpi-val" style="color:var(--gold)">4.2×</div><div class="kpi-label">ROAS</div><div style="font-size:10px;font-weight:700;color:var(--green);margin-top:4px">▲ 0.2× vs May</div></div>
-    <div class="kpi-card" style="border-left-color:var(--blue)"><div class="kpi-val" style="color:var(--blue)">$4,200</div><div class="kpi-label">Ad Spend</div><div style="font-size:10px;font-weight:700;color:var(--muted);margin-top:4px">Budget on track</div></div>
-    <div class="kpi-card" style="border-left-color:var(--ink)"><div class="kpi-val">$18,400</div><div class="kpi-label">Revenue Generated</div><div style="font-size:10px;font-weight:700;color:var(--green);margin-top:4px">▲ 14% YoY</div></div>
+  <div class="sec-head">
+    <div><h2 id="reports-title">Reports</h2><p id="reports-subtitle">Monthly performance summaries</p></div>
+    <button class="btn-gold" id="reports-new-btn" onclick="openPublishReportModal()" style="display:none">+ New Report</button>
   </div>
 
-  <!-- Monthly Reports — Year + Month Selector -->
-  <p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px">📋 Monthly Reports</p>
-
-  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-    <span style="font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap">Year</span>
-    <select id="report-year-sel" class="input-std" style="width:110px;padding:6px 10px" onchange="renderReportMonthPills()"></select>
+  <!-- CLIENT VIEW: year/month selector + published list -->
+  <div id="reports-client-view">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap">Year</span>
+      <select id="report-year-sel" class="input-std" style="width:110px;padding:6px 10px" onchange="renderReportMonthPills()"></select>
+    </div>
+    <div id="report-month-pills" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px"></div>
+    <div id="report-inline-card" style="margin-bottom:4px"></div>
+    <div id="reports-published-list" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
   </div>
 
-  <div id="report-month-pills" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px"></div>
+  <!-- AGENCY VIEW: account filter + report list -->
+  <div id="reports-agency-view" style="display:none">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+      <label class="form-label" style="white-space:nowrap;margin:0">Account:</label>
+      <select class="input-std" id="reports-acct-filter" style="max-width:240px" onchange="renderAgencyReportsList()">
+        <option value="all">All Accounts</option>
+      </select>
+    </div>
+    <div id="reports-agency-list" style="display:flex;flex-direction:column;gap:12px"></div>
+  </div>
 
-  <div id="report-inline-card" style="margin-bottom:4px"></div>
-
-  <!-- Review Your Team — compact button -->
-  <div class="card card-pad" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border:1px solid var(--gold)">
+  <!-- Review Your Team -->
+  <div class="card card-pad" id="reports-nps-card" style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;border:1px solid var(--gold);margin-top:18px">
     <div>
       <p style="font-size:14px;font-weight:900;color:var(--ink)">How is your marketing team doing?</p>
       <p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Review your CAL team and share your satisfaction so we can keep improving your results.</p>
@@ -3089,7 +3094,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button onclick="nav('nps')" style="padding:8px 18px;border:1.5px solid var(--gold);border-radius:8px;background:transparent;color:var(--gold);font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:900;cursor:pointer;white-space:nowrap">Review Your Team</button>
   </div>
 
-  <!-- Generate Report (agency only) -->
+  <!-- Generate Report (agency only — legacy card kept for nav() compat) -->
   <div class="card card-pad" id="generate-report-card" style="margin-top:12px;display:none">
     <div class="card-head" style="margin-bottom:16px">
       <span class="card-title">Generate Report</span>
@@ -10089,16 +10094,8 @@ function previewGenReport(){
   showToast('Preview: '+acctName+' · '+period+' · '+sections.length+' sections','gold');
 }
 function generateReport(){
-  var acctSel=document.getElementById('gen-report-acct');
-  var acctName=acctSel?acctSel.options[acctSel.selectedIndex].text:'All Accounts';
-  var btn=document.querySelector('#generate-report-card .btn-gold');
-  if(btn){ btn.textContent='Generating…'; btn.disabled=true; }
-  setTimeout(function(){
-    if(btn){ btn.innerHTML='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/><\/svg>Generate Report'; btn.disabled=false; }
-    if(_genFmt==='email'||_genFmt==='both') showToast('Report emailed to '+acctName+'!','green');
-    else showToast('Report ready — opening PDF…','green');
-    if(_genFmt!=='email') setTimeout(function(){ openModal('report-modal'); },600);
-  },1800);
+  /* Delegate to the real publish-to-account flow */
+  openPublishReportModal();
 }
 function setReportSchedule(btn, type){
   document.querySelectorAll('.report-toggle-btn[id^="rpt-"]').forEach(function(b){ b.classList.remove('active'); });
@@ -16856,6 +16853,404 @@ function showDriverDetail(driver) {
     </button>
   </div>
 </div>
+
+<!-- ============ PUBLISH REPORT MODAL ============ -->
+<div class="modal-overlay" id="publish-report-modal" style="display:none;align-items:center;justify-content:center">
+  <div class="modal-box" style="max-width:580px;width:100%;padding:28px;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="font-size:17px;font-weight:900;color:var(--ink)">Publish Report to Client</h3>
+      <button onclick="closeModal('publish-report-modal')" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--muted)">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="form-field">
+        <label class="form-label">Client Account</label>
+        <select class="input-std" id="pr-acct-sel">
+          <option value="">Select account…</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Report Period</label>
+        <select class="input-std" id="pr-period-sel"></select>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Report Title</label>
+        <input class="input-std" id="pr-title" placeholder="e.g. June 2026 Performance Report">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Summary / Key Wins</label>
+        <textarea class="input-std" id="pr-summary" rows="4" style="resize:vertical" placeholder="What were the highlights this month?"></textarea>
+      </div>
+      <div class="grid g2" style="gap:12px">
+        <div class="form-field">
+          <label class="form-label">Total Leads</label>
+          <input class="input-std" id="pr-leads" type="number" placeholder="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Ad Spend ($)</label>
+          <input class="input-std" id="pr-spend" type="number" placeholder="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">Revenue Generated ($)</label>
+          <input class="input-std" id="pr-revenue" type="number" placeholder="0">
+        </div>
+        <div class="form-field">
+          <label class="form-label">ROAS</label>
+          <input class="input-std" id="pr-roas" type="number" step="0.1" placeholder="0.0">
+        </div>
+      </div>
+      <div class="form-field">
+        <label class="form-label">Recommendations / Next Steps</label>
+        <textarea class="input-std" id="pr-recs" rows="3" style="resize:vertical" placeholder="What should we focus on next month?"></textarea>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:6px">
+        <button class="btn-ghost" onclick="submitPublishReport('draft')">Save Draft</button>
+        <button class="btn-gold" onclick="submitPublishReport('published')">Publish to Client</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+/* ================================================================
+   CAL OS PUBLISHING ENGINE
+   Master-to-client content publishing system
+   Storage key: cal-published-content  →  { [acctId]: [ ...items ] }
+   ================================================================ */
+
+(function(){
+
+  /* ── Storage helpers ── */
+  function _getStore(){
+    try{ return JSON.parse(localStorage.getItem('cal-published-content')||'{}'); }catch(e){ return {}; }
+  }
+  function _saveStore(db){
+    try{ localStorage.setItem('cal-published-content', JSON.stringify(db)); }catch(e){}
+  }
+
+  /* Get all published items for an account (optionally filter by type and status) */
+  window.getPublishedContent = function(acctId, type, status){
+    var db = _getStore();
+    var items = (db[acctId] || []).slice();
+    if(type)   items = items.filter(function(i){ return i.type === type; });
+    if(status) items = items.filter(function(i){ return i.status === status; });
+    return items.sort(function(a,b){ return (b.publishedAt||b.createdAt||0)-(a.publishedAt||b.createdAt||0); });
+  };
+
+  /* Save / update an item in an account's store */
+  window.savePublishedItem = function(acctId, item){
+    var db = _getStore();
+    if(!db[acctId]) db[acctId] = [];
+    var idx = db[acctId].findIndex(function(i){ return i.id === item.id; });
+    if(idx >= 0) db[acctId][idx] = item;
+    else         db[acctId].unshift(item);
+    _saveStore(db);
+  };
+
+  /* Delete an item */
+  window.deletePublishedItem = function(acctId, itemId){
+    var db = _getStore();
+    if(db[acctId]) db[acctId] = db[acctId].filter(function(i){ return i.id !== itemId; });
+    _saveStore(db);
+  };
+
+  /* Publish a draft (flip status to published, set publishedAt) */
+  window.publishItem = function(acctId, itemId){
+    var db = _getStore();
+    if(!db[acctId]) return;
+    var item = db[acctId].find(function(i){ return i.id === itemId; });
+    if(item){ item.status='published'; item.publishedAt=Date.now(); }
+    _saveStore(db);
+  };
+
+  /* ── Period helpers ── */
+  var MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  window._genPeriodOptions = function(){
+    var now = new Date(); var opts = [];
+    for(var y=now.getFullYear(); y>=now.getFullYear()-2; y--){
+      var maxM = (y===now.getFullYear()) ? now.getMonth() : 11;
+      for(var m=maxM; m>=0; m--){
+        opts.push({ value: MONTHS[m]+' '+y, label: MONTHS[m]+' '+y });
+      }
+    }
+    return opts;
+  };
+
+  /* ── Modal open / close ── */
+  window.openPublishReportModal = function(){
+    /* Populate account selector */
+    var acctSel = document.getElementById('pr-acct-sel');
+    if(acctSel){
+      var accts = window.DEFAULT_ACCOUNTS || [];
+      acctSel.innerHTML = '<option value="">Select account…</option>';
+      accts.forEach(function(a){
+        var opt = document.createElement('option');
+        opt.value = a.id; opt.textContent = a.name;
+        acctSel.appendChild(opt);
+      });
+      /* Pre-select current account if agency is viewing a client */
+      if(window.currentAcctId && window.currentAcctId !== 'local'){
+        acctSel.value = window.currentAcctId;
+      }
+    }
+    /* Populate period selector */
+    var perSel = document.getElementById('pr-period-sel');
+    if(perSel){
+      var periods = window._genPeriodOptions();
+      perSel.innerHTML = periods.map(function(p){
+        return '<option value="'+p.value+'">'+p.label+'</option>';
+      }).join('');
+    }
+    /* Auto-fill title */
+    var titleEl = document.getElementById('pr-title');
+    var perEl   = document.getElementById('pr-period-sel');
+    if(titleEl && perEl && !titleEl.value){
+      titleEl.value = (perEl.value||'') + ' Performance Report';
+    }
+    openModal('publish-report-modal');
+  };
+
+  /* ── Submit ── */
+  window.submitPublishReport = function(status){
+    var acctId  = (document.getElementById('pr-acct-sel')||{}).value;
+    var period  = (document.getElementById('pr-period-sel')||{}).value;
+    var title   = ((document.getElementById('pr-title')||{}).value||'').trim();
+    var summary = ((document.getElementById('pr-summary')||{}).value||'').trim();
+    var leads   = parseInt((document.getElementById('pr-leads')||{}).value)||0;
+    var spend   = parseFloat((document.getElementById('pr-spend')||{}).value)||0;
+    var revenue = parseFloat((document.getElementById('pr-revenue')||{}).value)||0;
+    var roas    = parseFloat((document.getElementById('pr-roas')||{}).value)||0;
+    var recs    = ((document.getElementById('pr-recs')||{}).value||'').trim();
+
+    if(!acctId){ showToast('Please select a client account.','gold'); return; }
+    if(!period){ showToast('Please select a report period.','gold'); return; }
+    if(!title){ showToast('Please enter a report title.','gold'); return; }
+
+    var item = {
+      id:          'rpt-'+Date.now(),
+      type:        'report',
+      accountId:   acctId,
+      title:       title,
+      period:      period,
+      summary:     summary,
+      metrics:     { leads:leads, spend:spend, revenue:revenue, roas:roas },
+      recommendations: recs,
+      status:      status,
+      createdBy:   (window.currentUser && window.currentUser.email) || 'agency',
+      createdAt:   Date.now(),
+      publishedAt: status==='published' ? Date.now() : null
+    };
+
+    window.savePublishedItem(acctId, item);
+    closeModal('publish-report-modal');
+
+    /* Clear form */
+    ['pr-title','pr-summary','pr-leads','pr-spend','pr-revenue','pr-roas','pr-recs'].forEach(function(id){
+      var el = document.getElementById(id);
+      if(el) el.value = '';
+    });
+
+    if(status === 'published'){
+      /* Also stamp it into _reportDb so existing month pills work */
+      _injectIntoReportDb(acctId, item);
+      showToast('Report published to '+_acctName(acctId)+'!', 'green');
+    } else {
+      showToast('Draft saved for '+_acctName(acctId)+'.', 'gold');
+    }
+
+    /* Refresh reports screen if visible */
+    if(window.currentScreen === 'reports') renderReportsScreen();
+  };
+
+  /* ── Inject into legacy _reportDb so month pills light up ── */
+  function _injectIntoReportDb(acctId, item){
+    if(typeof _reportDb === 'undefined') return;
+    var ABBR=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    var FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var parts = (item.period||'').split(' ');
+    if(parts.length < 2) return;
+    var mIdx = FULL.indexOf(parts[0]);
+    var yr   = parseInt(parts[1]);
+    if(mIdx < 0 || isNaN(yr)) return;
+    var key  = ABBR[mIdx]+'-'+yr;
+    var m = item.metrics||{};
+    _reportDb[key] = {
+      t:     item.title,
+      leads: m.leads||0,
+      spend: m.spend||0,
+      roas:  m.roas||0,
+      rev:   m.revenue||0,
+      summary: item.summary||'',
+      recommendations: item.recommendations||'',
+      publishedBy: item.createdBy,
+      publishedAt: item.publishedAt,
+      accountId: acctId,
+      _published: true   /* flag: real data, not synthetic */
+    };
+    /* Refresh pills if on screen */
+    if(typeof renderReportMonthPills==='function') renderReportMonthPills();
+  }
+
+  /* ── Helper: account name from id ── */
+  function _acctName(id){
+    var accts = window.DEFAULT_ACCOUNTS||[];
+    var a = accts.find(function(a){ return a.id===id; });
+    return a ? a.name : id;
+  }
+
+  /* ── renderReportsScreen: switch between agency and client views ── */
+  window.renderReportsScreen = function(){
+    var isAgency = (window.currentRole==='agency'||window.currentRole==='test'||window.currentRole==='superadmin');
+    var agencyView  = document.getElementById('reports-agency-view');
+    var clientView  = document.getElementById('reports-client-view');
+    var newBtn      = document.getElementById('reports-new-btn');
+    var npsCard     = document.getElementById('reports-nps-card');
+    var legacyCard  = document.getElementById('generate-report-card');
+
+    if(isAgency){
+      if(agencyView)  agencyView.style.display = '';
+      if(clientView)  clientView.style.display = 'none';
+      if(newBtn)      newBtn.style.display = '';
+      if(legacyCard)  legacyCard.style.display = 'none';
+      if(npsCard)     npsCard.style.display = 'none';
+      /* Populate account filter */
+      var af = document.getElementById('reports-acct-filter');
+      if(af){
+        var accts = window.DEFAULT_ACCOUNTS||[];
+        af.innerHTML = '<option value="all">All Accounts</option>';
+        accts.forEach(function(a){
+          var o = document.createElement('option');
+          o.value = a.id; o.textContent = a.name;
+          af.appendChild(o);
+        });
+        /* Pre-select current account */
+        if(window.currentAcctId && window.currentAcctId!=='local') af.value = window.currentAcctId;
+      }
+      renderAgencyReportsList();
+    } else {
+      if(agencyView)  agencyView.style.display = 'none';
+      if(clientView)  clientView.style.display = '';
+      if(newBtn)      newBtn.style.display = 'none';
+      if(legacyCard)  legacyCard.style.display = 'none';
+      if(npsCard)     npsCard.style.display = '';
+      renderClientReportsList();
+      /* Also run legacy selector for month pills */
+      if(typeof initReportSelector==='function') initReportSelector();
+    }
+  };
+
+  /* ── Agency view: list of all reports across accounts ── */
+  window.renderAgencyReportsList = function(){
+    var list = document.getElementById('reports-agency-list'); if(!list) return;
+    var af   = document.getElementById('reports-acct-filter');
+    var filterAcct = af ? af.value : 'all';
+
+    var accts = filterAcct==='all' ? (window.DEFAULT_ACCOUNTS||[]).map(function(a){return a.id;}) : [filterAcct];
+    var allItems = [];
+    accts.forEach(function(id){
+      var items = window.getPublishedContent(id, 'report');
+      items.forEach(function(i){ i._acctName = _acctName(id); });
+      allItems = allItems.concat(items);
+    });
+    allItems.sort(function(a,b){ return (b.createdAt||0)-(a.createdAt||0); });
+
+    if(!allItems.length){
+      list.innerHTML = '<div class="card card-pad" style="text-align:center;padding:40px 20px"><p style="font-size:14px;font-weight:800;color:var(--muted)">No reports yet</p><p style="font-size:12px;color:var(--muted2);margin-top:4px">Click + New Report to publish the first one.</p></div>';
+      return;
+    }
+
+    list.innerHTML = allItems.map(function(item){
+      var statusColor = item.status==='published' ? 'var(--green)' : 'var(--gold)';
+      var statusLabel = item.status==='published' ? 'Published' : 'Draft';
+      var m = item.metrics||{};
+      return '<div class="card card-pad" style="border-left:3px solid '+statusColor+'">'
+        +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+          +'<div>'
+            +'<p style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+item._acctName+' · '+item.period+'</p>'
+            +'<p style="font-size:15px;font-weight:900;color:var(--ink);margin-top:2px">'+item.title+'</p>'
+          +'</div>'
+          +'<span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;background:'+statusColor+'22;color:'+statusColor+'">'+statusLabel+'</span>'
+        +'</div>'
+        +(item.summary ? '<p style="font-size:13px;color:var(--muted);font-weight:600;margin-top:8px;line-height:1.5">'+item.summary.slice(0,200)+(item.summary.length>200?'…':'')+'</p>' : '')
+        +'<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">'
+          +(m.leads   ? '<span style="font-size:12px;font-weight:700;color:var(--ink)">'+m.leads+' leads</span>' : '')
+          +(m.spend   ? '<span style="font-size:12px;font-weight:700;color:var(--ink)">$'+m.spend.toLocaleString()+' spend</span>' : '')
+          +(m.revenue ? '<span style="font-size:12px;font-weight:700;color:var(--green)">$'+m.revenue.toLocaleString()+' revenue</span>' : '')
+          +(m.roas    ? '<span style="font-size:12px;font-weight:700;color:var(--blue)">'+m.roas+'× ROAS</span>' : '')
+        +'</div>'
+        +'<div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">'
+          +(item.status==='draft' ? '<button class="btn-gold" style="font-size:12px;padding:6px 14px" onclick="publishExistingReport(''+item.accountId+'',''+item.id+'')">Publish →</button>' : '')
+          +'<button class="btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--red)" onclick="deleteReport(''+item.accountId+'',''+item.id+'')">Delete</button>'
+        +'</div>'
+        +'</div>';
+    }).join('');
+  };
+
+  /* ── Client view: read-only published reports list ── */
+  window.renderClientReportsList = function(){
+    var list = document.getElementById('reports-published-list'); if(!list) return;
+    var acctId = typeof acctKey==='function' ? acctKey() : (window.currentAcctId||'local');
+    var items  = window.getPublishedContent(acctId, 'report', 'published');
+
+    if(!items.length){
+      list.innerHTML = '';  /* hide — month pills still show synthetic data */
+      return;
+    }
+
+    list.innerHTML = '<p style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Published Reports</p>'
+      + items.map(function(item){
+        var m = item.metrics||{};
+        var d = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
+        return '<div class="card card-pad">'
+          +'<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">'
+            +'<div>'
+              +'<p style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">'+item.period+(d?' · Published '+d:'')+'</p>'
+              +'<p style="font-size:15px;font-weight:900;color:var(--ink);margin-top:2px">'+item.title+'</p>'
+            +'</div>'
+            +'<span style="font-size:11px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--green)22;color:var(--green)">Published</span>'
+          +'</div>'
+          +(item.summary ? '<p style="font-size:13px;color:var(--muted);font-weight:600;margin-top:8px;line-height:1.5">'+item.summary+'</p>' : '')
+          +'<div style="display:flex;gap:16px;margin-top:10px;flex-wrap:wrap">'
+            +(m.leads   ? '<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:18px;font-weight:900;color:var(--ink)">'+m.leads+'</span><span style="font-size:11px;color:var(--muted);font-weight:700">Leads</span></div>' : '')
+            +(m.spend   ? '<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:18px;font-weight:900;color:var(--gold)">$'+m.spend.toLocaleString()+'</span><span style="font-size:11px;color:var(--muted);font-weight:700">Ad Spend</span></div>' : '')
+            +(m.revenue ? '<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:18px;font-weight:900;color:var(--green)">$'+m.revenue.toLocaleString()+'</span><span style="font-size:11px;color:var(--muted);font-weight:700">Revenue</span></div>' : '')
+            +(m.roas    ? '<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:18px;font-weight:900;color:var(--blue)">'+m.roas+'×</span><span style="font-size:11px;color:var(--muted);font-weight:700">ROAS</span></div>' : '')
+          +'</div>'
+          +(item.recommendations ? '<div style="margin-top:12px;padding:10px 12px;background:var(--blue)11;border-radius:8px;border-left:3px solid var(--blue)"><p style="font-size:11px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Next Steps</p><p style="font-size:13px;color:var(--ink);font-weight:600;line-height:1.5">'+item.recommendations+'</p></div>' : '')
+          +'</div>';
+      }).join('');
+  };
+
+  /* ── Publish an existing draft ── */
+  window.publishExistingReport = function(acctId, itemId){
+    window.publishItem(acctId, itemId);
+    var db = (function(){ try{ return JSON.parse(localStorage.getItem('cal-published-content')||'{}'); }catch(e){ return {}; } })();
+    var item = (db[acctId]||[]).find(function(i){ return i.id===itemId; });
+    if(item) _injectIntoReportDb(acctId, item);
+    showToast('Report published!', 'green');
+    renderAgencyReportsList();
+  };
+
+  /* ── Delete a report ── */
+  window.deleteReport = function(acctId, itemId){
+    if(!confirm('Delete this report? This cannot be undone.')) return;
+    window.deletePublishedItem(acctId, itemId);
+    showToast('Report deleted.', 'gold');
+    renderAgencyReportsList();
+  };
+
+  /* ── Hook into nav() so reports screen renders correctly on open ── */
+  var _origNav = window.nav;
+  if(typeof _origNav === 'function'){
+    window.nav = function(screen){
+      _origNav.apply(this, arguments);
+      if(screen === 'reports') renderReportsScreen();
+    };
+  }
+
+})();
+</script>
+
 </body>
 </html>
 
