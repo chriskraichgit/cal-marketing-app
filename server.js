@@ -1460,6 +1460,59 @@ function logNfcTap(person, req) {
   } catch(e) {}
 }
 
+function buildDriverPage(person, reviewUrl) {
+  const safeUrl = reviewUrl || '#';
+  const initials = person.split(' ').map(w => w[0]||'').join('').toUpperCase().slice(0,2) || '??';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${htmlEscape(person)} — Leave a Review</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e1a3a 100%); color: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; text-align: center; }
+  .card { background: rgba(255,255,255,0.05); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 40px 28px; max-width: 380px; width: 100%; }
+  .avatar { width: 90px; height: 90px; border-radius: 50%; background: linear-gradient(135deg, #f59e0b, #d97706); display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; color: white; margin: 0 auto 20px; letter-spacing: 1px; box-shadow: 0 0 0 4px rgba(245,158,11,0.2); }
+  .badge { display: inline-block; background: rgba(245,158,11,0.15); color: #f59e0b; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; padding: 4px 12px; border-radius: 99px; margin-bottom: 14px; }
+  h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
+  .tagline { color: #94a3b8; font-size: 14px; line-height: 1.6; margin-bottom: 28px; }
+  .stars { font-size: 26px; margin-bottom: 20px; letter-spacing: 2px; }
+  .btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; text-decoration: none; padding: 16px 24px; border-radius: 14px; font-size: 16px; font-weight: 700; box-shadow: 0 8px 20px rgba(37,99,235,0.35); transition: transform .15s; }
+  .btn:active { transform: scale(0.97); }
+  .footer { margin-top: 24px; font-size: 11px; color: #475569; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="avatar">${initials}</div>
+    <div class="badge">Your Service Provider</div>
+    <h1>${htmlEscape(person)}</h1>
+    <div class="stars">⭐⭐⭐⭐⭐</div>
+    <p class="tagline">Happy with the service today?<br>A quick review helps our team grow — it only takes 30 seconds!</p>
+    <a class="btn" href="${safeUrl}" id="review-btn">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" fill="white" opacity="0"/><circle cx="12" cy="12" r="10" stroke="white" stroke-width="1.5" fill="none"/><path d="M9 9l6 3-6 3V9z" fill="white"/></svg>
+      Leave a Google Review
+    </a>
+    <p class="footer">Powered by CAL Marketing</p>
+  </div>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const cid = params.get('cid');
+    const placeid = params.get('placeid');
+    const btn = document.getElementById('review-btn');
+    if (btn.getAttribute('href') === '#') {
+      if (placeid) btn.href = 'https://search.google.com/local/writereview?placeid=' + placeid;
+      else if (cid) btn.href = 'https://www.google.com/maps?cid=' + cid;
+    }
+    btn.addEventListener('click', function() {
+      fetch('/api/nfc/click', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person: ${JSON.stringify(person)}, ts: new Date().toISOString() }) }).catch(() => {});
+    });
+  </script>
+</body>
+</html>`;
+}
+
 function buildTapPage(person, reviewUrl) {
   const safeUrl = reviewUrl || '#';
   return `<!DOCTYPE html>
@@ -1784,6 +1837,30 @@ window.location.replace('/');
   }
 
   // ── NFC Tap Landing Page ──
+  // /d/driver-name  — personal NFC landing page (short URL for cards)
+  if (urlPath.startsWith('/d/')) {
+    const person = decodeURIComponent(urlPath.slice(3)) || 'Your Driver';
+    logNfcTap(person, req);
+    let reviewUrl = null;
+    try {
+      const store = loadMetaStore();
+      for (const key of Object.keys(store)) {
+        if (key.startsWith('nfc_cards_')) {
+          const cards = store[key] || [];
+          const card = cards.find(c => c.name.toLowerCase() === person.toLowerCase());
+          if (card) {
+            if (card.placeId) reviewUrl = 'https://search.google.com/local/writereview?placeid=' + card.placeId;
+            else if (card.cid) reviewUrl = 'https://www.google.com/maps?cid=' + card.cid;
+            break;
+          }
+        }
+      }
+    } catch(e) {}
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end(buildDriverPage(person, reviewUrl));
+    return;
+  }
+
   if (urlPath.startsWith('/tap/')) {
     const person = decodeURIComponent(urlPath.slice(5)) || 'Your Driver';
     logNfcTap(person, req);
