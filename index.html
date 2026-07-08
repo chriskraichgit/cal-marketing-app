@@ -1446,8 +1446,20 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div class="field">
         <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Role</label>
         <select id="au-role" class="input-std" style="margin-top:4px" onchange="auRoleChange()">
-          <option value="driver">Driver</option>
-          <option value="client">Client</option>
+          <optgroup label="Client Roles">
+            <option value="owner">Owner</option>
+            <option value="operator">Operator</option>
+            <option value="manager">Manager</option>
+            <option value="receptionist">Receptionist</option>
+            <option value="technician">Technician</option>
+            <option value="sales_rep">Sales Rep</option>
+            <option value="field_worker">Field Worker</option>
+            <option value="office_staff">Office Staff</option>
+            <option value="client">Client (General)</option>
+          </optgroup>
+          <optgroup label="Field">
+            <option value="driver">Driver / Field Tech</option>
+          </optgroup>
         </select>
       </div>
       <div class="field" id="au-account-wrap">
@@ -2409,82 +2421,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <div class="screen" id="s-reviews">
 
   <!-- ── SECTION 1: Connect Platforms ── -->
-  <div id="rv-gate" style="max-width:520px;margin:0 auto">
-    <div style="margin-bottom:6px">
-      <h2 style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:26px;color:var(--ink);margin:0 0 4px">Reviews &amp; NFC</h2>
-      <p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin:0">Connect your review platforms to start tracking your reviews in one place.</p>
-    </div>
-
-    <!-- Google -->
-    <div class="card" id="rv-conn-google" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:14px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:24px;height:24px;object-fit:contain">
-        </div>
-        <div>
-          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Google Business Profile</p>
-          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Reviews, ratings, local visibility</p>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <span class="pill" id="rv-google-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Checking…</span>
-        <button class="btn-connect" id="rv-google-btn" onclick="rvGoogleBtnClick()">Connect</button>
-      </div>
-    </div>
-
-    <!-- Facebook -->
-    <div class="card" id="rv-conn-facebook" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:#1877f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png" alt="Facebook" style="width:24px;height:24px;object-fit:contain">
-        </div>
-        <div>
-          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Facebook Page</p>
-          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Page reviews and recommendations</p>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <span class="pill" id="rv-facebook-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
-        <button class="btn-connect" id="rv-facebook-btn" onclick="connectReviewPlatform('facebook',this)">Connect</button>
-      </div>
-    </div>
-
-    <!-- Yelp -->
-    <div class="card" id="rv-conn-yelp" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-top:10px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:#d32323;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
-          <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a428d992fa97cb75437dc89.jpg" alt="Yelp" style="width:40px;height:40px;object-fit:cover">
-        </div>
-        <div>
-          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Yelp Business</p>
-          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Yelp reviews and ratings</p>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-        <span class="pill" id="rv-yelp-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
-        <button class="btn-connect" id="rv-yelp-btn" onclick="connectReviewPlatform('yelp',this)">Connect</button>
-      </div>
-    </div>
-
-    <p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;margin-top:14px;line-height:1.6">
-      Google connects to your real Business Profile. Facebook and Yelp connections are managed by your account manager —
-      <a href="mailto:info@cal.marketing" style="color:var(--gold);font-weight:800;text-decoration:none">info@cal.marketing</a>
-    </p>
-  </div>
-
-
-  <!-- ── Google Place ID & Review Link Setup ── -->
-  <div class="review-link-setup" style="background:#1e293b;border-radius:12px;padding:16px;margin-top:14px;max-width:520px;margin-left:auto;margin-right:auto">
-    <label style="font-size:13px;color:#94a3b8;display:block;margin-bottom:8px;font-weight:600">Google Place ID (for NFC review link)</label>
-    <div style="display:flex;gap:8px;">
-      <input type="text" id="googlePlaceIdInput" placeholder="ChIJ... or paste CID decimal" style="flex:1;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
-      <button onclick="saveGooglePlaceId()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px;font-weight:600;">Save</button>
-    </div>
-    <div id="reviewLinkDisplay" style="margin-top:8px;font-size:12px;color:#64748b;"></div>
-  </div>
-
   <!-- ── SECTION 2: Dashboard ── -->
-  <div id="rv-dashboard" style="margin-top:28px;display:none">
+  <div id="rv-dashboard" style="margin-top:8px;display:block">
 
     <!-- Platform filter -->
     <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
@@ -3304,6 +3242,76 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div id="stab-help" style="display:none"></div>
   <div id="stab-profile" style="display:none"></div>
   <div id="stab-notifications" style="display:none"></div>
+  <div id="stab-connections" style="display:none">
+    <div class="sec-head" style="margin-bottom:16px"><div><h2 style="font-size:20px">Platform Connections</h2><p>Connect your review and marketing platforms</p></div></div>
+
+    <!-- Yelp -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:#d32323;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+          <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a428d992fa97cb75437dc89.jpg" alt="Yelp" style="width:40px;height:40px;object-fit:cover">
+        </div>
+        <div>
+          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Yelp Business</p>
+          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Yelp reviews and ratings</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span class="pill" id="conn-yelp-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
+        <button class="btn-connect" onclick="connectReviewPlatform('yelp',this)">Connect</button>
+      </div>
+    </div>
+
+    <!-- Google Business Profile -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:#fff;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width:24px;height:24px;object-fit:contain">
+        </div>
+        <div>
+          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Google Business Profile</p>
+          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Reviews, ratings, local visibility</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span class="pill" id="conn-google-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
+        <button class="btn-connect" onclick="rvGoogleBtnClick()">Connect</button>
+      </div>
+    </div>
+
+    <!-- Facebook Page -->
+    <div class="card" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:#1877f2;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/2023_Facebook_icon.svg/960px-2023_Facebook_icon.svg.png" alt="Facebook" style="width:24px;height:24px;object-fit:contain">
+        </div>
+        <div>
+          <p style="font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:900;color:var(--ink);margin:0">Facebook Page</p>
+          <p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Page reviews and recommendations</p>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span class="pill" id="conn-facebook-pill" style="background:rgba(27,58,107,.08);color:var(--muted);white-space:nowrap">Not connected</span>
+        <button class="btn-connect" onclick="connectReviewPlatform('facebook',this)">Connect</button>
+      </div>
+    </div>
+
+    <!-- Google Place ID for NFC -->
+    <div class="card card-pad" style="margin-top:6px">
+      <div class="card-head"><span class="card-title">Google Place ID (NFC Review Link)</span></div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px;font-weight:600">Used to generate the direct review link on driver NFC cards.</p>
+      <div style="display:flex;gap:8px">
+        <input type="text" id="googlePlaceIdInput" placeholder="ChIJ... or paste CID decimal" class="input-std" style="flex:1">
+        <button class="btn-primary" onclick="saveGooglePlaceId()">Save</button>
+      </div>
+      <div id="reviewLinkDisplay" style="margin-top:8px;font-size:12px;color:var(--muted)"></div>
+    </div>
+
+    <p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;margin-top:16px;line-height:1.6">
+      Platform connections are managed by your account manager —
+      <a href="mailto:info@cal.marketing" style="color:var(--gold);font-weight:800;text-decoration:none">info@cal.marketing</a>
+    </p>
+  </div>
 </div>
 
 <!-- ============ SCREEN: PROFILE ============ -->
@@ -15635,15 +15643,15 @@ function renderSettingsTabs(){
   if(!row) return;
   var role=window.currentRole||'admin';
   var tabSets={
-    agency:['general','team','permissions','whitelabel','help'],
-    admin:['general','profile','notifications','team','permissions','help'],
-    test:['general','team','permissions','help'],
-    user:['general','profile','notifications','help']
+    agency:['general','connections','team','permissions','whitelabel','help'],
+    admin:['general','connections','profile','notifications','team','permissions','help'],
+    test:['general','connections','team','permissions','help'],
+    user:['general','connections','profile','notifications','help']
   };
   var labels={
     general:'General','team':'Team & Access','agency-admin':'Agency Admin',
     permissions:'Permissions',whitelabel:'White Label',help:'Help & Support',
-    profile:'Profile',notifications:'Notifications'
+    profile:'Profile',notifications:'Notifications',connections:'Connections'
   };
   var tabs=tabSets[role]||tabSets['admin'];
   row.innerHTML=tabs.map(function(t,i){
@@ -15719,6 +15727,13 @@ function renderSettingsTabContent(tab,pane){
       +'</div>'
       +'</div>';
     setTimeout(function(){ var n=document.getElementById('wl-stab-name'); if(n) n.value=savedWLName; },0);
+  } else if(tab==='connections'){
+    pane.innerHTML='<div '+W+'>'
+      +'<div class="sec-head" style="padding:0;margin-bottom:4px"><div><h3 style="font-size:15px;font-weight:800">Platform Connections</h3><p style="font-size:12px;color:var(--muted)">Connect your review and marketing platforms</p></div></div>'
+      +'</div>';
+    // The connections stab already has full HTML rendered from the static HTML above
+    // Just show it as-is (it was pre-populated in the DOM)
+    pane.dataset.loaded='1';
   } else if(tab==='help'){
     pane.innerHTML='<div '+W+'>'
       +'<div class="card card-pad" style="display:flex;flex-direction:column;gap:10px">'
