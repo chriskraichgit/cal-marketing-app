@@ -25,7 +25,7 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node server.js"
+args = "npm install && node server.js"
 waitForPort = 5000
 
 [workflows.workflow.metadata]
