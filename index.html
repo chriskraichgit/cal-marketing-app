@@ -898,25 +898,48 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     return ACCOUNT_COMPANY_MAP[id] || id || 'default';
   }
 
+  // Resolve a display account id (a1, a2…) to the server-side key used in API calls
+  function serverKeyForAcct(id){
+    var all = window.accounts || window.DEFAULT_ACCOUNTS || DEFAULT_ACCOUNTS || [];
+    var found = all.find(function(a){ return a.id === id; });
+    if(found && found.serverKey) return found.serverKey;
+    // If id already looks like an email or non-display key, pass it through
+    return ACCOUNT_COMPANY_MAP[id] || id || 'default';
+  }
+
   function getSavedAcct(){
-    try { return localStorage.getItem('cal-current-acct') || ''; } catch(e){ return ''; }
+    // Returns the display id (a1, a2…) — stored in cal-current-acct-id
+    try { return localStorage.getItem('cal-current-acct-id') || localStorage.getItem('cal-current-acct') || ''; } catch(e){ return ''; }
   }
 
   function saveAcct(id){
+    var serverKey = serverKeyForAcct(id);
     var company = companyForAccount(id);
     window.currentAcctId = id;
-    window.currentCompanyId = company;
-    try { localStorage.setItem('cal-current-acct', id); } catch(e){}
+    window.currentCompanyId = serverKey; // API calls use this — must be the server key
+    // Store both: display id for UI, server key for API calls
+    try { localStorage.setItem('cal-current-acct-id', id); } catch(e){}
+    try { localStorage.setItem('cal-current-acct', serverKey); } catch(e){} // APIs read this
     try { localStorage.setItem('cal-current-company', company); } catch(e){}
     try {
       var sess = JSON.parse(localStorage.getItem('cal-session') || '{}');
-      sess.companyId = company;
+      sess.companyId = serverKey;
       localStorage.setItem('cal-session', JSON.stringify(sess));
     } catch(e){}
   }
 
   function acctObj(id){
-    return (window.accounts || window.DEFAULT_ACCOUNTS || []).find(function(a){ return a.id === id; }) || null;
+    var all = window.accounts || window.DEFAULT_ACCOUNTS || [];
+    // Try direct id match first (a1, a2…)
+    var found = all.find(function(a){ return a.id === id; });
+    if(found) return found;
+    // Fall back to serverKey match (email or short key stored in cal-current-acct)
+    found = all.find(function(a){ return a.serverKey === id; });
+    if(found) return found;
+    // Fall back to company map reverse lookup
+    var mapped = ACCOUNT_COMPANY_MAP[id];
+    if(mapped) return all.find(function(a){ return a.id === mapped; }) || null;
+    return null;
   }
 
   function acctName(id){
@@ -956,6 +979,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     setText('sb-company-name-user', name);
     setText('page-sub', name);
     setText('acct-sw-name', name);
+    setText('sb-acct-sw-name', name);
 
     var av = document.getElementById('acct-sw-avatar');
     if(av){
@@ -1144,8 +1168,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
   // ── Feature Flag Application ──
   function applyAccountFeatureFlags(acctId, cb){
-    var token = (typeof getMeta === 'function') ? null : null;
-    try { token = window.__calMetaToken || localStorage.getItem('cal-meta-token') || ''; } catch(e){}
+    var token = '';
+    try { token = localStorage.getItem('cal-meta-session-token') || window.__calMetaToken || localStorage.getItem('cal-meta-token') || ''; } catch(e){}
 
     var url = '/api/account/config?account=' + encodeURIComponent(acctId);
     var headers = { 'Content-Type': 'application/json' };
@@ -5490,11 +5514,11 @@ var TITLES = {
   permissions:'Permission Controls','job-logging':'Job Tracker',social:'Social Media Health',seo:'SEO',leaderboard:'Review Leaderboard'
 };
 var DEFAULT_ACCOUNTS = [
-  {id:'a1',name:'Apex Legal Group',initials:'AL',plan:'Deluxe',color:'#1b3a6b'},
-  {id:'a2',name:'Green Collar Roofing',initials:'GC',plan:'Standard',color:'#2e7d32'},
-  {id:'a3',name:'Willy Diamond Tree Care',initials:'WD',plan:'Premium',color:'#c9a84c'},
-  {id:'a4',name:'Houses Auto Body',initials:'HA',plan:'Deluxe',color:'#7c3aed',onboarding:true},
-  {id:'a5',name:'United Sewer and Septic',initials:'US',plan:'Standard',color:'#0052cc',onboarding:true}
+  {id:'a1',name:'Apex Legal Group',initials:'AL',plan:'Deluxe',color:'#1b3a6b',serverKey:'apexlegal'},
+  {id:'a2',name:'Green Collar Roofing',initials:'GC',plan:'Standard',color:'#2e7d32',serverKey:'greencollаr'},
+  {id:'a3',name:'Willy Diamond Tree Care',initials:'WD',plan:'Premium',color:'#c9a84c',serverKey:'willydiamond'},
+  {id:'a4',name:'Houses Auto Body',initials:'HA',plan:'Deluxe',color:'#7c3aed',onboarding:true,serverKey:'housesautobody'},
+  {id:'a5',name:'United Sewer and Septic',initials:'US',plan:'Standard',color:'#0052cc',onboarding:true,serverKey:'info@unitedsewerservice.com'}
 ];
 var COMPANY_ACCT_MAP = {
   'apexlegal':'a1',
@@ -8063,15 +8087,21 @@ function buildSidebarAccounts(){
 }
 function updateSbCurrentAcct(acct){
   if(!acct) return;
-  // Refresh active state in accounts sub-group only (button label stays "Sub Accounts")
+  // Update the sidebar switcher button name and subtitle
+  var sbName=document.getElementById('sb-acct-sw-name');
+  if(sbName) sbName.textContent=acct.name||'';
+  var sbSub=document.getElementById('sb-acct-sw-sub');
+  if(sbSub) sbSub.textContent=acct.plan||'';
+  // Update avatar
+  var sbAv=document.getElementById('sb-acct-sw-av');
+  if(sbAv){ sbAv.textContent=acct.initials||''; sbAv.style.background=acct.color||'#1b3a6b'; }
+  // Refresh active state in accounts sub-group
   var sub=document.getElementById('sb-accts-sub');
   if(sub) sub.querySelectorAll('.nav-btn').forEach(function(b){
     var av2=b.querySelector('.sb-acct-av'); if(!av2) return;
     var matches=av2.style.background===acct.color&&b.textContent.indexOf(acct.name)>=0;
     b.classList.toggle('active',matches);
   });
-  var sbSub=document.getElementById('sb-acct-sw-sub');
-  if(sbSub) sbSub.textContent=acct.name||'';
 }
 function sbNavSearch(val){
   var cl=document.getElementById('sb-search-clear');
