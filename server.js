@@ -229,6 +229,66 @@ function parseQueryString(url) {
   } catch (e) { return {}; }
 }
 
+async function handleDriverStats(req, res, payload) {
+  const qs = Object.fromEntries(new URL('http://x' + req.url).searchParams);
+  const account = qs.account || payload.email;
+  const period = qs.period || 'month';
+
+  // Get NFC cards for this account
+  const cards = metaGet('nfc_cards_' + account) || [];
+
+  // Calculate date cutoffs
+  const now = new Date();
+  const weekAgo = new Date(now - 7*24*60*60*1000).toISOString();
+  const monthAgo = new Date(now - 30*24*60*60*1000).toISOString();
+  const todayStart = new Date(new Date().setHours(0,0,0,0)).toISOString();
+
+  // Fallback if no Supabase
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+  if (!SUPABASE_URL || !SUPABASE_KEY) {
+    return jsonResponse(res, 200, { drivers: cards.map(c => ({ name: c.name || c, taps: { today: 0, week: 0, month: 0, alltime: 0 }, lastTap: null, active: false, daily: {} })), period, account });
+  }
+
+  // Fetch all taps for these cards from Supabase
+  const cardNames = cards.map(c => c.name || c);
+  const tapUrl = SUPABASE_URL + '/rest/v1/nfc_taps?select=person,tapped_at&order=tapped_at.desc&limit=5000';
+  let taps = [];
+  try {
+    const tapReq = await fetch(tapUrl, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+    taps = await tapReq.json();
+    if (!Array.isArray(taps)) taps = [];
+  } catch(e) { taps = []; }
+
+  // Aggregate per driver
+  const drivers = cardNames.map(name => {
+    const driverTaps = taps.filter(t => t.person === name);
+    const today = driverTaps.filter(t => t.tapped_at >= todayStart).length;
+    const week = driverTaps.filter(t => t.tapped_at >= weekAgo).length;
+    const month = driverTaps.filter(t => t.tapped_at >= monthAgo).length;
+    const alltime = driverTaps.length;
+    const lastTap = driverTaps[0] ? driverTaps[0].tapped_at : null;
+    const active = lastTap ? (new Date(lastTap) > new Date(Date.now() - 7*24*60*60*1000)) : false;
+
+    // Daily breakdown for last 30 days
+    const daily = {};
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const key = d.toISOString().slice(0,10);
+      daily[key] = driverTaps.filter(t => t.tapped_at && t.tapped_at.startsWith(key)).length;
+    }
+
+    return { name, taps: { today, week, month, alltime }, lastTap, active, daily };
+  });
+
+  // Sort by selected period desc
+  const sortKey = period === 'week' ? 'week' : period === 'alltime' ? 'alltime' : 'month';
+  drivers.sort((a, b) => b.taps[sortKey] - a.taps[sortKey]);
+
+  jsonResponse(res, 200, { drivers, period, account });
+}
+
 function jsonResponse(res, status, data) {
   res.writeHead(status, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(data));
@@ -1055,6 +1115,9 @@ const server = http.createServer(async (req, res) => {
 
   // ── Places Reviews (no OAuth) ──
   if (urlPath === '/api/reviews/places' && req.method === 'GET') { await handlePlacesReviews(res, qs); return; }
+
+  // ── Driver Stats ──
+  if (urlPath === '/api/drivers/stats' && req.method === 'GET') { const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null; if (!pl) { jsonResponse(res, 401, {error:'UNAUTHORIZED'}); return; } await handleDriverStats(req, res, pl); return; }
 
   // ── NFC Card Registry ──
   if (urlPath === '/api/nfc/taps' && req.method === 'GET') { await handleNfcTapsGet(req, res, qs); return; }
