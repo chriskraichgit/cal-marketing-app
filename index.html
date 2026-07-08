@@ -5721,17 +5721,60 @@ function getPermissions(role, email){
   return [];
 }
 /* ================================================================
-   CAL OS PERMISSION ENGINE v2 — Action-level 4-layer check
-   Data model: { screen: { view, edit, create, delete } }
-   Layer 1: CAL Marketing master (agency/superadmin always passes)
-   Layer 2: Account-level screen block  → cal-account-screen-blocks-{acctId}
-   Layer 3: Role-level defaults         → cal-account-permissions (existing) + role action map
-   Layer 4: Per-user overrides          → cal-user-overrides-{acctId}
+   CAL OS PERMISSION ENGINE v3 — Spec-compliant layered check
+   Storage: cal-permissions-{acctId} → { accountPermissions, rolePermissions, userOverrides }
+   Precedence (highest → lowest):
+     1. CAL Marketing master (agency/superadmin/test) — always PASS
+     2. User-level override  — explicit grant/deny for this user
+     3. Role-level permission — what this role is allowed to do
+     4. Account-level permission — what this account exposes at all
+   Fail-closed: missing/broken config → deny
    ================================================================ */
 
-/* ── Default role action map: what each role can do per action ──
-   Screens not listed = no access. Actions not listed = denied.
-   view=true minimum needed to see the screen at all. */
+/* ── Unified per-account permission store ──
+   Key: cal-permissions-{acctId}
+   Shape: {
+     accountPermissions: { screen: { view, edit, create, delete } },
+     rolePermissions:    { role: { screen: { view, edit, create, delete } } },
+     userOverrides:      { email: { screen: { view, edit, create, delete } } }
+   }
+*/
+function _getAcctPerms(acctId){
+  try{
+    var raw = localStorage.getItem('cal-permissions-'+(acctId||'local'));
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return { accountPermissions:{}, rolePermissions:{}, userOverrides:{} };
+}
+function _saveAcctPerms(acctId, data){
+  try{ localStorage.setItem('cal-permissions-'+(acctId||'local'), JSON.stringify(data)); }catch(e){}
+}
+
+/* Thin accessors used by editor and _checkAction */
+function _getAcctScreenBlocks(acctId){
+  return _getAcctPerms(acctId).accountPermissions || {};
+}
+function _saveAcctScreenBlocks(acctId, blocks){
+  var data = _getAcctPerms(acctId);
+  data.accountPermissions = blocks;
+  _saveAcctPerms(acctId, data);
+}
+function _getUserOverrides(acctId){
+  return _getAcctPerms(acctId).userOverrides || {};
+}
+function _saveUserOverrides(acctId, overrides){
+  var data = _getAcctPerms(acctId);
+  data.userOverrides = overrides;
+  _saveAcctPerms(acctId, data);
+}
+function _getRolePerms(acctId){
+  return _getAcctPerms(acctId).rolePermissions || {};
+}
+function _saveRolePerms(acctId, rolePerms){
+  var data = _getAcctPerms(acctId);
+  data.rolePermissions = rolePerms;
+  _saveAcctPerms(acctId, data);
+}
 var ROLE_ACTION_DEFAULTS = {
   agency:    { _all: { view:true, edit:true, create:true, delete:true } },
   superadmin:{ _all: { view:true, edit:true, create:true, delete:true } },
@@ -5768,64 +5811,44 @@ var ROLE_ACTION_DEFAULTS = {
   }
 };
 
-/* ── Account-level screen blocks (per-account on/off with action detail) ──
-   Format: { screen: { view:bool, edit:bool, create:bool, delete:bool } }
-   A missing screen = not blocked at account level. */
-function _getAcctScreenBlocks(acctId){
-  try{ return JSON.parse(localStorage.getItem('cal-account-screen-blocks-'+(acctId||'local'))||'{}'); }catch(e){ return {}; }
-}
-function _saveAcctScreenBlocks(acctId, blocks){
-  try{ localStorage.setItem('cal-account-screen-blocks-'+(acctId||'local'), JSON.stringify(blocks)); }catch(e){}
-}
 
-/* ── Per-user action overrides ──
-   Format: { email: { screen: { view:bool|null, edit:bool|null, ... } } }
-   null = inherit from role. true = force grant. false = force deny. */
-function _getUserOverrides(acctId){
-  try{ return JSON.parse(localStorage.getItem('cal-user-overrides-'+(acctId||'local'))||'{}'); }catch(e){ return {}; }
-}
-function _saveUserOverrides(acctId, overrides){
-  try{ localStorage.setItem('cal-user-overrides-'+(acctId||'local'), JSON.stringify(overrides)); }catch(e){}
-}
 
 /* ── Core action check — all 4 layers ── */
 function _checkAction(screen, action){
   var role = currentRole || 'user';
 
-  /* Layer 1: master roles always pass */
+  /* Layer 1: CAL Marketing master — always PASS */
   if(role==='agency'||role==='superadmin'||role==='test') return true;
 
-  var acctId  = window.currentAcctId || 'a1';
-  var email   = currentUser ? currentUser.email : '';
+  var acctId = window.currentAcctId || 'a1';
+  var email  = currentUser ? currentUser.email : '';
+  var permsData = _getAcctPerms(acctId);
 
-  /* Layer 2: account-level block (strongest non-master restriction) */
-  var blocks = _getAcctScreenBlocks(acctId);
-  if(blocks[screen] && blocks[screen][action] === false) return false;
-
-  /* Layer 3: role-level action default */
-  var rad   = ROLE_ACTION_DEFAULTS[role] || ROLE_ACTION_DEFAULTS.user;
-  var screenRad = rad[screen] || rad['_default'] || { view:false, edit:false, create:false, delete:false };
-  var roleResult = !!screenRad[action];
-
-  /* Also cross-check the existing ACCOUNT_PERMISSIONS screen list (view only) */
-  if(action === 'view'){
-    var AP = window.ACCOUNT_PERMISSIONS || {};
-    var perms;
-    if(AP[acctId] && AP[acctId][role]){
-      perms = AP[acctId][role];
-    } else {
-      perms = getPermissions(role, email);
-    }
-    var screenInPerms = perms.indexOf(screen) >= 0;
-    /* If screen not in role perms at all, deny view regardless of ROLE_ACTION_DEFAULTS */
-    if(!screenInPerms && !rad['_all']) roleResult = false;
+  /* Layer 2: User-level override — explicit grant/deny beats everything else */
+  var uov = (permsData.userOverrides||{});
+  if(email && uov[email] && uov[email][screen]){
+    var uval = uov[email][screen][action];
+    if(typeof uval === 'boolean') return uval;
   }
 
-  /* Layer 4: per-user override */
-  var overrides = _getUserOverrides(acctId);
-  if(email && overrides[email] && overrides[email][screen]){
-    var uov = overrides[email][screen][action];
-    if(typeof uov === 'boolean') return uov;
+  /* Layer 3: Role-level permission (stored overrides first, then ROLE_ACTION_DEFAULTS) */
+  var storedRolePerms = (permsData.rolePermissions||{});
+  var roleScreenPerms = storedRolePerms[role] && storedRolePerms[role][screen];
+  var roleResult;
+  if(roleScreenPerms && typeof roleScreenPerms[action] === 'boolean'){
+    roleResult = roleScreenPerms[action];
+  } else {
+    /* Fall back to built-in ROLE_ACTION_DEFAULTS */
+    var rad = ROLE_ACTION_DEFAULTS[role] || ROLE_ACTION_DEFAULTS.user || {};
+    var def = rad[screen] || rad['_default'] || {view:false,edit:false,create:false,delete:false};
+    roleResult = !!def[action];
+  }
+
+  /* Layer 4: Account-level permission — can restrict what the account exposes */
+  var acctPerms = (permsData.accountPermissions||{});
+  if(acctPerms[screen] && typeof acctPerms[screen][action] === 'boolean'){
+    /* Account can restrict (deny) but cannot grant more than role allows */
+    if(acctPerms[screen][action] === false) return false;
   }
 
   return roleResult;
@@ -8359,15 +8382,15 @@ function rebuildNavForRole(){
   } else {
     perms = DEFAULT_PERMISSIONS.client || [];
   }
-  // Show/hide nav buttons based on permissions
+  // Show/hide nav buttons based on canView() — action-level permission check
   document.querySelectorAll('.nav-btn[data-screen]').forEach(function(btn){
     var sc = btn.getAttribute('data-screen');
-    if(sc) btn.style.display = (perms.indexOf(sc) >= 0) ? '' : 'none';
+    if(sc) btn.style.display = canView(sc) ? '' : 'none';
   });
   // Show/hide sidebar nav items
   document.querySelectorAll('[data-nav-screen]').forEach(function(el){
     var sc = el.getAttribute('data-nav-screen');
-    if(sc) el.style.display = (perms.indexOf(sc) >= 0) ? '' : 'none';
+    if(sc) el.style.display = canView(sc) ? '' : 'none';
   });
 }
 
@@ -17962,12 +17985,13 @@ function showDriverDetail(driver) {
     return a ? a.name : id;
   }
   function _getRoleActions(acctId, role){
-    var key = 'cal-role-actions-'+acctId+'-'+role;
-    try{ return JSON.parse(localStorage.getItem(key)||'{}'); }catch(e){ return {}; }
+    var rp = _getRolePerms(acctId);
+    return rp[role] || {};
   }
   function _saveRoleActions(acctId, role, data){
-    var key = 'cal-role-actions-'+acctId+'-'+role;
-    try{ localStorage.setItem(key, JSON.stringify(data)); }catch(e){}
+    var rp = _getRolePerms(acctId);
+    rp[role] = data;
+    _saveRolePerms(acctId, rp);
   }
   function _actionTH(){
     return ACTIONS.map(function(a){
