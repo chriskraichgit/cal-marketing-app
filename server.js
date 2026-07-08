@@ -1013,6 +1013,61 @@ function buildTapPage(person, reviewUrl) {
 </html>`;
 }
 
+
+// ── In-App Messaging ──
+async function handleMessageGet(req, res, payload) {
+  const qs = Object.fromEntries(new URL('http://x' + req.url).searchParams);
+  const account = qs.account || payload.email;
+  if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
+  const store = loadMetaStore();
+  const key = 'messages_' + account;
+  let msgs = store[key] || [];
+  // Mark client messages as read when fetched by admin or different user
+  if (payload.role === 'admin' || payload.email !== account) {
+    msgs = msgs.map(m => m.senderRole === 'client' ? Object.assign({}, m, { read: true }) : m);
+    store[key] = msgs;
+    saveMetaStore(store);
+  }
+  const unread = msgs.filter(m => !m.read && m.senderRole === 'client').length;
+  jsonResponse(res, 200, { messages: msgs, unread });
+}
+
+async function handleMessagePost(req, res, payload) {
+  let body;
+  try { const raw = await readRequestBody(req, 8 * 1024); body = JSON.parse(raw.toString('utf8')); } catch(e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+  const { account, text, senderName, senderRole } = body;
+  if (!account || !text) { jsonResponse(res, 400, { error: 'MISSING_FIELDS' }); return; }
+  const store = loadMetaStore();
+  const key = 'messages_' + account;
+  const msgs = store[key] || [];
+  const msg = {
+    id: Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    account,
+    text: String(text).slice(0, 1000),
+    senderName: senderName || 'Client',
+    senderRole: senderRole || 'client',
+    timestamp: new Date().toISOString(),
+    read: false
+  };
+  msgs.push(msg);
+  if (msgs.length > 200) msgs.splice(0, msgs.length - 200);
+  store[key] = msgs;
+  saveMetaStore(store);
+  jsonResponse(res, 200, { ok: true, message: msg });
+}
+
+async function handleMessageRead(req, res, payload) {
+  let body;
+  try { const raw = await readRequestBody(req, 4 * 1024); body = JSON.parse(raw.toString('utf8')); } catch(e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+  const { account } = body;
+  if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
+  const store = loadMetaStore();
+  const key = 'messages_' + account;
+  store[key] = (store[key] || []).map(m => Object.assign({}, m, { read: true }));
+  saveMetaStore(store);
+  jsonResponse(res, 200, { ok: true });
+}
+
 const server = http.createServer(async (req, res) => {
   const urlPath = req.url.split('?')[0];
   const qs = parseQueryString(req.url);
@@ -1118,6 +1173,11 @@ const server = http.createServer(async (req, res) => {
 
   // ── Driver Stats ──
   if (urlPath === '/api/drivers/stats' && req.method === 'GET') { const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null; if (!pl) { jsonResponse(res, 401, {error:'UNAUTHORIZED'}); return; } await handleDriverStats(req, res, pl); return; }
+
+  // ── Messaging ──
+  if (urlPath === '/api/messages' && req.method === 'GET') { const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null; if (!pl) { jsonResponse(res, 401, {error:'UNAUTHORIZED'}); return; } await handleMessageGet(req, res, pl); return; }
+  if (urlPath === '/api/messages' && req.method === 'POST') { const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null; if (!pl) { jsonResponse(res, 401, {error:'UNAUTHORIZED'}); return; } await handleMessagePost(req, res, pl); return; }
+  if (urlPath === '/api/messages/read' && req.method === 'POST') { const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null; if (!pl) { jsonResponse(res, 401, {error:'UNAUTHORIZED'}); return; } await handleMessageRead(req, res, pl); return; }
 
   // ── NFC Card Registry ──
   if (urlPath === '/api/nfc/taps' && req.method === 'GET') { await handleNfcTapsGet(req, res, qs); return; }
