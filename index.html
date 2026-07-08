@@ -5126,6 +5126,124 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 .admin-cta-sub{font-size:12px;color:var(--muted);font-weight:600}
 .admin-money-total{font-family:'Barlow Condensed',sans-serif;font-size:46px;font-weight:900;color:var(--ink);line-height:1}
 .admin-section-label{font-size:13px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:22px 0 10px}
+
+/* ── Messaging Widget ── */
+#msg-fab {
+  position: fixed;
+  right: 20px;
+  bottom: 80px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--gold, #f5a623);
+  border: none;
+  cursor: pointer;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+  transition: transform .15s;
+}
+#msg-fab:hover { transform: scale(1.08); }
+#msg-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #e53e3e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  border-radius: 10px;
+  padding: 2px 5px;
+  display: none;
+}
+#msg-panel {
+  position: fixed;
+  right: 20px;
+  bottom: 140px;
+  width: 320px;
+  max-height: 480px;
+  background: var(--card, #1e1e2e);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+  z-index: 901;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--border, rgba(255,255,255,.1));
+}
+#msg-panel-header {
+  padding: 14px 16px;
+  background: var(--gold, #f5a623);
+  color: #000;
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+#msg-thread {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 200px;
+}
+.msg-bubble {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.msg-bubble.client {
+  background: var(--border, rgba(255,255,255,.1));
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+}
+.msg-bubble.admin {
+  background: var(--gold, #f5a623);
+  color: #000;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+}
+.msg-meta {
+  font-size: 10px;
+  color: var(--muted, #888);
+  margin-top: 2px;
+}
+#msg-input-row {
+  display: flex;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border, rgba(255,255,255,.1));
+}
+#msg-input {
+  flex: 1;
+  background: var(--page, #141420);
+  border: 1px solid var(--border, rgba(255,255,255,.1));
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--ink, #fff);
+  font-size: 13px;
+  resize: none;
+  outline: none;
+}
+#msg-send-btn {
+  background: var(--gold, #f5a623);
+  border: none;
+  border-radius: 8px;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
 </style>
 
 <!-- GOOGLE SIGN-IN MODAL -->
@@ -7344,6 +7462,7 @@ function initHomeScreen(){
   if(typeof loadNfcCards === 'function') try{ loadNfcCards(); }catch(e){}
   if(typeof loadDriverStats === 'function') try{ loadDriverStats(); }catch(e){}
   if(typeof loadGoogleReviews === 'function') try{ loadGoogleReviews(); }catch(e){}
+  if(typeof startMsgPolling === 'function') startMsgPolling();
 }
 
 // ============ UNIFIED TAB SWITCHING ============
@@ -15666,6 +15785,119 @@ function timeAgo(iso) {
   return Math.floor(hrs / 24) + 'd ago';
 }
 
+
+// ── Messaging Widget ──
+var _msgPanelOpen = false;
+var _msgPollTimer = null;
+
+function toggleMsgPanel() {
+  _msgPanelOpen = !_msgPanelOpen;
+  var panel = document.getElementById('msg-panel');
+  if (panel) panel.style.display = _msgPanelOpen ? 'flex' : 'none';
+  if (_msgPanelOpen) {
+    loadMessages();
+    markMessagesRead();
+  }
+}
+
+function loadMessages() {
+  var account = '';
+  try { account = localStorage.getItem('cal-current-acct') || ''; } catch(e) {}
+  var token = '';
+  try { token = localStorage.getItem('cal-meta-session-token') || ''; } catch(e) {}
+  fetch('/api/messages?account=' + encodeURIComponent(account), {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    renderMessages(data.messages || []);
+    updateMsgBadge(data.unread || 0);
+  })
+  .catch(function() {});
+}
+
+function renderMessages(msgs) {
+  var thread = document.getElementById('msg-thread');
+  if (!thread) return;
+  if (!msgs.length) {
+    thread.innerHTML = '<p style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">No messages yet. Send one below.</p>';
+    return;
+  }
+  thread.innerHTML = msgs.map(function(m) {
+    var isAdmin = m.senderRole === 'admin';
+    var time = new Date(m.timestamp).toLocaleString('en-US', { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+    return '<div style="display:flex;flex-direction:column;align-items:' + (isAdmin ? 'flex-end' : 'flex-start') + '">' +
+      '<div class="msg-bubble ' + (isAdmin ? 'admin' : 'client') + '">' + htmlEsc(m.text) + '</div>' +
+      '<div class="msg-meta">' + htmlEsc(m.senderName) + ' · ' + time + '</div>' +
+    '</div>';
+  }).join('');
+  thread.scrollTop = thread.scrollHeight;
+}
+
+function sendMessage() {
+  var input = document.getElementById('msg-input');
+  var text = input ? input.value.trim() : '';
+  if (!text) return;
+  var account = '';
+  try { account = localStorage.getItem('cal-current-acct') || ''; } catch(e) {}
+  var token = '';
+  try { token = localStorage.getItem('cal-meta-session-token') || ''; } catch(e) {}
+  var allAccounts = [];
+  try { allAccounts = JSON.parse(localStorage.getItem('cal-accounts') || '[]'); } catch(e) {}
+  var isAdmin = allAccounts.length > 1;
+  var displayName = '';
+  try { displayName = localStorage.getItem('cal-display-name') || ''; } catch(e) {}
+  if (!displayName) displayName = isAdmin ? 'CAL Marketing' : 'Client';
+  if (input) input.value = '';
+  fetch('/api/messages', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ account: account, text: text, senderName: displayName, senderRole: isAdmin ? 'admin' : 'client' })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function() { loadMessages(); })
+  .catch(function() {});
+}
+
+function markMessagesRead() {
+  var account = '';
+  try { account = localStorage.getItem('cal-current-acct') || ''; } catch(e) {}
+  var token = '';
+  try { token = localStorage.getItem('cal-meta-session-token') || ''; } catch(e) {}
+  fetch('/api/messages/read', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ account: account })
+  }).catch(function() {});
+  updateMsgBadge(0);
+}
+
+function updateMsgBadge(count) {
+  var badge = document.getElementById('msg-badge');
+  if (!badge) return;
+  if (count > 0) {
+    badge.textContent = count > 9 ? '9+' : String(count);
+    badge.style.display = 'block';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function startMsgPolling() {
+  if (_msgPollTimer) clearInterval(_msgPollTimer);
+  _msgPollTimer = setInterval(function() {
+    if (!_msgPanelOpen) {
+      var account = '';
+      try { account = localStorage.getItem('cal-current-acct') || ''; } catch(e) {}
+      var token = '';
+      try { token = localStorage.getItem('cal-meta-session-token') || ''; } catch(e) {}
+      fetch('/api/messages?account=' + encodeURIComponent(account), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      }).then(function(r) { return r.json(); }).then(function(d) { updateMsgBadge(d.unread || 0); }).catch(function() {});
+    }
+  }, 30000);
+}
+
 function htmlEsc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
@@ -15729,6 +15961,27 @@ function showDriverDetail(driver) {
   </div>
 </div>
 
+
+<!-- Messaging Widget -->
+<button id="msg-fab" onclick="toggleMsgPanel()" title="Messages">
+  <span id="msg-badge"></span>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+</button>
+<div id="msg-panel">
+  <div id="msg-panel-header">
+    <span>Messages</span>
+    <button onclick="toggleMsgPanel()" style="background:none;border:none;cursor:pointer;font-size:18px;color:#000;line-height:1">&times;</button>
+  </div>
+  <div id="msg-thread">
+    <p style="color:var(--muted);font-size:12px;text-align:center;padding:20px 0">Loading messages...</p>
+  </div>
+  <div id="msg-input-row">
+    <textarea id="msg-input" rows="1" placeholder="Type a message..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+    <button id="msg-send-btn" onclick="sendMessage()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
 </body>
 </html>
 
