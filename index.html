@@ -1510,6 +1510,22 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
     <div id="au-user-list"><p style="font-size:13px;color:var(--muted);text-align:center;padding:20px 0">Loading…</p></div>
   </div>
+
+  <!-- NFC Card Manager — moved here from Reviews -->
+  <div style="background:var(--card);border-radius:14px;padding:20px;margin-top:16px;border:1.5px solid var(--border)">
+    <div style="font-size:14px;font-weight:900;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      NFC Card Manager
+    </div>
+    <p style="font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px">Register NFC cards for drivers. Each card gets a personal landing page at <code style="background:var(--surface);padding:2px 6px;border-radius:4px">/d/driver-name</code></p>
+    <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
+      <input type="text" id="nfcCardName" placeholder="Driver name (e.g. James)" class="input-std" style="flex:1;min-width:140px">
+      <input type="text" id="nfcCardPlaceId" placeholder="Google Place ID (optional)" class="input-std" style="flex:1;min-width:140px">
+      <button onclick="registerNfcCard()" class="btn-primary" style="white-space:nowrap">+ Add Card</button>
+    </div>
+    <div id="nfcCardList" style="font-size:13px;color:var(--muted);margin-top:8px;"></div>
+  </div>
+
 </div>
 
 <!-- ONBOARDING (client / admin) -->
@@ -2498,16 +2514,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <div id="nfcTapList" style="font-size:13px;color:var(--muted);font-weight:600">Loading…</div>
     </div>
 
-    <!-- NFC Card Manager — bottom of Reviews section -->
-    <div style="background:#1e293b;border-radius:12px;padding:20px;margin-top:14px;margin-bottom:0">
-      <h3 style="font-size:15px;font-weight:600;margin:0 0 12px;color:#f1f5f9;">Register NFC Card</h3>
-      <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap;">
-        <input type="text" id="nfcCardName" placeholder="Driver name (e.g. James)" style="flex:1;min-width:120px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
-        <input type="text" id="nfcCardPlaceId" placeholder="Place ID (optional)" style="flex:1;min-width:120px;background:#0f172a;border:1px solid #334155;color:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:14px;">
-        <button onclick="registerNfcCard()" style="background:#2563eb;color:white;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-size:14px;white-space:nowrap;font-weight:600;">+ Add Card</button>
-      </div>
-      <div id="nfcCardList" style="font-size:13px;color:#94a3b8;margin-top:8px;"></div>
-    </div>
+    <!-- NFC Card Manager moved to Users+ section -->
 
   </div>
 
@@ -5577,8 +5584,8 @@ var POS_OB_STEPS = [
 
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
-  agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo','leaderboard'],
-  admin: ['home','onboarding','maintenance','campaigns','reviews','leads','files','billing','reports','inbox','schedule','todos','notes','nps','referrals','settings','notifications','help','profile'],
+  agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo','leaderboard','admin-users','users'],
+  admin: ['home','onboarding','maintenance','campaigns','reviews','leads','files','billing','reports','inbox','schedule','todos','notes','nps','referrals','settings','notifications','help','profile','admin-users','users'],
   user: ['todos','notes','files','inbox','profile'],
   test: ['home','onboarding','maintenance','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
 };
@@ -5687,6 +5694,41 @@ window.addEventListener('DOMContentLoaded',function(){
                 try { localStorage.setItem('cal-current-acct', payload.accounts[0]); } catch(e){}
               }
               document.addEventListener('DOMContentLoaded', function(){ showDriverDashboard(); });
+              return; // skip Replit auth check
+            }
+            if (calRole === 'superadmin' || calRole === 'agency') {
+              // Agency PIN login — set up session and skip Replit auth entirely
+              window.currentUser = {
+                email: payload.email || 'admin@cal.marketing',
+                name: payload.displayName || 'Agency Admin',
+                initials: 'AA',
+                role: 'agency',
+                title: 'Agency Owner',
+                companyId: 'agency'
+              };
+              window.currentRole = 'agency';
+              window.currentCompanyId = 'agency';
+              try { localStorage.setItem('cal-user-role', 'agency'); } catch(e){}
+              try { localStorage.setItem('cal-display-name', payload.displayName || 'Agency Admin'); } catch(e){}
+              try { localStorage.setItem('cal-user-email', payload.email || 'admin@cal.marketing'); } catch(e){}
+              // Restore last selected account if saved, else default to a1
+              var savedAcctId = null;
+              try { savedAcctId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
+              if (!savedAcctId && payload.accounts && payload.accounts[0]) {
+                // accounts array has server keys — map first one to a1
+                savedAcctId = 'a1';
+              }
+              document.addEventListener('DOMContentLoaded', function(){
+                if (typeof launchApp === 'function') {
+                  launchApp();
+                  // Switch to last known account after launch
+                  setTimeout(function(){
+                    var acctId = savedAcctId || 'a1';
+                    if (typeof setCurrentAcct === 'function') setCurrentAcct(acctId);
+                    if (typeof nav === 'function') nav('home');
+                  }, 100);
+                }
+              });
               return; // skip Replit auth check
             }
           } else {
@@ -5847,10 +5889,17 @@ function sendMagicLink(){
 
 // ── Admin User Management ──
 function openAdminUsers(){
-  document.querySelectorAll('.screen').forEach(function(el){ el.style.display='none'; });
+  // Hide all screens and show s-admin-users like a proper screen
+  document.querySelectorAll('.screen').forEach(function(el){ el.style.display='none'; el.classList.remove('active'); });
   var panel = document.getElementById('s-admin-users');
-  if (panel) { panel.style.display = 'block'; }
+  if (panel) {
+    panel.style.display = 'block';
+    panel.classList.add('active');
+  }
+  // Also hide s-admin-users from the "all screens" hide loop in nav()
+  currentScreen = 'admin-users';
   auLoadUsers();
+  loadNfcCards();
 }
 function closeAdminUsers(){
   var panel = document.getElementById('s-admin-users');
@@ -7998,9 +8047,14 @@ function renderMyAccess(){
 // ============ NAVIGATION ============
 function nav(screen){
   if(!screen) return;
+  // admin-users is handled by openAdminUsers
+  if(screen==='admin-users'){ openAdminUsers(); return; }
   if(!hasPermission(screen)){ showToast('You do not have access to this section.','gold'); return; }
   closeProfileDd();
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+  // Also hide the admin-users panel if it's showing
+  var adminPanel=document.getElementById('s-admin-users');
+  if(adminPanel) adminPanel.style.display='none';
   currentScreen=screen;
   saveState('lastNav',screen);
   var target=document.getElementById('s-'+screen);
