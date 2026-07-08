@@ -1246,17 +1246,25 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <div id="cal-login-error" style="display:none;color:#e53935;font-size:12px;font-weight:700;margin-bottom:8px;text-align:center"></div>
           <button onclick="calDoLogin()" id="cal-login-btn" style="width:100%;background:var(--gold);color:#000;font-weight:900;border:none;padding:13px;border-radius:10px;font-size:15px;cursor:pointer">Sign In &rarr;</button>
         </div>
-        <div style="display:flex;align-items:center;gap:8px;width:100%;margin:4px 0 10px">
-          <div style="flex:1;height:1px;background:var(--border)"></div>
-          <span style="font-size:11px;color:var(--muted);font-weight:700">OR</span>
-          <div style="flex:1;height:1px;background:var(--border)"></div>
+        <!-- Send magic link row -->
+        <div style="text-align:center;margin-top:4px;margin-bottom:2px">
+          <a href="javascript:void(0)" onclick="showMagicLinkForm()" style="font-size:12px;font-weight:700;color:var(--muted);text-decoration:none">Forgot password? Send me a sign-in link →</a>
         </div>
-        <p style="font-size:12px;font-weight:700;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:8px">Sign in with your Replit account</p>
-        <div class="login-error" id="login-error" style="width:100%;text-align:center">Access not granted. Contact your administrator.</div>
-        <a href="/api/login" id="replit-signin-btn" class="btn-primary btn-blue" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#fff;width:100%">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 3a7 7 0 110 14A7 7 0 0112 5zm0 2a5 5 0 100 10A5 5 0 0012 7zm0 2a3 3 0 110 6 3 3 0 010-6z"/></svg>
-          Sign in with Replit
-        </a>
+        <!-- Magic link form (hidden by default) -->
+        <div id="magic-link-form" style="display:none;width:100%;margin-top:10px">
+          <div class="field" style="margin-bottom:8px">
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Your Email</label>
+            <input class="input-std" id="magic-link-email" type="email" placeholder="you@company.com" autocomplete="email" onkeydown="if(event.key==='Enter')sendMagicLink()" style="width:100%;margin-top:4px">
+          </div>
+          <div id="magic-link-msg" style="display:none;font-size:12px;font-weight:700;margin-bottom:8px;text-align:center"></div>
+          <button onclick="sendMagicLink()" id="magic-link-btn" style="width:100%;background:var(--surface);color:var(--ink);border:1.5px solid var(--border);font-weight:800;padding:11px;border-radius:10px;font-size:14px;cursor:pointer">Send Sign-In Link</button>
+          <button onclick="hideMagicLinkForm()" style="width:100%;background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;padding:8px;cursor:pointer;margin-top:4px">← Back to password login</button>
+        </div>
+        <div class="login-error" id="login-error" style="width:100%;text-align:center;margin-top:8px">Access not granted. Contact your administrator.</div>
+        <!-- Agency login — small text link -->
+        <div style="text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+          <a href="/api/login" style="font-size:11px;font-weight:700;color:var(--muted);text-decoration:none;opacity:.7">Agency login →</a>
+        </div>
       </div>
     </div>
     <div id="create-panel" style="display:none">
@@ -1389,6 +1397,77 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </button>
 </div>
 
+<!-- SUPERADMIN USER MANAGEMENT PANEL -->
+<div id="s-admin-users" style="display:none;min-height:100vh;background:var(--page);padding:24px 16px;max-width:680px;margin:0 auto">
+  <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
+    <button onclick="closeAdminUsers()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)">← Back</button>
+    <div>
+      <div style="font-size:20px;font-weight:900">User Management</div>
+      <div style="font-size:12px;color:var(--muted)">Create and manage driver &amp; client accounts</div>
+    </div>
+  </div>
+
+  <!-- Create new user form -->
+  <div style="background:var(--card);border-radius:14px;padding:20px;margin-bottom:20px;border:1.5px solid var(--border)">
+    <div style="font-size:14px;font-weight:900;margin-bottom:14px">Create New Account</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="field">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Role</label>
+        <select id="au-role" class="input-std" style="margin-top:4px" onchange="auRoleChange()">
+          <option value="driver">Driver</option>
+          <option value="client">Client</option>
+        </select>
+      </div>
+      <div class="field" id="au-account-wrap">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Account</label>
+        <select id="au-account" class="input-std" style="margin-top:4px">
+          <option value="info@unitedsewerservice.com">United Sewer</option>
+          <option value="greencollаr">Green Collar</option>
+          <option value="willydiamond">Willy Diamond</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div class="field">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Email</label>
+        <input class="input-std" id="au-email" type="email" placeholder="driver@example.com" style="margin-top:4px;width:100%">
+      </div>
+      <div class="field" id="au-drivername-wrap">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Driver Name (matches NFC card)</label>
+        <input class="input-std" id="au-drivername" type="text" placeholder="John Smith" style="margin-top:4px;width:100%">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="field">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Display Name</label>
+        <input class="input-std" id="au-displayname" type="text" placeholder="John" style="margin-top:4px;width:100%">
+      </div>
+      <div class="field">
+        <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Temp Password</label>
+        <input class="input-std" id="au-password" type="text" placeholder="auto-generate or set one" style="margin-top:4px;width:100%">
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;cursor:pointer">
+        <input type="checkbox" id="au-send-email" checked style="width:16px;height:16px;cursor:pointer">
+        Send onboarding email
+      </label>
+    </div>
+    <div id="au-error" style="display:none;color:#e53935;font-size:12px;font-weight:700;margin-top:10px"></div>
+    <div id="au-success" style="display:none;color:#2e7d32;font-size:12px;font-weight:700;margin-top:10px"></div>
+    <button onclick="auCreate()" id="au-create-btn" style="margin-top:14px;background:var(--gold);color:#000;font-weight:900;border:none;padding:12px 24px;border-radius:10px;font-size:14px;cursor:pointer;width:100%">Create Account</button>
+  </div>
+
+  <!-- User list -->
+  <div style="background:var(--card);border-radius:14px;padding:20px;border:1.5px solid var(--border)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-size:14px;font-weight:900">Existing Accounts</div>
+      <button onclick="auLoadUsers()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:6px 12px;cursor:pointer;font-size:12px;font-weight:700">↻ Refresh</button>
+    </div>
+    <div id="au-user-list"><p style="font-size:13px;color:var(--muted);text-align:center;padding:20px 0">Loading…</p></div>
+  </div>
+</div>
+
 <!-- ONBOARDING (client / admin) -->
 <div id="onboarding" style="display:none">
   <div class="ob-card" id="ob-card">
@@ -1499,6 +1578,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </button>
 
       <div class="nav-label">Settings</div>
+      <button class="nav-btn" onclick="openAdminUsers()" id="nav-user-mgmt-btn">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Users
+      </button>
       <button class="nav-btn" onclick="nav('settings')">
         <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
       </button>
@@ -5660,9 +5742,192 @@ function calDoLogin(){
   });
 }
 
+// ── Magic Link UI ──
+function showMagicLinkForm(){
+  var f = document.getElementById('magic-link-form');
+  var em = document.getElementById('cal-login-email');
+  var mlem = document.getElementById('magic-link-email');
+  if (f) f.style.display = 'block';
+  // Pre-fill email if already typed
+  if (mlem && em && em.value) mlem.value = em.value;
+  if (mlem) mlem.focus();
+}
+function hideMagicLinkForm(){
+  var f = document.getElementById('magic-link-form');
+  if (f) f.style.display = 'none';
+  var msg = document.getElementById('magic-link-msg');
+  if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+}
+function sendMagicLink(){
+  var emailEl = document.getElementById('magic-link-email');
+  var btn = document.getElementById('magic-link-btn');
+  var msgEl = document.getElementById('magic-link-msg');
+  var email = emailEl ? emailEl.value.trim() : '';
+  if (!email) {
+    if (msgEl) { msgEl.textContent = 'Please enter your email.'; msgEl.style.color = '#e53935'; msgEl.style.display = 'block'; }
+    return;
+  }
+  if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
+  if (msgEl) msgEl.style.display = 'none';
+  fetch('/api/auth/magic-link', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(){
+    if (btn) { btn.textContent = 'Send Sign-In Link'; btn.disabled = false; }
+    if (msgEl) {
+      msgEl.textContent = '✓ Check your email — sign-in link sent!';
+      msgEl.style.color = '#2e7d32';
+      msgEl.style.display = 'block';
+    }
+  })
+  .catch(function(){
+    if (btn) { btn.textContent = 'Send Sign-In Link'; btn.disabled = false; }
+    if (msgEl) { msgEl.textContent = 'Could not send. Check your connection.'; msgEl.style.color = '#e53935'; msgEl.style.display = 'block'; }
+  });
+}
+
+// ── Admin User Management ──
+function openAdminUsers(){
+  document.querySelectorAll('.screen').forEach(function(el){ el.style.display='none'; });
+  var panel = document.getElementById('s-admin-users');
+  if (panel) { panel.style.display = 'block'; }
+  auLoadUsers();
+}
+function closeAdminUsers(){
+  var panel = document.getElementById('s-admin-users');
+  if (panel) panel.style.display = 'none';
+  // Return to main app
+  var app = document.getElementById('app');
+  if (app) app.style.display = 'block';
+  var appShell = document.getElementById('app-shell');
+  if (appShell) appShell.style.display = '';
+}
+function auRoleChange(){
+  var role = document.getElementById('au-role') ? document.getElementById('au-role').value : 'driver';
+  var dnWrap = document.getElementById('au-drivername-wrap');
+  if (dnWrap) dnWrap.style.display = role === 'driver' ? 'block' : 'none';
+}
+function auGenPassword(){
+  var chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  var pw = '';
+  for (var i=0;i<10;i++) pw += chars[Math.floor(Math.random()*chars.length)];
+  return pw;
+}
+function _auGetToken(){
+  try { return localStorage.getItem('cal-meta-session-token') || ''; } catch(e){ return ''; }
+}
+function auCreate(){
+  var role = (document.getElementById('au-role')||{}).value || 'driver';
+  var email = ((document.getElementById('au-email')||{}).value || '').trim().toLowerCase();
+  var driverName = ((document.getElementById('au-drivername')||{}).value || '').trim();
+  var displayName = ((document.getElementById('au-displayname')||{}).value || '').trim();
+  var password = ((document.getElementById('au-password')||{}).value || '').trim() || auGenPassword();
+  var account = (document.getElementById('au-account')||{}).value || '';
+  var sendEmail = document.getElementById('au-send-email') ? document.getElementById('au-send-email').checked : true;
+  var errEl = document.getElementById('au-error');
+  var succEl = document.getElementById('au-success');
+  var btn = document.getElementById('au-create-btn');
+
+  if (errEl) errEl.style.display='none';
+  if (succEl) succEl.style.display='none';
+
+  if (!email) { if(errEl){errEl.textContent='Email is required.';errEl.style.display='block';} return; }
+  if (role==='driver' && !driverName) { if(errEl){errEl.textContent='Driver name is required (must match NFC card).';errEl.style.display='block';} return; }
+
+  var endpoint = role === 'driver' ? '/api/users/create-driver' : '/api/users/create-client';
+  var body = role === 'driver'
+    ? { email, password, displayName: displayName||driverName, account, driverName }
+    : { email, password, displayName: displayName||email.split('@')[0], accounts: [account] };
+
+  if (btn) { btn.textContent='Creating…'; btn.disabled=true; }
+
+  fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _auGetToken() },
+    body: JSON.stringify(body)
+  })
+  .then(function(r){ return r.json().then(function(d){ return {status:r.status,data:d}; }); })
+  .then(function(result){
+    if (btn) { btn.textContent='Create Account'; btn.disabled=false; }
+    if (result.status !== 200) {
+      var msg = result.data.error === 'USER_EXISTS' ? 'An account with that email already exists.' : (result.data.error || 'Error creating account.');
+      if (errEl) { errEl.textContent=msg; errEl.style.display='block'; }
+      return;
+    }
+    // Clear form
+    ['au-email','au-drivername','au-displayname','au-password'].forEach(function(id){
+      var el = document.getElementById(id); if(el) el.value='';
+    });
+    if (succEl) { succEl.textContent='✓ Account created for ' + email; succEl.style.display='block'; }
+    auLoadUsers();
+
+    // Send onboarding email if checked
+    if (sendEmail) {
+      fetch('/api/users/send-onboarding', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _auGetToken() },
+        body: JSON.stringify({ email, password, role, displayName: displayName||driverName||email.split('@')[0] })
+      }).catch(function(){});
+    }
+  })
+  .catch(function(){
+    if (btn) { btn.textContent='Create Account'; btn.disabled=false; }
+    if (errEl) { errEl.textContent='Connection error. Try again.'; errEl.style.display='block'; }
+  });
+}
+function auLoadUsers(){
+  var listEl = document.getElementById('au-user-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;padding:20px 0">Loading…</p>';
+  fetch('/api/users/list', { headers: { 'Authorization': 'Bearer ' + _auGetToken() } })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    var users = data.users || [];
+    if (!users.length) {
+      listEl.innerHTML = '<p style="font-size:13px;color:var(--muted);text-align:center;padding:20px 0">No accounts yet.</p>';
+      return;
+    }
+    var html = '<div style="display:flex;flex-direction:column;gap:8px">';
+    users.forEach(function(u){
+      var roleColor = u.role==='driver'?'#2e7d32':u.role==='client'?'#1565c0':'#b45309';
+      html += '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">';
+      html += '<div style="min-width:0">';
+      html += '<div style="font-size:13px;font-weight:900;color:var(--ink)">' + (u.displayName||u.email) + '</div>';
+      html += '<div style="font-size:11px;color:var(--muted)">' + u.email + '</div>';
+      if (u.driverName) html += '<div style="font-size:11px;color:var(--muted)">NFC: ' + u.driverName + '</div>';
+      html += '<div style="font-size:11px;color:var(--muted)">' + (u.accounts||[]).join(', ') + '</div>';
+      html += '</div>';
+      html += '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">';
+      html += '<span style="font-size:10px;font-weight:800;background:'+roleColor+';color:#fff;padding:3px 8px;border-radius:99px;text-transform:uppercase">' + u.role + '</span>';
+      html += '<button onclick="auDeleteUser(\''+u.email+'\')" style="background:#e53935;color:#fff;border:none;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:11px;font-weight:700">✕</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    listEl.innerHTML = html;
+  })
+  .catch(function(){
+    listEl.innerHTML = '<p style="font-size:13px;color:#e53935;text-align:center;padding:20px 0">Could not load users.</p>';
+  });
+}
+function auDeleteUser(email){
+  if (!confirm('Delete account for ' + email + '? This cannot be undone.')) return;
+  fetch('/api/users/delete', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + _auGetToken() },
+    body: JSON.stringify({ email })
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(){ auLoadUsers(); })
+  .catch(function(){ alert('Could not delete user.'); });
+}
+
 // ── Driver Dashboard ──
 function showDriverDashboard(){
-  document.querySelectorAll('.screen, #app, #app-shell, #nav-sidebar, #msg-fab, #login-view, #onboarding, #ob-loading').forEach(function(el){ if(el) el.style.display='none'; });
+  document.querySelectorAll('.screen, #app, #app-shell, #nav-sidebar, #msg-fab, #login-view, #onboarding, #ob-loading, #s-admin-users').forEach(function(el){ if(el) el.style.display='none'; });
   var dh = document.getElementById('s-driver-home');
   if (dh) dh.style.display = 'block';
   loadDriverHome();
