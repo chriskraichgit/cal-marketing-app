@@ -15290,7 +15290,7 @@ function sendWaReply() {
     var prefs=loadLayoutPrefs(role);
     host.innerHTML=items.map(function(it){
       var on=prefs.hasOwnProperty(it[0])?(prefs[it[0]]!==false):navItemVisible(it[0]);
-      return '<div class="toggle-row"><div><p style="font-size:13px;font-weight:800;color:var(--ink)">'+it[1]+'</p></div><button class="sw'+(on?'':' off')+'" onclick="toggleLayoutPref(this,''+it[0]+'')"></button></div>';
+      return '<div class="toggle-row"><div><p style="font-size:13px;font-weight:800;color:var(--ink)">'+it[1]+'</p></div><button class="sw'+(on?'':' off')+'" onclick="toggleLayoutPref(this,\x27'+it[0]+'\x27)"></button></div>';
     }).join('');
   }
   window.renderNavLayoutSettings=renderNavLayoutSettings;
