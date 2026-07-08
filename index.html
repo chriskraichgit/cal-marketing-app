@@ -1491,7 +1491,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </div>
       <div class="field">
         <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Temp Password</label>
-        <input class="input-std" id="au-password" type="text" placeholder="auto-generate or set one" style="margin-top:4px;width:100%">
+        <input class="input-std" id="au-password" type="password" placeholder="auto-generate or set one" style="margin-top:4px;width:100%">
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:10px">
@@ -3252,6 +3252,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div id="stab-help" style="display:none"></div>
   <div id="stab-profile" style="display:none"></div>
   <div id="stab-notifications" style="display:none"></div>
+  <div id="stab-navigation" style="display:none"></div>
   <div id="stab-connections" style="display:none">
     <div class="sec-head" style="margin-bottom:16px"><div><h2 style="font-size:20px">Platform Connections</h2><p>Connect your review and marketing platforms</p></div></div>
 
@@ -15219,6 +15220,22 @@ function sendWaReply() {
     }catch(e){}
   }
 
+  /* --- per-account layout wrappers (spec §10) --- */
+  window.saveLayoutForAccount=function(acctId,role,prefs){
+    /* temporarily switch acct context, save, then restore */
+    var prev=window.currentAcctId;
+    window.currentAcctId=acctId||prev;
+    saveLayoutPrefs(role,prefs);
+    window.currentAcctId=prev;
+  };
+  window.loadLayoutForAccount=function(acctId,role){
+    var prev=window.currentAcctId;
+    window.currentAcctId=acctId||prev;
+    var result=loadLayoutPrefs(role);
+    window.currentAcctId=prev;
+    return result;
+  };
+
   function navBtnsFor(key){
     var out=[];
     document.querySelectorAll('.nav-btn').forEach(function(b){
@@ -15264,6 +15281,32 @@ function sendWaReply() {
     }).join('');
   }
   window.renderLayoutPrefs=renderLayoutPrefs;
+
+  function renderNavLayoutSettings(pane){
+    var host=pane?pane.querySelector('#nav-layout-settings-list'):document.getElementById('nav-layout-settings-list');
+    if(!host) return;
+    var role=window.currentRole; var items=LAYOUT_ITEMS[role];
+    if(!items){ host.innerHTML='<p style="font-size:13px;color:var(--muted)">No layout options available for your role.</p>'; return; }
+    var prefs=loadLayoutPrefs(role);
+    host.innerHTML=items.map(function(it){
+      var on=prefs.hasOwnProperty(it[0])?(prefs[it[0]]!==false):navItemVisible(it[0]);
+      return '<div class="toggle-row"><div><p style="font-size:13px;font-weight:800;color:var(--ink)">'+it[1]+'</p></div><button class="sw'+(on?'':' off')+'" onclick="toggleLayoutPref(this,''+it[0]+'')"></button></div>';
+    }).join('');
+  }
+  window.renderNavLayoutSettings=renderNavLayoutSettings;
+
+  window.saveNavLayoutForCurrentAccount=function(){
+    var role=window.currentRole; var acctId=window.currentAcctId;
+    var items=LAYOUT_ITEMS[role]; if(!items) return;
+    var prefs={};
+    items.forEach(function(it){
+      prefs[it[0]]=navItemVisible(it[0]);
+    });
+    saveLayoutForAccount(acctId,role,prefs);
+    /* visual feedback */
+    var btn=document.querySelector('#stab-navigation .btn-gold');
+    if(btn){ var orig=btn.textContent; btn.textContent='✓ Saved'; btn.disabled=true; setTimeout(function(){ btn.textContent=orig; btn.disabled=false; },1800); }
+  };
 
   /* ---- nav label helper (preserves icon) ---- */
   function setNavLabel(btn,label){
@@ -15853,14 +15896,15 @@ function renderSettingsTabs(){
   if(!row) return;
   var role=window.currentRole||'admin';
   var tabSets={
-    agency:['general','connections','team','permissions','whitelabel','help'],
-    admin:['general','connections','profile','notifications','team','permissions','help'],
+    agency:['general','connections','navigation','team','permissions','whitelabel','help'],
+    admin:['general','connections','navigation','profile','notifications','team','permissions','help'],
     test:['general','connections','team','permissions','help'],
+    owner:['general','connections','navigation','profile','notifications','settings','help'],
     user:['general','connections','profile','notifications','help']
   };
   var labels={
     general:'General','team':'Team & Access','agency-admin':'Agency Admin',
-    permissions:'Permissions',whitelabel:'White Label',help:'Help & Support',
+    permissions:'Permissions',whitelabel:'White Label',help:'Help & Support',navigation:'Navigation & Layout',
     profile:'Profile',notifications:'Notifications',connections:'Connections'
   };
   var tabs=tabSets[role]||tabSets['admin'];
@@ -15937,6 +15981,19 @@ function renderSettingsTabContent(tab,pane){
       +'</div>'
       +'</div>';
     setTimeout(function(){ var n=document.getElementById('wl-stab-name'); if(n) n.value=savedWLName; },0);
+  } else if(tab==='navigation'){
+    var W2='style="max-width:580px;display:flex;flex-direction:column;gap:14px"';
+    pane.innerHTML='<div '+W2+'>'
+      +'<div class="sec-head" style="padding:0;margin-bottom:0"><div><h3 style="font-size:15px;font-weight:800">Navigation & Layout</h3><p style="font-size:12px;color:var(--muted)">Show or hide sidebar items for this account. Changes apply to the current account only.</p></div></div>'
+      +'<div class="card card-pad" id="nav-layout-settings-card">'
+        +'<div id="nav-layout-settings-list" style="display:flex;flex-direction:column;gap:10px"></div>'
+        +'<div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end">'
+          +'<button class="btn-ghost" onclick="renderLayoutPrefs()">↺ Reset View</button>'
+          +'<button class="btn-gold" onclick="saveNavLayoutForCurrentAccount()">Save Layout</button>'
+        +'</div>'
+      +'</div>'
+      +'</div>';
+    renderNavLayoutSettings(pane);
   } else if(tab==='connections'){
     pane.innerHTML='<div '+W+'>'
       +'<div class="sec-head" style="padding:0;margin-bottom:4px"><div><h3 style="font-size:15px;font-weight:800">Platform Connections</h3><p style="font-size:12px;color:var(--muted)">Connect your review and marketing platforms</p></div></div>'
