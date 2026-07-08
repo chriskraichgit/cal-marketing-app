@@ -1100,6 +1100,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   window.setCurrentAcct = function(id){
     if(!id) return;
 
+    // Always restore the user's saved account instead of accepting a forced a1
     var saved = getSavedAcct();
     if(window.__calBootRestoring && id === 'a1' && saved && saved !== 'a1'){
       id = saved;
@@ -1116,6 +1117,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
     saveAcct(id);
     syncVisibleAccountChrome(id);
+    // Keep sidebar accounts in sync on every switch
+    try { if(typeof buildSidebarAccounts==='function') buildSidebarAccounts(); } catch(e){}
 
     if(!window.__calBootRestoring && old && old !== id){
       clearStaleAccountUi();
@@ -5721,10 +5724,15 @@ window.addEventListener('DOMContentLoaded',function(){
               document.addEventListener('DOMContentLoaded', function(){
                 if (typeof launchApp === 'function') {
                   launchApp();
-                  // Switch to last known account after launch
+                  // Restore last known account after launch — refreshTenantContext reads from storage
                   setTimeout(function(){
-                    var acctId = savedAcctId || 'a1';
-                    if (typeof setCurrentAcct === 'function') setCurrentAcct(acctId);
+                    var acctId = null;
+                    try { acctId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
+                    if (typeof refreshTenantContext === 'function') {
+                      refreshTenantContext(acctId || 'a1');
+                    } else if (typeof setCurrentAcct === 'function') {
+                      setCurrentAcct(acctId || 'a1');
+                    }
                     if (typeof nav === 'function') nav('home');
                   }, 100);
                 }
@@ -5764,7 +5772,11 @@ window.addEventListener('DOMContentLoaded',function(){
               setTimeout(function(){
                 var savedId = null;
                 try { savedId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
-                if(typeof setCurrentAcct==='function') setCurrentAcct(savedId||'a1');
+                if(typeof refreshTenantContext==='function') {
+                  refreshTenantContext(savedId||'a1');
+                } else if(typeof setCurrentAcct==='function') {
+                  setCurrentAcct(savedId||'a1');
+                }
                 if(typeof nav==='function') nav('home');
               }, 150);
             }
@@ -7964,14 +7976,14 @@ function setupRoleUI(){
     if(accWrap) accWrap.style.display='none';
     document.body.classList.remove('has-acct-switch');
     if(sbAgency) sbAgency.style.display='';
-    buildAcctDd(); setCurrentAcct('a1');
+    buildAcctDd(); (function(){ var _s=null; try{_s=localStorage.getItem('cal-current-acct-id');}catch(e){} setCurrentAcct(_s||'a1'); })();
     buildSidebarAccounts();
     setTimeout(function(){ if(typeof renderObSidebar==='function') renderObSidebar(); },200);
   } else if(currentRole==='test'){
     if(accWrap) accWrap.style.display='block';
     document.body.classList.add('has-acct-switch');
     if(sbAgency) sbAgency.style.display='none';
-    buildAcctDd(); setCurrentAcct('a1');
+    buildAcctDd(); (function(){ var _s=null; try{_s=localStorage.getItem('cal-current-acct-id');}catch(e){} setCurrentAcct(_s||'a1'); })();
   } else {
     document.body.classList.remove('has-acct-switch');
     if(accWrap) accWrap.style.display='none';
@@ -8410,6 +8422,31 @@ function buildAcctDd(){
     row.innerHTML='<div class="acct-dd-avatar" style="background:'+a.color+'">'+a.initials+'</div><div><span class="acct-dd-name">'+a.name+'</span><span class="acct-dd-meta">'+a.plan+' Plan</span></div>'+(a.id===currentAcctId?'<div class="acct-dd-check"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>':'');
     list.appendChild(row);
   });
+}
+// ── Single source of truth for tenant switching ──
+function refreshTenantContext(id){
+  if(!id) id = (function(){ try{ return localStorage.getItem('cal-current-acct-id'); }catch(e){ return null; } })() || 'a1';
+  var a = (window.accounts||[]).find(function(x){ return x.id===id; });
+  if(!a) a = (window.accounts||[])[0];
+  if(!a) return;
+  id = a.id;
+  currentAcctId = id;
+  window.currentAcctId = id;
+  if(typeof saveAcct==='function') saveAcct(id);
+  // Update header switcher
+  var swAvatar=document.getElementById('acct-sw-avatar');
+  var swName=document.getElementById('acct-sw-name');
+  if(swAvatar){ swAvatar.textContent=a.initials; swAvatar.style.background=a.color; }
+  if(swName) swName.textContent=a.name;
+  // Update sidebars
+  if(typeof buildAcctDd==='function') buildAcctDd();
+  if(typeof buildSidebarAccounts==='function') buildSidebarAccounts();
+  if(typeof updateSbCurrentAcct==='function') updateSbCurrentAcct(a);
+  // Update visible chrome (header acct name, breadcrumb)
+  var sbn=document.getElementById('sb-company-name'); if(sbn) sbn.textContent=a.name;
+  var pageSub=document.getElementById('page-sub'); if(pageSub){ pageSub.textContent=a.name; pageSub.style.display=''; }
+  // Refresh all tenant-dependent screens
+  if(typeof refreshScreenForAccount==='function') refreshScreenForAccount(a);
 }
 function setCurrentAcct(id){
   currentAcctId=id;
