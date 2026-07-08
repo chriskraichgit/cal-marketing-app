@@ -1288,9 +1288,14 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <button onclick="hideMagicLinkForm()" style="width:100%;background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;padding:8px;cursor:pointer;margin-top:4px">← Back to password login</button>
         </div>
         <div class="login-error" id="login-error" style="width:100%;text-align:center;margin-top:8px">Access not granted. Contact your administrator.</div>
-        <!-- Agency login — small text link -->
-        <div style="text-align:center;margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
-          <a href="/api/login" style="font-size:11px;font-weight:700;color:var(--muted);text-decoration:none;opacity:.7">Agency login →</a>
+        <!-- Agency PIN login -->
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:center;margin-bottom:8px">Agency Login</div>
+          <div style="display:flex;gap:8px;justify-content:center">
+            <input id="agency-pin" type="password" maxlength="6" placeholder="PIN" style="width:100px;text-align:center;font-size:18px;font-weight:900;border:2px solid var(--gold);border-radius:8px;padding:8px 12px;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')agencyPinLogin()">
+            <button onclick="agencyPinLogin()" style="background:var(--gold);color:#000;font-weight:900;border:none;padding:10px 18px;border-radius:8px;font-size:14px;cursor:pointer">Enter →</button>
+          </div>
+          <div id="agency-pin-error" style="display:none;color:#e53935;font-size:11px;margin-top:6px;text-align:center"></div>
         </div>
       </div>
     </div>
@@ -5784,6 +5789,22 @@ function hideMagicLinkForm(){
   if (f) f.style.display = 'none';
   var msg = document.getElementById('magic-link-msg');
   if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
+}
+function agencyPinLogin(){
+  var pin = (document.getElementById('agency-pin')||{}).value||'';
+  var errEl = document.getElementById('agency-pin-error');
+  if(!pin){ if(errEl){errEl.textContent='Enter your PIN';errEl.style.display='block';} return; }
+  fetch('/api/agency-pin',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({pin:pin})})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(!d.ok){ if(errEl){errEl.textContent=d.error||'Invalid PIN';errEl.style.display='block';} return; }
+    try{localStorage.setItem('cal-meta-session-token',d.token);}catch(e){}
+    try{localStorage.setItem('cal-user-role',d.role||'superadmin');}catch(e){}
+    try{localStorage.setItem('cal-display-name',d.displayName||'Agency Admin');}catch(e){}
+    try{localStorage.setItem('cal-user-email',d.email||'admin@cal.marketing');}catch(e){}
+    window.location.replace('/');
+  })
+  .catch(function(){ if(errEl){errEl.textContent='Connection error';errEl.style.display='block';} });
 }
 function sendMagicLink(){
   var emailEl = document.getElementById('magic-link-email');
