@@ -100,6 +100,8 @@ a{text-decoration:none}
 .sb-view-btn svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .sb-view-btn .sb-vb-arrow{margin-left:auto;width:12px;height:12px;opacity:.5}
 .nav-label{padding:12px 8px 5px;font-size:9px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;color:rgba(201,168,76,.6)}
+.period-btn{padding:6px 14px;border:1px solid var(--border);border-radius:20px;background:transparent;color:var(--ink);font-size:12px;font-weight:700;cursor:pointer;transition:all .14s}
+.period-btn.active,.period-btn:hover{background:var(--gold);color:#000;border-color:var(--gold)}
 .nav-btn{display:flex;align-items:center;gap:9px;width:100%;min-height:36px;padding:0 9px;margin:1px 0;border:0;border-left:3px solid transparent;border-radius:9px;background:transparent;color:rgba(255,255,255,.6);font-size:13px;font-weight:700;text-align:left;transition:all .14s;position:relative}
 .nav-btn:hover,.nav-btn.active{background:rgba(255,255,255,.1);color:#fff}
 .nav-btn.active{border-left-color:var(--gold)}
@@ -4483,6 +4485,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button id="more-analytics-btn" class="more-item" onclick="closeMoreSheet();nav('analytics')" style="display:none"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics</button>
     <button class="more-item" onclick="closeMoreSheet();nav('goals')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals</button>
     <button class="more-item" onclick="closeMoreSheet();nav('reviews')"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC</button>
+    <button class="more-item" onclick="closeMoreSheet();nav('drivers')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Drivers</button>
     <button class="more-item" onclick="closeMoreSheet();nav('campaigns')"><svg viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7 12,2"/></svg>Campaigns</button>
     <button class="more-item" onclick="closeMoreSheet();nav('projects')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Projects</button>
     <button class="more-item" onclick="closeMoreSheet();nav('todos')"><svg viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/></svg>To-Dos</button>
@@ -7321,6 +7324,7 @@ function nav(screen){
   if(screen==='job-logging') renderJobLogs();
   if(screen==='social'){ if(!currentAcctId) currentAcctId='local'; loadSocialConnections(); }
   if(screen==='files') initGDriveCard();
+  if(screen==='drivers') loadDriverStats();
   if(screen==='schedule') loadGoogleCalendarEvents();
   if(screen==='booking') initBookingPicker();
   if(screen==='settings'){ renderSettingsTabs(); setTimeout(renderIntegrationsGrid,300); }
@@ -7338,6 +7342,7 @@ function initHomeScreen(){
   // Reload account-specific panels so switching accounts always shows fresh data
   if(typeof loadNfcTaps === 'function') try{ loadNfcTaps(); }catch(e){}
   if(typeof loadNfcCards === 'function') try{ loadNfcCards(); }catch(e){}
+  if(typeof loadDriverStats === 'function') try{ loadDriverStats(); }catch(e){}
   if(typeof loadGoogleReviews === 'function') try{ loadGoogleReviews(); }catch(e){}
 }
 
@@ -7636,6 +7641,7 @@ function refreshScreenForAccount(account){
   var hs=document.getElementById('h-score'); if(hs) hs.textContent=score;
   if(currentScreen==='home' && typeof window.applyHomeForRole==='function') window.applyHomeForRole();
   if(currentScreen==='leads') initLeads();
+  if(currentScreen==='drivers') { if(typeof loadDriverStats==='function') try{ loadDriverStats(); }catch(e){} }
   if(currentScreen==='inbox'){ inboxInvalidateCache(); try{ renderInboxThreadList(); }catch(e){} }
   if(currentScreen==='notes'){ if(typeof _loadNotesForAcct==='function') _loadNotesForAcct(); try{ renderNotesList(); openNote(0); }catch(e){} }
   showToast('Switched to '+account.name,'gold');
@@ -15596,7 +15602,132 @@ async function loadGoogleReviews() {
   } catch(e) { if (el) el.textContent = 'Error loading reviews: ' + e.message; }
 }
 
+
+// ============ DRIVER STATS ============
+var _driverPeriod = 'month';
+
+function loadDriverStats() {
+  var account = localStorage.getItem('cal-current-acct') || '';
+  var token = localStorage.getItem('cal-meta-session-token') || '';
+  var el = document.getElementById('driver-leaderboard');
+  if (el) el.innerHTML = '<p style="color:var(--muted);font-size:13px">Loading...</p>';
+  fetch('/api/drivers/stats?account=' + encodeURIComponent(account) + '&period=' + _driverPeriod, {
+    headers: { 'Authorization': 'Bearer ' + token }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){ renderDriverLeaderboard(data.drivers || []); })
+  .catch(function(){ var el=document.getElementById('driver-leaderboard'); if(el) el.innerHTML='<p style="color:var(--muted);font-size:13px">Could not load driver data.</p>'; });
+}
+
+function setDriverPeriod(period) {
+  _driverPeriod = period;
+  ['week','month','alltime'].forEach(function(p){
+    var btn = document.getElementById('period-' + p);
+    if (btn) btn.className = 'period-btn' + (p === period ? ' active' : '');
+  });
+  loadDriverStats();
+}
+
+function renderDriverLeaderboard(drivers) {
+  var el = document.getElementById('driver-leaderboard');
+  if (!el) return;
+  if (!drivers.length) {
+    el.innerHTML = '<p style="color:var(--muted);font-size:13px;padding:16px 0">No NFC cards registered yet. Add drivers in the Reviews tab.</p>';
+    return;
+  }
+  var tapKey = _driverPeriod === 'week' ? 'week' : _driverPeriod === 'alltime' ? 'alltime' : 'month';
+  var max = Math.max.apply(null, drivers.map(function(d){ return d.taps[tapKey]; }).concat([1]));
+  el.innerHTML = drivers.map(function(d, i) {
+    var pct = Math.round((d.taps[tapKey] / max) * 100);
+    var lastSeen = d.lastTap ? timeAgo(d.lastTap) : 'Never';
+    var medals = ['🥇','🥈','🥉'];
+    var medal = i < 3 ? medals[i] : (i+1) + '.';
+    var dStr = JSON.stringify(d).replace(/'/g, "\\x27");
+    return '<div style="padding:12px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick=\'showDriverDetail(' + dStr + ')\'>' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">' +
+        '<span style="font-weight:700;font-size:14px">' + medal + ' ' + htmlEsc(d.name) + '</span>' +
+        '<span style="font-size:12px;color:' + (d.active ? 'var(--green)' : 'var(--muted)') + ';font-weight:700">' + (d.active ? 'Active' : 'Inactive') + '</span>' +
+      '</div>' +
+      '<div style="background:var(--border);border-radius:4px;height:6px;margin-bottom:4px"><div style="background:var(--gold);height:6px;border-radius:4px;width:' + pct + '%"></div></div>' +
+      '<div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted)">' +
+        '<span>' + d.taps[tapKey] + ' taps</span>' +
+        '<span>Last: ' + lastSeen + '</span>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function timeAgo(iso) {
+  var diff = Date.now() - new Date(iso).getTime();
+  var mins = Math.floor(diff / 60000);
+  if (mins < 60) return mins + 'm ago';
+  var hrs = Math.floor(mins / 60);
+  if (hrs < 24) return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+function htmlEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function showDriverDetail(driver) {
+  var modal = document.getElementById('driver-detail-modal');
+  if (!modal) return;
+  document.getElementById('dd-name').textContent = driver.name;
+  document.getElementById('dd-today').textContent = driver.taps.today;
+  document.getElementById('dd-week').textContent = driver.taps.week;
+  document.getElementById('dd-month').textContent = driver.taps.month;
+  document.getElementById('dd-alltime').textContent = driver.taps.alltime;
+  document.getElementById('dd-last').textContent = driver.lastTap ? timeAgo(driver.lastTap) : 'Never';
+  var statusEl = document.getElementById('dd-status');
+  statusEl.textContent = driver.active ? 'Active' : 'Inactive';
+  statusEl.style.color = driver.active ? 'var(--green)' : 'var(--muted)';
+  if (driver.daily) {
+    var days = Object.entries(driver.daily);
+    var maxDay = Math.max.apply(null, days.map(function(d){ return d[1]; }).concat([1]));
+    document.getElementById('dd-chart').innerHTML = days.map(function(entry) {
+      var date = entry[0], count = entry[1];
+      return '<div style="display:inline-block;vertical-align:bottom;flex:1;background:var(--gold);opacity:0.8;height:' + Math.max(4, Math.round((count/maxDay)*60)) + 'px;border-radius:2px 2px 0 0;margin:0 1px" title="' + date + ': ' + count + ' taps"></div>';
+    }).join('');
+  }
+  modal.style.display = 'flex';
+}
+
 </script>
+
+
+<div class="screen" id="s-drivers">
+  <div class="screen-inner">
+    <div class="card">
+      <h3>Team Leaderboard</h3>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button onclick="setDriverPeriod('week')" class="period-btn" id="period-week">This Week</button>
+        <button onclick="setDriverPeriod('month')" class="period-btn active" id="period-month">This Month</button>
+        <button onclick="setDriverPeriod('alltime')" class="period-btn" id="period-alltime">All Time</button>
+      </div>
+      <div id="driver-leaderboard"><p style="color:var(--muted);font-size:13px">Loading...</p></div>
+    </div>
+  </div>
+</div>
+
+<div id="driver-detail-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center" onclick="if(event.target===this)this.style.display='none'">
+  <div style="background:var(--card);border-radius:16px;padding:24px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 id="dd-name" style="margin:0;font-size:18px"></h3>
+      <span id="dd-status" style="font-size:12px;font-weight:700"></span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--page);border-radius:10px;padding:12px;text-align:center"><div id="dd-today" style="font-size:24px;font-weight:900">0</div><div style="font-size:11px;color:var(--muted)">Today</div></div>
+      <div style="background:var(--page);border-radius:10px;padding:12px;text-align:center"><div id="dd-week" style="font-size:24px;font-weight:900">0</div><div style="font-size:11px;color:var(--muted)">This Week</div></div>
+      <div style="background:var(--page);border-radius:10px;padding:12px;text-align:center"><div id="dd-month" style="font-size:24px;font-weight:900">0</div><div style="font-size:11px;color:var(--muted)">This Month</div></div>
+      <div style="background:var(--page);border-radius:10px;padding:12px;text-align:center"><div id="dd-alltime" style="font-size:24px;font-weight:900">0</div><div style="font-size:11px;color:var(--muted)">All Time</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Last tap: <span id="dd-last"></span></div>
+    <div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:6px">30-Day Activity</div>
+    <div id="dd-chart" style="height:64px;display:flex;align-items:flex-end;border-bottom:1px solid var(--border)"></div>
+    <button onclick="document.getElementById('driver-detail-modal').style.display='none'" style="margin-top:16px;width:100%;padding:10px;background:var(--border);border:none;border-radius:8px;color:var(--ink);cursor:pointer;font-weight:700">Close</button>
+  </div>
+</div>
 
 </body>
 </html>
