@@ -5587,17 +5587,55 @@ var POS_OB_STEPS = [
 
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
-  agency: ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo','leaderboard','admin-users','users'],
-  admin: ['home','onboarding','maintenance','campaigns','reviews','leads','files','billing','reports','inbox','schedule','todos','notes','nps','referrals','settings','notifications','help','profile','admin-users','users'],
-  user: ['todos','notes','files','inbox','profile'],
-  test: ['home','onboarding','maintenance','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
+  agency:   ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo','leaderboard','admin-users','users'],
+  admin:    ['home','onboarding','maintenance','campaigns','reviews','leads','files','billing','reports','inbox','schedule','todos','notes','nps','referrals','settings','notifications','help','profile','admin-users','users'],
+  owner:    ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','schedule','inbox','notes','todos','files','billing','reports','nps','referrals','settings','notifications','help','profile','admin-users','users','social','seo','booking'],
+  operator: ['home','reviews','leads','inbox','todos','notes','schedule','notifications','help','profile','social'],
+  driver:   ['home','reviews','todos','notifications','help','profile'],
+  user:     ['todos','notes','files','inbox','profile'],
+  client:   ['home','reviews','leads','inbox','todos','notes','schedule','notifications','help','profile'],
+  test:     ['home','onboarding','maintenance','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo']
 };
+
+// Per-account role permission overrides: { accountId: { role: [screens] } }
+var ACCOUNT_PERMISSIONS = (function(){
+  try { return JSON.parse(localStorage.getItem('cal-account-permissions') || '{}'); } catch(e) { return {}; }
+})();
+
+function saveAccountPermissions(){
+  try { localStorage.setItem('cal-account-permissions', JSON.stringify(ACCOUNT_PERMISSIONS)); } catch(e) {}
+}
+
+// Get the effective permission set for a role within a specific account
+function getAccountPermissions(acctId, role){
+  if(!acctId || !role) return DEFAULT_PERMISSIONS[role] || DEFAULT_PERMISSIONS.client || [];
+  if(ACCOUNT_PERMISSIONS[acctId] && ACCOUNT_PERMISSIONS[acctId][role]){
+    return ACCOUNT_PERMISSIONS[acctId][role];
+  }
+  return DEFAULT_PERMISSIONS[role] || DEFAULT_PERMISSIONS.client || [];
+}
+
+// Set permissions for a role within a specific account
+function setAccountPermissions(acctId, role, screens){
+  if(!ACCOUNT_PERMISSIONS[acctId]) ACCOUNT_PERMISSIONS[acctId] = {};
+  ACCOUNT_PERMISSIONS[acctId][role] = screens;
+  saveAccountPermissions();
+}
 var agencyPermissions = JSON.parse(localStorage.getItem('cal-agency-perms') || 'null') || {};
 var adminPermissions = JSON.parse(localStorage.getItem('cal-admin-perms') || 'null') || {};
 
 function getPermissions(role, email){
   if(role==='agency') return DEFAULT_PERMISSIONS.agency;
   if(role==='test') return DEFAULT_PERMISSIONS.test;
+  // Check account-scoped permissions first
+  var acctId = window.currentAcctId || 'a1';
+  if(ACCOUNT_PERMISSIONS[acctId] && ACCOUNT_PERMISSIONS[acctId][role]){
+    return ACCOUNT_PERMISSIONS[acctId][role];
+  }
+  if(role==='owner') return DEFAULT_PERMISSIONS.owner;
+  if(role==='operator') return DEFAULT_PERMISSIONS.operator;
+  if(role==='driver') return DEFAULT_PERMISSIONS.driver;
+  if(role==='client') return DEFAULT_PERMISSIONS.client;
   if(role==='admin'){
     var override=agencyPermissions[email];
     return override || DEFAULT_PERMISSIONS.admin;
@@ -5609,7 +5647,16 @@ function getPermissions(role, email){
   return [];
 }
 function hasPermission(screen){
-  var perms=getPermissions(currentRole, currentUser?currentUser.email:'');
+  // Agency always has full access
+  if(currentRole==='agency') return true;
+  // Get account-scoped permissions if available
+  var acctId = window.currentAcctId || 'a1';
+  var perms;
+  if(ACCOUNT_PERMISSIONS[acctId] && ACCOUNT_PERMISSIONS[acctId][currentRole]){
+    perms = ACCOUNT_PERMISSIONS[acctId][currentRole];
+  } else {
+    perms = getPermissions(currentRole, currentUser?currentUser.email:'');
+  }
   return perms.indexOf(screen)>=0;
 }
 
@@ -8092,6 +8139,36 @@ function renderMyAccess(){
 }
 
 // ============ NAVIGATION ============
+
+// Account-scoped localStorage helpers
+function acctScopedKey(base){
+  return base + '-' + (window.currentAcctId || 'a1');
+}
+
+// Rebuild sidebar/nav button visibility for current role + account
+function rebuildNavForRole(){
+  var role = window.currentRole || currentRole || 'client';
+  var acctId = window.currentAcctId || 'a1';
+  var perms;
+  if(ACCOUNT_PERMISSIONS && ACCOUNT_PERMISSIONS[acctId] && ACCOUNT_PERMISSIONS[acctId][role]){
+    perms = ACCOUNT_PERMISSIONS[acctId][role];
+  } else if(DEFAULT_PERMISSIONS[role]) {
+    perms = DEFAULT_PERMISSIONS[role];
+  } else {
+    perms = DEFAULT_PERMISSIONS.client || [];
+  }
+  // Show/hide nav buttons based on permissions
+  document.querySelectorAll('.nav-btn[data-screen]').forEach(function(btn){
+    var sc = btn.getAttribute('data-screen');
+    if(sc) btn.style.display = (perms.indexOf(sc) >= 0) ? '' : 'none';
+  });
+  // Show/hide sidebar nav items
+  document.querySelectorAll('[data-nav-screen]').forEach(function(el){
+    var sc = el.getAttribute('data-nav-screen');
+    if(sc) el.style.display = (perms.indexOf(sc) >= 0) ? '' : 'none';
+  });
+}
+
 function nav(screen){
   if(!screen) return;
   // admin-users is handled by openAdminUsers
@@ -11942,11 +12019,14 @@ function sendWaReply() {
   function metaAll(){ return safeJSON('cal-account-meta',{}); }
   function getMeta(key){
     var all=metaAll();
-    var account=(window.accounts||[]).find(function(a){ return a.id===key; });
+    // Try by display id first (a1, a2...), then by serverKey
+    var account=(window.accounts||[]).find(function(a){ return a.id===key; })
+              ||(window.accounts||[]).find(function(a){ return a.serverKey===key; });
     if(!all[key]){
+      // Use account object for defaults — never use currentUser.company for tenant identity
       all[key]={
-        name:account?account.name:(window.currentUser&&window.currentUser.company)||'Business Account',
-        initials:account?account.initials:initials((window.currentUser&&window.currentUser.company)||'Business'),
+        name:account?account.name:'Business Account',
+        initials:account?account.initials:initials('Business'),
         plan:account?account.plan:'Standard',
         color:account?account.color:'#1b3a6b',
         logo:'',
@@ -12137,7 +12217,11 @@ function sendWaReply() {
 
   window.setCurrentAcct=function(id){
     window.currentAcctId=id;
-    localStorage.setItem('cal-current-acct',id);
+    // Store both: display id for UI restoration, server key for API calls
+    var _sk = (window.accounts||[]).find(function(x){return x.id===id;});
+    _sk = (_sk && _sk.serverKey) ? _sk.serverKey : id;
+    try { localStorage.setItem('cal-current-acct-id', id); } catch(e){}
+    try { localStorage.setItem('cal-current-acct', _sk); } catch(e){}
     var a=(window.accounts||[]).find(function(x){ return x.id===id; });
     if(!a) return;
     var m=getMeta(id);
@@ -12150,12 +12234,12 @@ function sendWaReply() {
     buildAcctDd();
     refreshScreenForAccount(a);
     applyAccountBranding();
-    // Force a full re-render of whatever screen is currently open, as if
-    // the user had freshly navigated to it — prevents stale data from the
-    // previously selected account from lingering on screen.
+    // Force a full re-render to the home screen for new account context
     if(typeof window.nav==='function'){
       try{ window.nav('home'); }catch(e){}
     }
+    // Rebuild nav buttons to reflect role permissions for this account
+    try { if(typeof rebuildNavForRole==='function') rebuildNavForRole(); } catch(e){}
   };
 
   window.removeAccount=function(id){
