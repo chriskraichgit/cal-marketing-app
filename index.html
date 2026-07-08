@@ -1109,6 +1109,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           try { if(typeof loadGDriveFiles === 'function') loadGDriveFiles(); } catch(e){}
           try { if(typeof loadGoogleCalendarEvents === 'function') loadGoogleCalendarEvents(); } catch(e){}
           try { if(typeof loadLiveReviewsForReviewsScreen === 'function') loadLiveReviewsForReviewsScreen(); } catch(e){}
+          // Phase 2 Item 1: refresh messages if panel is open
+          try { if(typeof _msgPanelOpen !== 'undefined' && _msgPanelOpen && typeof loadMessages === 'function') loadMessages(); } catch(e){}
           // Fade out the overlay after loaders are kicked off
           hideSwitchOverlay();
         });
@@ -1232,7 +1234,24 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <p class="login-sub" id="login-main-sub">CLIENT OPERATING SYSTEM — v1.0</p>
     <div id="signin-panel">
       <div class="login-form" style="align-items:center">
-        <p style="font-size:13px;font-weight:700;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:4px">Sign in securely with your Replit account.<br>Supports Google, GitHub, Apple, X, and email.</p>
+        <div id="cal-login-form" style="width:100%;margin-bottom:12px">
+          <div class="field" style="margin-bottom:10px">
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Email</label>
+            <input class="input-std" id="cal-login-email" type="email" placeholder="you@company.com" autocomplete="email" onkeydown="if(event.key==='Enter')document.getElementById('cal-login-pw').focus()" style="width:100%;margin-top:4px">
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Password</label>
+            <input class="input-std" id="cal-login-pw" type="password" placeholder="&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;" autocomplete="current-password" onkeydown="if(event.key==='Enter')calDoLogin()" style="width:100%;margin-top:4px">
+          </div>
+          <div id="cal-login-error" style="display:none;color:#e53935;font-size:12px;font-weight:700;margin-bottom:8px;text-align:center"></div>
+          <button onclick="calDoLogin()" id="cal-login-btn" style="width:100%;background:var(--gold);color:#000;font-weight:900;border:none;padding:13px;border-radius:10px;font-size:15px;cursor:pointer">Sign In &rarr;</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;width:100%;margin:4px 0 10px">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <span style="font-size:11px;color:var(--muted);font-weight:700">OR</span>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+        <p style="font-size:12px;font-weight:700;color:var(--muted);text-align:center;line-height:1.6;margin-bottom:8px">Sign in with your Replit account</p>
         <div class="login-error" id="login-error" style="width:100%;text-align:center">Access not granted. Contact your administrator.</div>
         <a href="/api/login" id="replit-signin-btn" class="btn-primary btn-blue" style="display:flex;align-items:center;justify-content:center;gap:10px;text-decoration:none;color:#fff;width:100%">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 3a7 7 0 110 14A7 7 0 0112 5zm0 2a5 5 0 100 10A5 5 0 0012 7zm0 2a3 3 0 110 6 3 3 0 010-6z"/></svg>
@@ -1324,6 +1343,50 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
     <p class="login-footer" style="margin-top:14px">Powered by <a href="https://cal.marketing" target="_blank" rel="noopener">CAL Marketing</a></p>
   </div>
+</div>
+
+<!-- DRIVER DASHBOARD — shown only for role=driver, no sidebar/nav -->
+<div id="s-driver-home" style="display:none;min-height:100vh;background:var(--page);padding:24px 16px;max-width:480px;margin:0 auto">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">
+    <div>
+      <div style="font-size:22px;font-weight:900" id="dh-greeting">Hey there &#x1F44B;</div>
+      <div style="font-size:13px;color:var(--muted)" id="dh-account"></div>
+    </div>
+    <button onclick="driverLogout()" style="background:var(--border);border:none;border-radius:8px;padding:8px 12px;color:var(--muted);font-size:12px;cursor:pointer">Sign Out</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
+    <div style="background:var(--card);border-radius:12px;padding:16px;text-align:center">
+      <div id="dh-today" style="font-size:32px;font-weight:900;color:var(--gold)">&#x2014;</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Today</div>
+    </div>
+    <div style="background:var(--card);border-radius:12px;padding:16px;text-align:center">
+      <div id="dh-week" style="font-size:32px;font-weight:900;color:var(--gold)">&#x2014;</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">This Week</div>
+    </div>
+    <div style="background:var(--card);border-radius:12px;padding:16px;text-align:center">
+      <div id="dh-month" style="font-size:32px;font-weight:900;color:var(--gold)">&#x2014;</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">This Month</div>
+    </div>
+    <div style="background:var(--card);border-radius:12px;padding:16px;text-align:center">
+      <div id="dh-alltime" style="font-size:32px;font-weight:900;color:var(--gold)">&#x2014;</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">All Time</div>
+    </div>
+  </div>
+  <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px;text-align:center">
+    <div id="dh-rank" style="font-size:18px;font-weight:800;margin-bottom:4px">Loading rank...</div>
+    <div style="font-size:12px;color:var(--muted)">Monthly Leaderboard</div>
+  </div>
+  <div style="background:var(--card);border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:8px">30-Day Activity</div>
+    <div id="dh-chart" style="height:60px;display:flex;align-items:flex-end;gap:2px"></div>
+  </div>
+  <div style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px">Last tap: <span id="dh-last">&#x2014;</span></div>
+  <button id="dh-review-btn" onclick="driverGetReview()" style="width:100%;padding:16px;background:var(--gold);border:none;border-radius:12px;font-size:16px;font-weight:900;color:#000;cursor:pointer;margin-bottom:12px">
+    &#x2B50; Get a Google Review
+  </button>
+  <button onclick="loadDriverHome()" style="width:100%;padding:12px;background:var(--card);border:none;border-radius:12px;font-size:13px;color:var(--muted);cursor:pointer">
+    &#x21BB; Refresh Stats
+  </button>
 </div>
 
 <!-- ONBOARDING (client / admin) -->
@@ -5482,6 +5545,36 @@ window.addEventListener('DOMContentLoaded',function(){
       if(err) err.classList.add('show');
     }
   })();
+  // ── Check for existing CAL-native session token first ──
+  (function(){
+    var existingToken = null;
+    try { existingToken = localStorage.getItem('cal-meta-session-token'); } catch(e){}
+    if (existingToken) {
+      try {
+        var parts = existingToken.split('.');
+        if (parts.length === 2) {
+          var payload = JSON.parse(atob(parts[0].replace(/-/g,'+').replace(/_/g,'/')));
+          if (payload && payload.exp && Date.now() < payload.exp) {
+            var calRole = payload.calRole || payload.role || 'client';
+            if (calRole === 'driver') {
+              // Restore driver session immediately
+              try { localStorage.setItem('cal-user-role', 'driver'); } catch(e){}
+              try { localStorage.setItem('cal-driver-name', payload.driverName || ''); } catch(e){}
+              try { localStorage.setItem('cal-display-name', payload.displayName || ''); } catch(e){}
+              if (payload.accounts && payload.accounts[0]) {
+                try { localStorage.setItem('cal-current-acct', payload.accounts[0]); } catch(e){}
+              }
+              document.addEventListener('DOMContentLoaded', function(){ showDriverDashboard(); });
+              return; // skip Replit auth check
+            }
+          } else {
+            // Token expired — clear it
+            try { localStorage.removeItem('cal-meta-session-token'); } catch(e){}
+          }
+        }
+      } catch(e) {}
+    }
+
   // Check for existing Replit session — skip login screen if already authenticated
   fetch('/api/auth/user',{credentials:'include'})
     .then(function(r){ return (r.ok||r.status===403)?r.json():null; })
@@ -5502,12 +5595,180 @@ window.addEventListener('DOMContentLoaded',function(){
       }
     })
     .catch(function(){});
+  })();
 });
 
 // ============ LOGIN ============
 function doLogin(){
   window.location.href='/api/login';
 }
+
+// ── CAL-native login (email + password) ──
+function calDoLogin(){
+  var emailEl = document.getElementById('cal-login-email');
+  var pwEl = document.getElementById('cal-login-pw');
+  var errEl = document.getElementById('cal-login-error');
+  var btn = document.getElementById('cal-login-btn');
+  var email = emailEl ? emailEl.value.trim() : '';
+  var pw = pwEl ? pwEl.value : '';
+  if (!email || !pw) {
+    if (errEl) { errEl.textContent = 'Please enter your email and password.'; errEl.style.display = 'block'; }
+    return;
+  }
+  if (errEl) errEl.style.display = 'none';
+  if (btn) { btn.textContent = 'Signing in…'; btn.disabled = true; }
+  fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email, password: pw })
+  })
+  .then(function(r){ return r.json().then(function(d){ return { status: r.status, data: d }; }); })
+  .then(function(result){
+    if (btn) { btn.textContent = 'Sign In →'; btn.disabled = false; }
+    var data = result.data;
+    if (result.status !== 200 || !data.token) {
+      var msg = 'Invalid email or password.';
+      if (result.status === 429) msg = 'Too many attempts. Try again in ' + (data.remaining || 900) + ' seconds.';
+      if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+      return;
+    }
+    // Store token and user info
+    try { localStorage.setItem('cal-meta-session-token', data.token); } catch(e){}
+    try { localStorage.setItem('cal-current-acct', data.accounts && data.accounts[0] ? data.accounts[0] : email); } catch(e){}
+    try { localStorage.setItem('cal-user-role', data.calRole || 'client'); } catch(e){}
+    try { localStorage.setItem('cal-driver-name', data.driverName || ''); } catch(e){}
+    try { localStorage.setItem('cal-display-name', data.displayName || ''); } catch(e){}
+    var calRole = data.calRole || data.role || 'client';
+    if (calRole === 'driver') {
+      showDriverDashboard();
+    } else if (calRole === 'superadmin') {
+      // Treat superadmin as agency in existing app flow
+      currentUser = { email: email, name: data.displayName || email.split('@')[0], initials: (data.displayName||email).slice(0,2).toUpperCase(), role: 'agency', companyId: 'default' };
+      currentRole = 'agency';
+      launchApp();
+    } else {
+      // client
+      currentUser = { email: email, name: data.displayName || email.split('@')[0], initials: (data.displayName||email).slice(0,2).toUpperCase(), role: 'admin', companyId: data.accounts && data.accounts[0] ? data.accounts[0] : email };
+      currentRole = 'admin';
+      currentCompanyId = data.accounts && data.accounts[0] ? data.accounts[0] : email;
+      launchApp();
+    }
+  })
+  .catch(function(){
+    if (btn) { btn.textContent = 'Sign In →'; btn.disabled = false; }
+    if (errEl) { errEl.textContent = 'Connection error. Please try again.'; errEl.style.display = 'block'; }
+  });
+}
+
+// ── Driver Dashboard ──
+function showDriverDashboard(){
+  document.querySelectorAll('.screen, #app, #app-shell, #nav-sidebar, #msg-fab, #login-view, #onboarding, #ob-loading').forEach(function(el){ if(el) el.style.display='none'; });
+  var dh = document.getElementById('s-driver-home');
+  if (dh) dh.style.display = 'block';
+  loadDriverHome();
+}
+
+function loadDriverHome(){
+  var token = '';
+  try { token = localStorage.getItem('cal-meta-session-token') || ''; } catch(e){}
+  var driverName = '';
+  try { driverName = localStorage.getItem('cal-driver-name') || ''; } catch(e){}
+  var account = '';
+  try { account = localStorage.getItem('cal-current-acct') || ''; } catch(e){}
+  var firstName = driverName.split(' ')[0] || 'there';
+  var greeting = document.getElementById('dh-greeting');
+  if (greeting) greeting.textContent = 'Hey ' + firstName + ' 👋';
+  var acctEl = document.getElementById('dh-account');
+  if (acctEl) acctEl.textContent = account;
+  fetch('/api/drivers/my-stats', { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(r){
+      if (r.status === 401) { driverLogout(); return null; }
+      return r.json();
+    })
+    .then(function(data){
+      if (!data) return;
+      var todayEl = document.getElementById('dh-today'); if(todayEl) todayEl.textContent = data.taps.today;
+      var weekEl = document.getElementById('dh-week'); if(weekEl) weekEl.textContent = data.taps.week;
+      var monthEl = document.getElementById('dh-month'); if(monthEl) monthEl.textContent = data.taps.month;
+      var alltimeEl = document.getElementById('dh-alltime'); if(alltimeEl) alltimeEl.textContent = data.taps.alltime;
+      var rankEl = document.getElementById('dh-rank');
+      if (rankEl) {
+        var medals = ['🥇','🥈','🥉'];
+        var medal = medals[data.rank - 1] || ('#' + data.rank);
+        rankEl.textContent = medal + ' Ranked ' + data.rank + ' of ' + data.totalDrivers + ' drivers this month';
+      }
+      var lastEl = document.getElementById('dh-last');
+      if (lastEl) lastEl.textContent = data.lastTap ? (typeof timeAgo === 'function' ? timeAgo(data.lastTap) : data.lastTap.slice(0,16).replace('T',' ')) : 'No taps yet';
+      if (data.daily) {
+        var days = Object.entries(data.daily);
+        var maxDay = Math.max.apply(null, days.map(function(d){ return d[1]; }).concat([1]));
+        var chart = document.getElementById('dh-chart');
+        if (chart) chart.innerHTML = days.map(function(d){
+          var date = d[0], count = d[1];
+          return '<div style="flex:1;background:' + (count > 0 ? 'var(--gold)' : 'var(--border)') + ';opacity:' + (count > 0 ? '0.85' : '0.3') + ';height:' + Math.max(4, Math.round((count / maxDay) * 56)) + 'px;border-radius:2px 2px 0 0" title="' + date + ': ' + count + '"></div>';
+        }).join('');
+      }
+      // Store review link for button
+      if (data.reviewLink) {
+        var btn = document.getElementById('dh-review-btn');
+        if (btn) btn.setAttribute('data-review-link', data.reviewLink);
+      }
+    })
+    .catch(function(){
+      var todayEl = document.getElementById('dh-today'); if(todayEl) todayEl.textContent = '—';
+    });
+}
+
+function driverGetReview(){
+  var btn = document.getElementById('dh-review-btn');
+  var reviewLink = btn ? btn.getAttribute('data-review-link') : null;
+  if (reviewLink) { window.open(reviewLink, '_blank'); return; }
+  // Fallback: fetch from account config
+  var token = '';
+  try { token = localStorage.getItem('cal-meta-session-token') || ''; } catch(e){}
+  var account = '';
+  try { account = localStorage.getItem('cal-current-acct') || ''; } catch(e){}
+  fetch('/api/account/config?account=' + encodeURIComponent(account), { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(r){ return r.json(); })
+    .then(function(cfg){
+      var placeId = cfg.placeId || cfg.googlePlaceId;
+      if (placeId) { window.open('https://search.google.com/local/writereview?placeid=' + placeId, '_blank'); }
+      else { alert('Review link not configured yet. Ask your manager to set it up.'); }
+    })
+    .catch(function(){ alert('Could not load review link.'); });
+}
+
+function driverLogout(){
+  try { localStorage.removeItem('cal-meta-session-token'); } catch(e){}
+  try { localStorage.removeItem('cal-user-role'); } catch(e){}
+  try { localStorage.removeItem('cal-driver-name'); } catch(e){}
+  try { localStorage.removeItem('cal-current-acct'); } catch(e){}
+  try { localStorage.removeItem('cal-display-name'); } catch(e){}
+  window.location.reload();
+}
+
+// ── Global 401 session-expiry handler ──
+(function(){
+  var _origFetch = window.fetch;
+  window.fetch = function(url, opts){
+    return _origFetch.apply(this, arguments).then(function(r){
+      if (r.status === 401) {
+        var calRole = '';
+        try { calRole = localStorage.getItem('cal-user-role') || ''; } catch(e){}
+        if (calRole === 'driver') {
+          // Clone response so it can still be read downstream
+          r.clone().json().then(function(d){
+            if (d && (d.error === 'UNAUTHORIZED' || d.error === 'TOKEN_EXPIRED')) {
+              showToast && showToast('Session expired — please sign in again.', 'gold');
+              setTimeout(driverLogout, 1500);
+            }
+          }).catch(function(){});
+        }
+      }
+      return r;
+    });
+  };
+})();
 
 var _pendingLogin=null;
 var _twoFACode='';
@@ -14974,6 +15235,9 @@ function sendWaReply() {
       window.doLogout=function(){
         _setMetaToken(null);
         _syncMetaLastRun={};
+        try { localStorage.removeItem('cal-user-role'); } catch(e){}
+        try { localStorage.removeItem('cal-driver-name'); } catch(e){}
+        try { localStorage.removeItem('cal-display-name'); } catch(e){}
         _origDoLogout.apply(this,arguments);
       };
     }
