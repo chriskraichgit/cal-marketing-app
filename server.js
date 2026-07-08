@@ -1695,6 +1695,52 @@ window.location.replace('/');
 
 
   // ── CAL-native auth login (email + password → token with role) ──
+  // ── /api/auth/user — CAL auth check (intercepted before Replit) ──
+  // Frontend calls this on every page load. We own this endpoint.
+  // If request has a valid CAL token → return the user identity from it.
+  // If no token or expired → return 401 so frontend shows login screen.
+  if (urlPath === '/api/auth/user' && req.method === 'GET') {
+    const tok = extractBearerToken(req);
+    if (!tok) {
+      // Also check query param for legacy support
+      const qsTok = qs.token || '';
+      const pl2 = qsTok ? verifyMetaToken(qsTok) : null;
+      if (pl2 && pl2.exp && Date.now() < pl2.exp) {
+        const role = (pl2.calRole === 'superadmin') ? 'agency' : (pl2.calRole || pl2.role || 'client');
+        jsonResponse(res, 200, {
+          email: pl2.email || 'admin@cal.marketing',
+          name: pl2.displayName || 'Agency Admin',
+          initials: (pl2.displayName || 'AA').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2) || 'AA',
+          role,
+          calRole: role,
+          companyId: role === 'agency' ? 'agency' : (pl2.accounts && pl2.accounts[0] ? pl2.accounts[0] : 'default'),
+          accounts: pl2.accounts || [],
+          title: pl2.title || ''
+        });
+        return;
+      }
+      jsonResponse(res, 401, { error: 'NO_TOKEN' });
+      return;
+    }
+    const payload = verifyMetaToken(tok);
+    if (!payload || !payload.exp || Date.now() >= payload.exp) {
+      jsonResponse(res, 401, { error: 'TOKEN_EXPIRED' });
+      return;
+    }
+    const role = (payload.calRole === 'superadmin') ? 'agency' : (payload.calRole || payload.role || 'client');
+    jsonResponse(res, 200, {
+      email: payload.email || '',
+      name: payload.displayName || payload.email || '',
+      initials: (payload.displayName || payload.email || 'U').split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2) || 'U',
+      role,
+      calRole: role,
+      companyId: role === 'agency' ? 'agency' : (payload.accounts && payload.accounts[0] ? payload.accounts[0] : 'default'),
+      accounts: payload.accounts || [],
+      title: payload.title || ''
+    });
+    return;
+  }
+
   if (urlPath === '/api/auth/login' && req.method === 'POST') {
     await handleMetaLogin(req, res);
     return;
