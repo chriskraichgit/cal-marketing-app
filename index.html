@@ -15824,6 +15824,9 @@ function sendWaReply() {
         try { localStorage.removeItem('cal-user-role'); } catch(e){}
         try { localStorage.removeItem('cal-driver-name'); } catch(e){}
         try { localStorage.removeItem('cal-display-name'); } catch(e){}
+        try { localStorage.removeItem('cal-current-acct-id'); } catch(e){}
+        try { localStorage.removeItem('cal-current-acct'); } catch(e){}
+        try { localStorage.removeItem('cal-current-company'); } catch(e){}
         _origDoLogout.apply(this,arguments);
       };
     }
