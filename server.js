@@ -1603,6 +1603,25 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ── Agency PIN login ──
+  if (urlPath === '/api/agency-pin' && req.method === 'POST') {
+    let body = '';
+    req.on('data', c => body += c);
+    await new Promise(r => req.on('end', r));
+    let pin = '';
+    try { pin = JSON.parse(body).pin || ''; } catch(e) {}
+    const AGENCY_PIN = process.env.AGENCY_PIN || '1234';
+    if (pin !== AGENCY_PIN) {
+      jsonResponse(res, 401, { ok: false, error: 'Invalid PIN' });
+      return;
+    }
+    const serverAccounts = ['apexlegal', 'greencollаr', 'willydiamond', 'housesautobody', 'info@unitedsewerservice.com'];
+    const payload = { email: 'admin@cal.marketing', role: 'superadmin', calRole: 'superadmin', accounts: serverAccounts, displayName: 'Agency Admin', exp: Date.now() + TOKEN_TTL_MS };
+    const sessionToken = signMetaToken(payload);
+    jsonResponse(res, 200, { ok: true, token: sessionToken, role: 'superadmin', displayName: 'Agency Admin', email: 'admin@cal.marketing' });
+    return;
+  }
+
   // ── Agency login — direct superadmin session (Replit-hosted, owner only) ──
   if (urlPath === '/api/login' && req.method === 'GET') {
     const serverAccounts = ['apexlegal', 'greencollаr', 'willydiamond', 'housesautobody', 'info@unitedsewerservice.com'];
