@@ -8373,15 +8373,6 @@ function acctScopedKey(base){
 // Rebuild sidebar/nav button visibility for current role + account
 function rebuildNavForRole(){
   var role = window.currentRole || currentRole || 'client';
-  var acctId = window.currentAcctId || 'a1';
-  var perms;
-  if(ACCOUNT_PERMISSIONS && ACCOUNT_PERMISSIONS[acctId] && ACCOUNT_PERMISSIONS[acctId][role]){
-    perms = ACCOUNT_PERMISSIONS[acctId][role];
-  } else if(DEFAULT_PERMISSIONS[role]) {
-    perms = DEFAULT_PERMISSIONS[role];
-  } else {
-    perms = DEFAULT_PERMISSIONS.client || [];
-  }
   // Show/hide nav buttons based on canView() — action-level permission check
   document.querySelectorAll('.nav-btn[data-screen]').forEach(function(btn){
     var sc = btn.getAttribute('data-screen');
@@ -8749,6 +8740,8 @@ function refreshTenantContext(id){
   var pageSub=document.getElementById('page-sub'); if(pageSub){ pageSub.textContent=a.name; pageSub.style.display=''; }
   // Refresh all tenant-dependent screens
   if(typeof refreshScreenForAccount==='function') refreshScreenForAccount(a);
+  // Rebuild nav permission visibility for the new account context
+  if(typeof rebuildNavForRole==='function') rebuildNavForRole();
 }
 function setCurrentAcct(id){
   currentAcctId=id;
