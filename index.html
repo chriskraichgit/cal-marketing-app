@@ -8318,6 +8318,8 @@ function setCurrentAcct(id){
   currentAcctId=id;
   var a=accounts.find(function(x){ return x.id===id; });
   if(!a) return;
+  // saveAcct sets cal-current-acct (server key) + cal-current-acct-id (display id)
+  if(typeof saveAcct==='function') saveAcct(id);
   var swAvatar=document.getElementById('acct-sw-avatar');
   var swName=document.getElementById('acct-sw-name');
   if(swAvatar){ swAvatar.textContent=a.initials; swAvatar.style.background=a.color; }
@@ -11796,7 +11798,11 @@ function sendWaReply() {
   function initials(name){ return (name||'CA').split(/\s+/).map(function(w){return w[0]||'';}).join('').toUpperCase().slice(0,2)||'CA'; }
   function slug(str){ return String(str||'local').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'local'; }
   function acctKey(){
-    if(window.currentRole==='agency'||window.currentRole==='test') return window.currentAcctId||'a1';
+    if(window.currentRole==='agency'||window.currentRole==='test'){
+      // Use server key for data isolation (e.g. 'apexlegal', 'willydiamond')
+      try{ var sk=localStorage.getItem('cal-current-acct'); if(sk) return sk; }catch(e){}
+      return window.currentAcctId||'a1';
+    }
     return window.currentUser&&window.currentUser.email ? window.currentUser.email : 'local';
   }
   function metaAll(){ return safeJSON('cal-account-meta',{}); }
