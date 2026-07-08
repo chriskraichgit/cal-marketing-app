@@ -49,7 +49,8 @@ const SERVER_USERS = {
   'info@unitedsewerservice.com':   { pwHash: 'c87b71ef7b9882f404028ae7d5431cc6fdb73b64cfe52e9dc0501ff3dbe1a580', role: 'admin',       calRole: 'client',     accounts: ['info@unitedsewerservice.com'] },
 };
 
-const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (non-driver)
+const DRIVER_TOKEN_TTL_MS = 365 * 24 * 60 * 60 * 1000; // 1 year for drivers
 
 // Secret is sourced from the environment (set CAL_META_SECRET in production for persistence).
 // If absent, a random ephemeral secret is generated at startup — tokens will not survive a restart.
@@ -219,7 +220,8 @@ async function handleMetaLogin(req, res) {
   const accounts = dynUser.accounts || [email];
   const displayName = dynUser.displayName || dynUser.driverName || email.split('@')[0];
   const driverName = dynUser.driverName || null;
-  const payload = { email, role: calRole, calRole, accounts, displayName, driverName, exp: Date.now() + TOKEN_TTL_MS };
+  const ttl = calRole === 'driver' ? DRIVER_TOKEN_TTL_MS : TOKEN_TTL_MS;
+  const payload = { email, role: calRole, calRole, accounts, displayName, driverName, exp: Date.now() + ttl };
   const token = signMetaToken(payload);
   jsonResponse(res, 200, { token, email, calRole, role: calRole, accounts, displayName, driverName });
 }
@@ -303,6 +305,292 @@ function parseQueryString(url) {
     }
     return out;
   } catch (e) { return {}; }
+}
+
+// ── Resend email helper ──
+async function sendEmail({ to, subject, html }) {
+  const RESEND_API_KEY = process.env.RESEND_API_KEY;
+  if (!RESEND_API_KEY) {
+    console.warn('[email] RESEND_API_KEY not set — skipping email to', to);
+    return { ok: false, reason: 'NO_API_KEY' };
+  }
+  return new Promise((resolve) => {
+    const body = JSON.stringify({
+      from: 'CAL OS <noreply@cal.marketing>',
+      to: [to],
+      subject,
+      html
+    });
+    const opts = {
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    };
+    const r = require('https').request(opts, (res2) => {
+      let d = '';
+      res2.on('data', c => d += c);
+      res2.on('end', () => {
+        try {
+          const parsed = JSON.parse(d);
+          if (res2.statusCode >= 200 && res2.statusCode < 300) {
+            resolve({ ok: true, id: parsed.id });
+          } else {
+            console.error('[email] Resend error', res2.statusCode, d);
+            resolve({ ok: false, reason: d });
+          }
+        } catch(e) { resolve({ ok: false, reason: 'PARSE_ERROR' }); }
+      });
+    });
+    r.on('error', (e) => { console.error('[email] request error', e); resolve({ ok: false, reason: e.message }); });
+    r.write(body);
+    r.end();
+  });
+}
+
+// ── Magic Link: Request ──
+// POST /api/auth/magic-link  { email }
+async function handleMagicLinkRequest(req, res) {
+  let body;
+  try {
+    const raw = await readRequestBody(req, 16 * 1024);
+    body = JSON.parse(raw.toString('utf8'));
+  } catch (e) { return jsonResponse(res, 400, { error: 'INVALID_BODY' }); }
+
+  const email = (body && typeof body.email === 'string') ? body.email.trim().toLowerCase() : '';
+  if (!email) return jsonResponse(res, 400, { error: 'MISSING_EMAIL' });
+
+  // Only allow known users (dynamic _users — mainly drivers)
+  const store = loadMetaStore();
+  const dynUsers = store['_users'] || {};
+  const user = dynUsers[email];
+  // Also allow SERVER_USERS (superadmin/client)
+  const staticUser = SERVER_USERS[email];
+  if (!user && !staticUser) {
+    // Always return OK to prevent user enumeration
+    return jsonResponse(res, 200, { ok: true });
+  }
+
+  // Generate a one-time token (32 random bytes, 15-min TTL)
+  const token = crypto.randomBytes(32).toString('hex');
+  const magicLinks = store['_magicLinks'] || {};
+  magicLinks[token] = {
+    email,
+    exp: Date.now() + 15 * 60 * 1000,
+    used: false
+  };
+  store['_magicLinks'] = magicLinks;
+  saveMetaStoreQueued(store);
+
+  // Determine the app base URL
+  const host = process.env.REPLIT_DEPLOYMENT_URL
+    || process.env.APP_BASE_URL
+    || `https://${process.env.REPLIT_DEV_DOMAIN || 'your-app.replit.app'}`;
+  const link = `${host}/api/auth/verify?token=${token}`;
+
+  const displayName = (user && (user.displayName || user.driverName)) || (staticUser && staticUser.displayName) || email.split('@')[0];
+  await sendEmail({
+    to: email,
+    subject: 'Your CAL OS sign-in link',
+    html: `
+      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff">
+        <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a381eca1c5d711b35cfdfbb.png"
+             alt="CAL Marketing" style="height:40px;margin-bottom:24px;display:block">
+        <h2 style="font-size:22px;font-weight:900;color:#111;margin:0 0 8px">Sign in to CAL OS</h2>
+        <p style="font-size:15px;color:#555;margin:0 0 28px">Hey ${displayName}, click the button below to sign in. This link expires in 15 minutes and can only be used once.</p>
+        <a href="${link}" style="display:inline-block;background:#C9A84C;color:#000;font-weight:900;font-size:16px;padding:14px 32px;border-radius:10px;text-decoration:none;letter-spacing:.02em">Sign In to CAL OS →</a>
+        <p style="font-size:12px;color:#999;margin:28px 0 0">If you didn't request this, you can safely ignore it. This link will expire on its own.</p>
+        <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+        <p style="font-size:11px;color:#bbb;margin:0">CAL Marketing · Client Operating System</p>
+      </div>
+    `
+  });
+
+  return jsonResponse(res, 200, { ok: true });
+}
+
+// ── Magic Link: Verify ──
+// GET /api/auth/verify?token=xxx
+async function handleMagicLinkVerify(req, res, qs) {
+  const token = (qs.token || '').trim();
+  if (!token) return jsonResponse(res, 400, { error: 'MISSING_TOKEN' });
+
+  const store = loadMetaStore();
+  const magicLinks = store['_magicLinks'] || {};
+  const link = magicLinks[token];
+
+  if (!link) return sendHtmlError(res, 'Invalid or expired sign-in link.');
+  if (link.used) return sendHtmlError(res, 'This sign-in link has already been used.');
+  if (Date.now() > link.exp) {
+    delete magicLinks[token];
+    store['_magicLinks'] = magicLinks;
+    saveMetaStoreQueued(store);
+    return sendHtmlError(res, 'This sign-in link has expired. Please request a new one.');
+  }
+
+  // Mark used
+  link.used = true;
+  store['_magicLinks'] = magicLinks;
+  saveMetaStoreQueued(store);
+
+  const email = link.email;
+  // Look up user to build token payload
+  const dynUsers = store['_users'] || {};
+  const user = dynUsers[email] || SERVER_USERS[email];
+  if (!user) return sendHtmlError(res, 'Account not found.');
+
+  const calRole = user.calRole || user.role || 'client';
+  const accounts = user.accounts || [email];
+  const displayName = user.displayName || user.driverName || email.split('@')[0];
+  const driverName = user.driverName || null;
+  const ttl = calRole === 'driver' ? DRIVER_TOKEN_TTL_MS : TOKEN_TTL_MS;
+  const payload = { email, role: calRole, calRole, accounts, displayName, driverName, exp: Date.now() + ttl };
+  const sessionToken = signMetaToken(payload);
+
+  // Redirect to app with token in hash — the SPA picks it up
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Signing you in…</title></head>
+<body style="font-family:sans-serif;text-align:center;padding-top:80px;background:#0a0a0a;color:#fff">
+<p style="font-size:18px;font-weight:700">Signing you in…</p>
+<script>
+try { localStorage.setItem('cal-meta-session-token', ${JSON.stringify(sessionToken)}); } catch(e){}
+try { localStorage.setItem('cal-user-role', ${JSON.stringify(calRole)}); } catch(e){}
+try { localStorage.setItem('cal-driver-name', ${JSON.stringify(driverName || '')}); } catch(e){}
+try { localStorage.setItem('cal-display-name', ${JSON.stringify(displayName)}); } catch(e){}
+try { localStorage.setItem('cal-current-acct', ${JSON.stringify(accounts[0] || '')}); } catch(e){}
+window.location.replace('/');
+</script>
+</body></html>`;
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+function sendHtmlError(res, msg) {
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Sign-in Error</title></head>
+<body style="font-family:sans-serif;text-align:center;padding-top:80px;background:#0a0a0a;color:#fff">
+<p style="font-size:20px;font-weight:900;color:#e53935">Sign-in Error</p>
+<p style="font-size:15px;color:#aaa;margin:12px 0 32px">${msg}</p>
+<a href="/" style="color:#C9A84C;font-weight:700;text-decoration:none">← Back to Login</a>
+</body></html>`;
+  res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+// ── Create Client Account (superadmin only) ──
+async function handleCreateClient(req, res, payload) {
+  if (payload.role !== 'superadmin' && payload.calRole !== 'superadmin') {
+    return jsonResponse(res, 403, { error: 'FORBIDDEN' });
+  }
+  let body;
+  try {
+    const raw = await readRequestBody(req, 32 * 1024);
+    body = JSON.parse(raw.toString('utf8'));
+  } catch (e) { return jsonResponse(res, 400, { error: 'INVALID_BODY' }); }
+  const { email, password, displayName, accounts } = body || {};
+  if (!email || !password) return jsonResponse(res, 400, { error: 'MISSING_FIELDS' });
+  const store = loadMetaStore();
+  const users = store['_users'] || {};
+  if (users[email.toLowerCase()] || SERVER_USERS[email.toLowerCase()]) {
+    return jsonResponse(res, 409, { error: 'USER_EXISTS' });
+  }
+  const passwordHash = hashPassword(password);
+  users[email.toLowerCase()] = {
+    email: email.toLowerCase(),
+    passwordHash,
+    accounts: Array.isArray(accounts) && accounts.length ? accounts : [email.toLowerCase()],
+    displayName: displayName || email.split('@')[0],
+    role: 'client',
+    calRole: 'client',
+    driverName: null,
+    createdAt: new Date().toISOString()
+  };
+  store['_users'] = users;
+  saveMetaStoreQueued(store);
+  return jsonResponse(res, 200, { ok: true, email: email.toLowerCase(), role: 'client' });
+}
+
+// ── List Users (superadmin only) ──
+async function handleListUsers(req, res, payload) {
+  if (payload.role !== 'superadmin' && payload.calRole !== 'superadmin') {
+    return jsonResponse(res, 403, { error: 'FORBIDDEN' });
+  }
+  const store = loadMetaStore();
+  const dynUsers = store['_users'] || {};
+  const list = Object.values(dynUsers).map(u => ({
+    email: u.email,
+    displayName: u.displayName,
+    driverName: u.driverName || null,
+    role: u.calRole || u.role,
+    accounts: u.accounts,
+    createdAt: u.createdAt
+  }));
+  return jsonResponse(res, 200, { users: list });
+}
+
+// ── Delete User (superadmin only) ──
+async function handleDeleteUser(req, res, payload) {
+  if (payload.role !== 'superadmin' && payload.calRole !== 'superadmin') {
+    return jsonResponse(res, 403, { error: 'FORBIDDEN' });
+  }
+  let body;
+  try {
+    const raw = await readRequestBody(req, 8 * 1024);
+    body = JSON.parse(raw.toString('utf8'));
+  } catch (e) { return jsonResponse(res, 400, { error: 'INVALID_BODY' }); }
+  const email = (body && body.email) ? body.email.toLowerCase() : '';
+  if (!email) return jsonResponse(res, 400, { error: 'MISSING_EMAIL' });
+  const store = loadMetaStore();
+  const users = store['_users'] || {};
+  if (!users[email]) return jsonResponse(res, 404, { error: 'USER_NOT_FOUND' });
+  delete users[email];
+  store['_users'] = users;
+  saveMetaStoreQueued(store);
+  return jsonResponse(res, 200, { ok: true });
+}
+
+// ── Send Onboarding Email (superadmin: after creating user) ──
+async function handleSendOnboardingEmail(req, res, payload) {
+  if (payload.role !== 'superadmin' && payload.calRole !== 'superadmin') {
+    return jsonResponse(res, 403, { error: 'FORBIDDEN' });
+  }
+  let body;
+  try {
+    const raw = await readRequestBody(req, 16 * 1024);
+    body = JSON.parse(raw.toString('utf8'));
+  } catch (e) { return jsonResponse(res, 400, { error: 'INVALID_BODY' }); }
+  const { email, password, role: userRole, displayName } = body || {};
+  if (!email) return jsonResponse(res, 400, { error: 'MISSING_EMAIL' });
+
+  const host = process.env.REPLIT_DEPLOYMENT_URL
+    || process.env.APP_BASE_URL
+    || `https://${process.env.REPLIT_DEV_DOMAIN || 'your-app.replit.app'}`;
+
+  const isDriver = userRole === 'driver';
+  const subject = isDriver
+    ? `You're invited to CAL OS — ${displayName || 'your account is ready'}`
+    : `Your CAL OS account is ready`;
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff">
+      <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a381eca1c5d711b35cfdfbb.png"
+           alt="CAL Marketing" style="height:40px;margin-bottom:24px;display:block">
+      <h2 style="font-size:22px;font-weight:900;color:#111;margin:0 0 8px">Welcome to CAL OS</h2>
+      <p style="font-size:15px;color:#555;margin:0 0 20px">Hey ${displayName || email.split('@')[0]}, your ${isDriver ? 'driver' : 'client'} account has been created.</p>
+      <div style="background:#f9f9f9;border-radius:10px;padding:20px;margin-bottom:24px">
+        <p style="margin:0 0 8px;font-size:13px;color:#555"><strong>Login URL:</strong> <a href="${host}" style="color:#C9A84C">${host}</a></p>
+        <p style="margin:0 0 8px;font-size:13px;color:#555"><strong>Email:</strong> ${email}</p>
+        ${password ? `<p style="margin:0;font-size:13px;color:#555"><strong>Temporary password:</strong> ${password}</p>` : ''}
+      </div>
+      <a href="${host}" style="display:inline-block;background:#C9A84C;color:#000;font-weight:900;font-size:16px;padding:14px 32px;border-radius:10px;text-decoration:none">Sign In to CAL OS →</a>
+      <p style="font-size:12px;color:#999;margin:28px 0 0">If you have any issues logging in, reply to this email or contact your account manager.</p>
+    </div>
+  `;
+
+  const result = await sendEmail({ to: email, subject, html });
+  return jsonResponse(res, 200, { ok: result.ok, reason: result.reason || null });
 }
 
 // ── Create Driver Account (superadmin only) ──
@@ -1387,10 +1675,39 @@ const server = http.createServer(async (req, res) => {
   if (urlPath === '/api/reviews/places' && req.method === 'GET') { await handlePlacesReviews(res, qs); return; }
 
   // ── Driver Management ──
+  // ── Magic Link ──
+  if (urlPath === '/api/auth/magic-link' && req.method === 'POST') {
+    await handleMagicLinkRequest(req, res); return;
+  }
+  if (urlPath === '/api/auth/verify' && req.method === 'GET') {
+    await handleMagicLinkVerify(req, res, qs); return;
+  }
+
+  // ── User Management (superadmin) ──
   if (urlPath === '/api/users/create-driver' && req.method === 'POST') {
     const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null;
     if (!pl) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
     await handleCreateDriver(req, res, pl); return;
+  }
+  if (urlPath === '/api/users/create-client' && req.method === 'POST') {
+    const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null;
+    if (!pl) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    await handleCreateClient(req, res, pl); return;
+  }
+  if (urlPath === '/api/users/list' && req.method === 'GET') {
+    const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null;
+    if (!pl) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    await handleListUsers(req, res, pl); return;
+  }
+  if (urlPath === '/api/users/delete' && req.method === 'POST') {
+    const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null;
+    if (!pl) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    await handleDeleteUser(req, res, pl); return;
+  }
+  if (urlPath === '/api/users/send-onboarding' && req.method === 'POST') {
+    const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null;
+    if (!pl) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    await handleSendOnboardingEmail(req, res, pl); return;
   }
 
   if (urlPath === '/api/drivers/my-stats' && req.method === 'GET') {
