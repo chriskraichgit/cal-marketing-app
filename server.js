@@ -30,9 +30,9 @@ const ACCOUNT_PLACE_IDS = {
 
 // ── Per-account feature flags ──
 const ACCOUNT_FEATURES = {
-  'info@unitedsewerservice.com': { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false },
-  'greencollар':                 { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false },
-  'willydiamond':                { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false },
+  'info@unitedsewerservice.com': { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false, placeId: 'ChIJvX0LSNPQ3IkRdma8QADGAhY' },
+  'greencollаr':                 { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false, placeId: 'ChIJJ8-biosyw4kR738ilrfxrbU' },
+  'willydiamond':                { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false, placeId: 'ChIJqcP1Ry7XwokRmaR_t8kedZM' },
 };
 const DEFAULT_FEATURES = { nfc: true, reviews: true, drive: true, calendar: true, stripe: true, searchConsole: true };
 
@@ -40,16 +40,16 @@ const DEFAULT_FEATURES = { nfc: true, reviews: true, drive: true, calendar: true
 // Passwords are stored as SHA-256 hashes only — never plaintext.
 // Agency/test roles may access any account key; admin/user roles may only access their own email key.
 const SERVER_USERS = {
-  'chris@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
-  'james@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
-  'matt@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'agency' },
-  'info@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'test'   },
-  'client@apexlegal.com':          { pwHash: '7e166f079a275064a2118127d7102a9471f671acb67a65a2c628684606b5e11f', role: 'admin'  },
-  'staff@apexlegal.com':           { pwHash: '7df64b2903b0ac2dc591ee097c36f4acdae759753bd197eaf11008093e2966ca', role: 'user'   },
-  'info@unitedsewerservice.com':   { pwHash: 'c87b71ef7b9882f404028ae7d5431cc6fdb73b64cfe52e9dc0501ff3dbe1a580', role: 'admin'  },
+  'chris@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollаr','willydiamond'] },
+  'james@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollаr','willydiamond'] },
+  'matt@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollаr','willydiamond'] },
+  'info@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'test',       calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollаr','willydiamond'] },
+  'client@apexlegal.com':          { pwHash: '7e166f079a275064a2118127d7102a9471f671acb67a65a2c628684606b5e11f', role: 'admin',       calRole: 'client',     accounts: ['client@apexlegal.com'] },
+  'staff@apexlegal.com':           { pwHash: '7df64b2903b0ac2dc591ee097c36f4acdae759753bd197eaf11008093e2966ca', role: 'user',        calRole: 'client',     accounts: ['client@apexlegal.com'] },
+  'info@unitedsewerservice.com':   { pwHash: 'c87b71ef7b9882f404028ae7d5431cc6fdb73b64cfe52e9dc0501ff3dbe1a580', role: 'admin',       calRole: 'client',     accounts: ['info@unitedsewerservice.com'] },
 };
 
-const TOKEN_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 // Secret is sourced from the environment (set CAL_META_SECRET in production for persistence).
 // If absent, a random ephemeral secret is generated at startup — tokens will not survive a restart.
@@ -78,7 +78,7 @@ function verifyMetaToken(token) {
 }
 
 function isKeyAllowed(key, payload) {
-  if (payload.role === 'agency' || payload.role === 'test') return true;
+  if (payload.role === 'agency' || payload.role === 'test' || payload.role === 'superadmin' || payload.calRole === 'superadmin') return true;
   return key === payload.email;
 }
 
@@ -128,24 +128,100 @@ function saveMetaStore(store) {
   try { fs.writeFileSync(META_STORE_FILE, JSON.stringify(store)); } catch (e) {}
 }
 
+// ── Write queue (prevents concurrent write corruption) ──
+var _writeQueue = Promise.resolve();
+function saveMetaStoreQueued(store) {
+  _writeQueue = _writeQueue.then(function() {
+    try { fs.writeFileSync(META_STORE_FILE, JSON.stringify(store, null, 2)); } catch(e) { console.error('store write error', e); }
+  });
+  return _writeQueue;
+}
+
+// ── Login rate limiting ──
+const _loginAttempts = {};
+function checkLoginRateLimit(email) {
+  const now = Date.now();
+  const rec = _loginAttempts[email] || { count: 0, lockedUntil: 0 };
+  if (rec.lockedUntil > now) return { locked: true, remaining: Math.ceil((rec.lockedUntil - now) / 1000) };
+  return { locked: false };
+}
+function recordLoginFailure(email) {
+  const rec = _loginAttempts[email] || { count: 0, lockedUntil: 0 };
+  rec.count++;
+  if (rec.count >= 5) { rec.lockedUntil = Date.now() + 15 * 60 * 1000; rec.count = 0; }
+  _loginAttempts[email] = rec;
+}
+function clearLoginAttempts(email) { delete _loginAttempts[email]; }
+
+// ── Simple password hash (SHA-256) ──
+function hashPassword(password) {
+  return crypto.createHash('sha256').update(password).digest('hex');
+}
+
+// ── Helper: metaGet ──
+function metaGet(key) {
+  const store = loadMetaStore();
+  return store[key] !== undefined ? store[key] : null;
+}
+
 async function handleMetaLogin(req, res) {
   let body;
   try {
     const raw = await readRequestBody(req, 64 * 1024);
     body = JSON.parse(raw.toString('utf8'));
   } catch (e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
+
   const email = (body && typeof body.email === 'string') ? body.email.trim().toLowerCase() : '';
   const password = (body && typeof body.password === 'string') ? body.password : '';
-  const user = SERVER_USERS[email];
-  if (!user) { jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return; }
-  const submittedHash = crypto.createHash('sha256').update(password).digest('hex');
-  const hashBuf = Buffer.from(user.pwHash, 'hex');
-  const submitBuf = Buffer.from(submittedHash, 'hex');
-  if (hashBuf.length !== submitBuf.length || !crypto.timingSafeEqual(hashBuf, submitBuf)) {
+
+  // Rate limiting check
+  const rateCheck = checkLoginRateLimit(email);
+  if (rateCheck.locked) {
+    jsonResponse(res, 429, { error: 'TOO_MANY_ATTEMPTS', remaining: rateCheck.remaining });
+    return;
+  }
+
+  // Check SERVER_USERS first
+  const staticUser = SERVER_USERS[email];
+  if (staticUser) {
+    const submittedHash = crypto.createHash('sha256').update(password).digest('hex');
+    const hashBuf = Buffer.from(staticUser.pwHash, 'hex');
+    const submitBuf = Buffer.from(submittedHash, 'hex');
+    if (hashBuf.length !== submitBuf.length || !crypto.timingSafeEqual(hashBuf, submitBuf)) {
+      recordLoginFailure(email);
+      jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return;
+    }
+    clearLoginAttempts(email);
+    const calRole = staticUser.calRole || 'client';
+    const accounts = staticUser.accounts || [email];
+    const displayName = staticUser.displayName || email.split('@')[0];
+    const payload = { email, role: staticUser.role, calRole, accounts, displayName, driverName: null, exp: Date.now() + TOKEN_TTL_MS };
+    const token = signMetaToken(payload);
+    jsonResponse(res, 200, { token, email, calRole, role: staticUser.role, accounts, displayName, driverName: null });
+    return;
+  }
+
+  // Check dynamic _users in meta store (clients and drivers)
+  const store = loadMetaStore();
+  const dynUsers = store['_users'] || {};
+  const dynUser = dynUsers[email];
+  if (!dynUser) {
+    recordLoginFailure(email);
     jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return;
   }
-  const token = signMetaToken({ email, role: user.role, exp: Date.now() + TOKEN_TTL_MS });
-  jsonResponse(res, 200, { token });
+  const submittedHash = crypto.createHash('sha256').update(password).digest('hex');
+  if (dynUser.passwordHash !== submittedHash) {
+    recordLoginFailure(email);
+    jsonResponse(res, 401, { error: 'INVALID_CREDENTIALS' }); return;
+  }
+  clearLoginAttempts(email);
+  const calRole = dynUser.role || 'client';
+  const accounts = dynUser.accounts || [email];
+  const displayName = dynUser.displayName || dynUser.driverName || email.split('@')[0];
+  const driverName = dynUser.driverName || null;
+  const payload = { email, role: calRole, calRole, accounts, displayName, driverName, exp: Date.now() + TOKEN_TTL_MS };
+  const token = signMetaToken(payload);
+  jsonResponse(res, 200, { token, email, calRole, role: calRole, accounts, displayName, driverName });
 }
 
 async function handleMetaGet(req, res, qs) {
@@ -174,7 +250,7 @@ async function handleMetaPut(req, res, qs) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
   const store = loadMetaStore();
   store[key] = Object.assign({}, store[key] || {}, body);
-  saveMetaStore(store);
+  saveMetaStoreQueued(store);
   jsonResponse(res, 200, { ok: true });
 }
 
@@ -227,6 +303,135 @@ function parseQueryString(url) {
     }
     return out;
   } catch (e) { return {}; }
+}
+
+// ── Create Driver Account (superadmin only) ──
+async function handleCreateDriver(req, res, payload) {
+  if (payload.role !== 'superadmin' && payload.calRole !== 'superadmin') {
+    return jsonResponse(res, 403, { error: 'FORBIDDEN' });
+  }
+  let body;
+  try {
+    const raw = await readRequestBody(req, 32 * 1024);
+    body = JSON.parse(raw.toString('utf8'));
+  } catch (e) { return jsonResponse(res, 400, { error: 'INVALID_BODY' }); }
+  const { email, password, displayName, account, driverName } = body || {};
+  if (!email || !password || !account || !driverName) {
+    return jsonResponse(res, 400, { error: 'MISSING_FIELDS' });
+  }
+  const store = loadMetaStore();
+  const users = store['_users'] || {};
+  if (users[email.toLowerCase()]) {
+    return jsonResponse(res, 409, { error: 'USER_EXISTS' });
+  }
+  const passwordHash = hashPassword(password);
+  users[email.toLowerCase()] = {
+    email: email.toLowerCase(),
+    passwordHash,
+    accounts: [account],
+    displayName: displayName || driverName,
+    role: 'driver',
+    calRole: 'driver',
+    driverName,
+    createdAt: new Date().toISOString()
+  };
+  store['_users'] = users;
+  saveMetaStoreQueued(store);
+  return jsonResponse(res, 200, { ok: true, email: email.toLowerCase(), role: 'driver' });
+}
+
+// ── My Driver Stats (driver role only) ──
+async function handleMyDriverStats(req, res, payload) {
+  if (payload.role !== 'driver' && payload.calRole !== 'driver') {
+    return jsonResponse(res, 403, { error: 'FORBIDDEN' });
+  }
+  const driverName = payload.driverName;
+  const account = (payload.accounts && payload.accounts[0]) || '';
+
+  if (!driverName) return jsonResponse(res, 400, { error: 'NO_DRIVER_NAME' });
+
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+  const weekAgo = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
+  const monthAgo = new Date(now - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  let taps = [];
+  if (SUPABASE_URL && SUPABASE_KEY) {
+    try {
+      const tapUrl = `${SUPABASE_URL}/rest/v1/nfc_taps?select=person,tapped_at&person=eq.${encodeURIComponent(driverName)}&order=tapped_at.desc&limit=1000`;
+      const r = await fetch(tapUrl, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+      const j = await r.json();
+      if (Array.isArray(j)) taps = j;
+    } catch (e) { taps = []; }
+  } else {
+    // Fallback: read from local tap log
+    try {
+      const tapLog = require('path').join(__dirname, '.nfc-taps.json');
+      const all = JSON.parse(fs.readFileSync(tapLog, 'utf8'));
+      taps = all.filter(t => t.person === driverName).map(t => ({ person: t.person, tapped_at: t.ts }));
+    } catch (e) { taps = []; }
+  }
+
+  // Get all drivers for rank calculation
+  const store = loadMetaStore();
+  const cards = store['nfc_cards_' + account] || [];
+  const cardNames = cards.map(c => c.name || c);
+
+  let allTaps = [];
+  if (SUPABASE_URL && SUPABASE_KEY && cardNames.length) {
+    try {
+      const allUrl = `${SUPABASE_URL}/rest/v1/nfc_taps?select=person,tapped_at&order=tapped_at.desc&limit=5000`;
+      const r2 = await fetch(allUrl, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY } });
+      const j2 = await r2.json();
+      if (Array.isArray(j2)) allTaps = j2;
+    } catch (e) { allTaps = []; }
+  } else if (cardNames.length) {
+    try {
+      const tapLog = require('path').join(__dirname, '.nfc-taps.json');
+      const all = JSON.parse(fs.readFileSync(tapLog, 'utf8'));
+      allTaps = all.map(t => ({ person: t.person, tapped_at: t.ts }));
+    } catch (e) { allTaps = []; }
+  }
+
+  const monthCounts = {};
+  cardNames.forEach(function(name) {
+    monthCounts[name] = allTaps.filter(t => t.person === name && t.tapped_at >= monthAgo).length;
+  });
+  const sorted = Object.entries(monthCounts).sort((a, b) => b[1] - a[1]);
+  const rank = sorted.findIndex(([name]) => name === driverName) + 1;
+  const total = sorted.length;
+
+  // 30-day daily breakdown
+  const daily = {};
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    daily[key] = taps.filter(t => t.tapped_at && t.tapped_at.startsWith(key)).length;
+  }
+
+  // Lookup review link from ACCOUNT_FEATURES or ACCOUNT_PLACE_IDS
+  const placeInfo = ACCOUNT_PLACE_IDS[account] || null;
+  const reviewLink = placeInfo ? ('https://search.google.com/local/writereview?placeid=' + placeInfo.placeId) : null;
+
+  return jsonResponse(res, 200, {
+    driverName,
+    account,
+    rank: rank || (total + 1),
+    totalDrivers: total,
+    taps: {
+      today: taps.filter(t => t.tapped_at >= todayStart).length,
+      week: taps.filter(t => t.tapped_at >= weekAgo).length,
+      month: taps.filter(t => t.tapped_at >= monthAgo).length,
+      alltime: taps.length
+    },
+    lastTap: taps[0] ? taps[0].tapped_at : null,
+    daily,
+    reviewLink
+  });
 }
 
 async function handleDriverStats(req, res, payload) {
@@ -951,7 +1156,7 @@ async function handleNfcCardsPost(req, res) {
   }
   cards.push({ name, placeId: placeId || null, cid: cid || null, createdAt: new Date().toISOString() });
   store[key] = cards;
-  saveMetaStore(store);
+  saveMetaStoreQueued(store);
   jsonResponse(res, 200, { ok: true, card: cards[cards.length - 1], tapUrl: `/tap/${encodeURIComponent(name)}` });
 }
 
@@ -1026,7 +1231,7 @@ async function handleMessageGet(req, res, payload) {
   if (payload.role === 'admin' || payload.email !== account) {
     msgs = msgs.map(m => m.senderRole === 'client' ? Object.assign({}, m, { read: true }) : m);
     store[key] = msgs;
-    saveMetaStore(store);
+    saveMetaStoreQueued(store);
   }
   const unread = msgs.filter(m => !m.read && m.senderRole === 'client').length;
   jsonResponse(res, 200, { messages: msgs, unread });
@@ -1052,7 +1257,7 @@ async function handleMessagePost(req, res, payload) {
   msgs.push(msg);
   if (msgs.length > 200) msgs.splice(0, msgs.length - 200);
   store[key] = msgs;
-  saveMetaStore(store);
+  saveMetaStoreQueued(store);
   jsonResponse(res, 200, { ok: true, message: msg });
 }
 
@@ -1064,7 +1269,7 @@ async function handleMessageRead(req, res, payload) {
   const store = loadMetaStore();
   const key = 'messages_' + account;
   store[key] = (store[key] || []).map(m => Object.assign({}, m, { read: true }));
-  saveMetaStore(store);
+  saveMetaStoreQueued(store);
   jsonResponse(res, 200, { ok: true });
 }
 
@@ -1110,6 +1315,12 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ── CAL-native auth login (email + password → token with role) ──
+  if (urlPath === '/api/auth/login' && req.method === 'POST') {
+    await handleMetaLogin(req, res);
+    return;
+  }
+
   if (urlPath === '/api/meta/login' && req.method === 'POST') {
     await handleMetaLogin(req, res);
     return;
@@ -1129,7 +1340,11 @@ const server = http.createServer(async (req, res) => {
     if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
     const account = (qs.account || '').trim().toLowerCase();
     const features = ACCOUNT_FEATURES[account] || Object.assign({}, DEFAULT_FEATURES);
-    jsonResponse(res, 200, features);
+    // Merge placeId from ACCOUNT_PLACE_IDS if not already in features
+    const placeInfo = ACCOUNT_PLACE_IDS[account];
+    const response = Object.assign({}, features);
+    if (!response.placeId && placeInfo) response.placeId = placeInfo.placeId;
+    jsonResponse(res, 200, response);
     return;
   }
 
@@ -1170,6 +1385,19 @@ const server = http.createServer(async (req, res) => {
 
   // ── Places Reviews (no OAuth) ──
   if (urlPath === '/api/reviews/places' && req.method === 'GET') { await handlePlacesReviews(res, qs); return; }
+
+  // ── Driver Management ──
+  if (urlPath === '/api/users/create-driver' && req.method === 'POST') {
+    const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null;
+    if (!pl) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    await handleCreateDriver(req, res, pl); return;
+  }
+
+  if (urlPath === '/api/drivers/my-stats' && req.method === 'GET') {
+    const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null;
+    if (!pl) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    await handleMyDriverStats(req, res, pl); return;
+  }
 
   // ── Driver Stats ──
   if (urlPath === '/api/drivers/stats' && req.method === 'GET') { const tok = extractBearerToken(req); const pl = tok ? verifyMetaToken(tok) : null; if (!pl) { jsonResponse(res, 401, {error:'UNAUTHORIZED'}); return; } await handleDriverStats(req, res, pl); return; }
