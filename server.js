@@ -1603,6 +1603,73 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ── Replit OAuth (agency login) ──
+  if (urlPath === '/api/login' && req.method === 'GET') {
+    const clientId = process.env.REPLIT_CLIENT_ID;
+    const baseUrl = process.env.APP_BASE_URL || `https://${req.headers.host}`;
+    const redirectUri = encodeURIComponent(`${baseUrl}/api/callback`);
+    if (!clientId) {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(`<html><body style="font-family:sans-serif;padding:40px;text-align:center;background:#0a0a0a;color:#fff">
+        <h2>Replit OAuth not configured</h2>
+        <p>Set <code>REPLIT_CLIENT_ID</code> and <code>REPLIT_CLIENT_SECRET</code> in Replit Secrets.</p>
+        <a href="/" style="color:#4f8ef7">&#8592; Back to login</a>
+      </body></html>`);
+      return;
+    }
+    const authUrl = `https://replit.com/auth_with_repl_site?domain=${encodeURIComponent(req.headers.host)}&redirect_uri=${redirectUri}&client_id=${clientId}&response_type=code&scope=identity`;
+    res.writeHead(302, { Location: authUrl });
+    res.end();
+    return;
+  }
+
+  if (urlPath === '/api/callback' && req.method === 'GET') {
+    const code = qs.code;
+    const clientId = process.env.REPLIT_CLIENT_ID;
+    const clientSecret = process.env.REPLIT_CLIENT_SECRET;
+    const baseUrl = process.env.APP_BASE_URL || `https://${req.headers.host}`;
+    const redirectUri = `${baseUrl}/api/callback`;
+    if (!code || !clientId || !clientSecret) {
+      res.writeHead(302, { Location: '/?error=oauth_failed' }); res.end(); return;
+    }
+    try {
+      const https = require('https');
+      const tokenBody = new URLSearchParams({ code, client_id: clientId, client_secret: clientSecret, redirect_uri: redirectUri, grant_type: 'authorization_code' }).toString();
+      const tokenRes = await new Promise((resolve, reject) => {
+        const opts = { hostname: 'replit.com', path: '/api/oauth/token', method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(tokenBody) } };
+        const r = https.request(opts, (resp) => { let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve(d)); });
+        r.on('error', reject); r.write(tokenBody); r.end();
+      });
+      const tokenData = JSON.parse(tokenRes);
+      const accessToken = tokenData.access_token;
+      if (!accessToken) throw new Error('No access token');
+      const userRes = await new Promise((resolve, reject) => {
+        const opts = { hostname: 'replit.com', path: '/api/v0/account', method: 'GET', headers: { Authorization: `Bearer ${accessToken}` } };
+        const r = https.request(opts, (resp) => { let d = ''; resp.on('data', c => d += c); resp.on('end', () => resolve(d)); });
+        r.on('error', reject); r.end();
+      });
+      const user = JSON.parse(userRes);
+      const email = user.email || (user.username + '@replit.com');
+      const displayName = user.name || user.username || 'Agency User';
+      const serverAccounts = ['apexlegal', 'green_collar', 'willydiamond', 'housesautobody', 'info@unitedsewerservice.com'];
+      const payload = { email, role: 'superadmin', calRole: 'superadmin', accounts: serverAccounts, displayName, exp: Date.now() + TOKEN_TTL_MS };
+      const sessionToken = signMetaToken(payload);
+      const html = `<!DOCTYPE html><html><head><title>Signing in...</title></head><body style="background:#0a0a0a">
+<script>
+try{localStorage.setItem('cal-meta-session-token',${JSON.stringify(sessionToken)});}catch(e){}
+try{localStorage.setItem('cal-user-role','superadmin');}catch(e){}
+try{localStorage.setItem('cal-display-name',${JSON.stringify(displayName)});}catch(e){}
+try{localStorage.setItem('cal-user-email',${JSON.stringify(email)});}catch(e){}
+window.location.replace('/');
+</script></body></html>`;
+      res.writeHead(200, { 'Content-Type': 'text/html' }); res.end(html);
+    } catch(e) {
+      console.error('[replit-oauth]', e.message);
+      res.writeHead(302, { Location: '/?error=oauth_failed' }); res.end();
+    }
+    return;
+  }
+
   // ── CAL-native auth login (email + password → token with role) ──
   if (urlPath === '/api/auth/login' && req.method === 'POST') {
     await handleMetaLogin(req, res);
