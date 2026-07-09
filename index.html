@@ -3980,6 +3980,28 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button class="tab-btn" id="ptab-users"   onclick="switchPermTab('users')">User Overrides</button>
   </div>
 
+  <!-- Task 19: Role Preview Mode (agency only) -->
+  <div class="card card-pad" style="margin-bottom:16px;border:1px solid var(--gold,#c9a84c);background:rgba(201,168,76,.06)">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div>
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--ink);margin:0 0 2px;letter-spacing:.2px">👁 Role Preview Mode</p>
+        <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0">Preview what the portal looks like for each role before saving changes</p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="preview-role-select" class="input-std" style="height:36px;font-size:13px;max-width:180px">
+          <option value="">Select a role…</option>
+          <option value="owner">Owner</option>
+          <option value="operator">Operator</option>
+          <option value="driver">Driver</option>
+          <option value="admin">Admin</option>
+          <option value="client">Client</option>
+        </select>
+        <button class="btn-gold" style="font-size:12px;padding:8px 16px" onclick="startPreviewRole(document.getElementById('preview-role-select').value)">Preview</button>
+        <button class="btn-ghost" style="font-size:12px;padding:8px 16px" onclick="stopPreviewRole()">Stop Preview</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Tab: Account screen blocks -->
   <div id="perm-tab-screens">
     <div class="card card-pad" style="margin-bottom:12px">
@@ -4013,6 +4035,28 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
   <!-- Legacy user card container (kept for old renderPermForAccount calls) -->
   <div id="perm-acct-users" style="display:none"></div>
+
+  <!-- Task 20: CAL Marketing → Publish content into client account -->
+  <div class="card card-pad" style="margin-top:20px;border:1px solid var(--border)">
+    <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0 0 4px;letter-spacing:.2px">📤 Publish to Account</p>
+    <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 14px">Push content from CAL Marketing into a client account (agency access only)</p>
+    <div style="display:grid;gap:10px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="publish-target-acct" class="input-std" style="flex:1;min-width:160px;height:36px;font-size:13px">
+          <option value="">Select client account…</option>
+        </select>
+        <select id="publish-content-type" class="input-std" style="flex:1;min-width:140px;height:36px;font-size:13px">
+          <option value="report">Report</option>
+          <option value="note">Note / Announcement</option>
+          <option value="campaign">Campaign Brief</option>
+        </select>
+      </div>
+      <textarea id="publish-content-body" class="notes-textarea" placeholder="Paste content or notes to publish into the client account…" style="min-height:80px;font-size:13px"></textarea>
+      <div>
+        <button class="btn-primary" style="font-size:13px" onclick="doCalPublish()">Publish to Account</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ============ SCREEN: POS BUILDER ============ -->
@@ -5615,6 +5659,7 @@ var TITLES = {
   permissions:'Permission Controls','job-logging':'Job Tracker',social:'Social Media Health',seo:'SEO',leaderboard:'Review Leaderboard'
 };
 var DEFAULT_ACCOUNTS = [
+  {id:'cal',name:'CAL Marketing',initials:'CM',plan:'Master',color:'#c9a84c',serverKey:'cal-marketing',isMaster:true},
   {id:'a1',name:'Apex Legal Group',initials:'AL',plan:'Deluxe',color:'#1b3a6b',serverKey:'apexlegal'},
   {id:'a2',name:'Green Collar Roofing',initials:'GC',plan:'Standard',color:'#2e7d32',serverKey:'greencollаr'},
   {id:'a3',name:'Willy Diamond Tree Care',initials:'WD',plan:'Premium',color:'#c9a84c',serverKey:'willydiamond'},
@@ -5622,6 +5667,7 @@ var DEFAULT_ACCOUNTS = [
   {id:'a5',name:'United Sewer and Septic',initials:'US',plan:'Standard',color:'#0052cc',onboarding:true,serverKey:'info@unitedsewerservice.com'}
 ];
 var COMPANY_ACCT_MAP = {
+  'cal-marketing':'cal',
   'apexlegal':'a1',
   'greencollar':'a2',
   'willydia':'a3',
@@ -8715,6 +8761,12 @@ function refreshTenantContext(id){
   currentAcctId = id;
   window.currentAcctId = id;
   if(typeof saveAcct==='function') saveAcct(id);
+  // CAL Marketing master account always gets agency role
+  if(id==='cal'){
+    currentRole='agency';
+    window.currentRole='agency';
+    if(currentUser) currentUser.role='agency';
+  }
   // Update header switcher
   var swAvatar=document.getElementById('acct-sw-avatar');
   var swName=document.getElementById('acct-sw-name');
@@ -11747,11 +11799,15 @@ function renderPermAccounts(){
   applyUserRoleOverrides();
   var sel=document.getElementById('perm-acct-select'); if(!sel) return;
   var accts=permAccountsList();
-  sel.innerHTML=accts.map(function(a){ return '<option value="'+permEsc(a.name)+'">'+permEsc(a.name)+'</option>'; }).join('');
-  var cur=accts.filter(function(a){ return a.id===currentAcctId; })[0];
-  var startName=cur?cur.name:(accts[0]?accts[0].name:'');
-  if(startName) sel.value=startName;
-  renderPermForAccount(sel.value||startName);
+  // CAL Marketing always at top, then client accounts
+  sel.innerHTML='<option value="">All Accounts</option>'
+    + accts.map(function(a){
+        return '<option value="'+permEsc(a.id)+'"'+(a.isMaster?' style="font-weight:900;color:var(--gold)"':'')+'>'+permEsc(a.name)+(a.isMaster?' ★':'')+'</option>';
+      }).join('');
+  // Default to current account
+  if(window.currentAcctId) sel.value=window.currentAcctId;
+  _permCurrentAcct = sel.value;
+  renderPermEditor(sel.value);
 }
 
 function renderPermForAccount(company){
@@ -16613,7 +16669,7 @@ function renderPermAccounts(){
       var all=JSON.parse(localStorage.getItem('cal-account-meta')||'{}');
       var keys=Object.keys(all);
       if(!keys.length){
-        [['a1','Apex Legal Group'],['a2','Green Collar Roofing'],['a3','Willy Diamond Tree Care'],['a4','Houses Auto Body']].forEach(function(a){
+        [['cal','CAL Marketing'],['a1','Apex Legal Group'],['a2','Green Collar Roofing'],['a3','Willy Diamond Tree Care'],['a4','Houses Auto Body']].forEach(function(a){
           var o=document.createElement('option'); o.value=a[0]; o.textContent=a[1]; sel.appendChild(o);
         });
       } else {
@@ -16627,6 +16683,7 @@ function renderPermForAccount(acctKey){
   var host=document.getElementById('perm-acct-users');
   if(!host) return;
   var staticUsers=[
+    {name:'CAL Marketing (Master)',email:'aivrya@cal.marketing',acct:'cal',acctLabel:'CAL Marketing',role:'Agency',status:'Active'},
     {name:'Alex Torres',email:'alex@apexlegal.com',acct:'a1',acctLabel:'Apex Legal Group',role:'Admin',status:'Active'},
     {name:'Maria Santos',email:'maria@apexlegal.com',acct:'a1',acctLabel:'Apex Legal Group',role:'Staff',status:'Active'},
     {name:'David Kim',email:'dkim@gcroofing.com',acct:'a2',acctLabel:'Green Collar Roofing',role:'Staff',status:'Invited'},
@@ -16649,6 +16706,361 @@ function openPermEditModal(email){
   openModal('perm-invite-modal');
   var el=document.getElementById('pi-email'); if(el) el.value=email;
 }
+
+
+// ═══════════════════════════════════════════════════════════════
+// PERMISSIONS SCREEN — tab switching, grid renderers, save, preview
+// (Tasks 18 + 19 + 20)
+// ═══════════════════════════════════════════════════════════════
+
+var _permCurrentTab  = 'screens';
+var _permCurrentRole = 'owner';
+var _permCurrentAcct = '';
+var _previewRole     = null; // Task 19: role preview mode
+
+// ── All screens available for permission editing ──
+var ALL_PERM_SCREENS = [
+  'home','reviews','leads','content','reports','notes','todos','files',
+  'inbox','schedule','billing','settings','users','campaigns','analytics',
+  'social','seo','leaderboard','booking','projects','permissions','drivers'
+];
+
+// ── Tab switcher (Account Screens / Role Defaults / User Overrides) ──
+function switchPermTab(tab){
+  _permCurrentTab = tab;
+  ['screens','roles','users'].forEach(function(t){
+    var btn = document.getElementById('ptab-'+t);
+    var panel = document.getElementById('perm-tab-'+t);
+    if(btn) btn.className = t===tab ? 'tab-btn active' : 'tab-btn';
+    if(panel) panel.style.display = t===tab ? '' : 'none';
+  });
+  var acctId = _permCurrentAcct || (window.currentAcctId||'a1');
+  if(tab==='screens') renderPermScreenGrid(acctId);
+  if(tab==='roles')   renderPermRoleGrid(acctId, _permCurrentRole);
+  if(tab==='users')   renderPermUserList(acctId);
+}
+
+// ── Role tab switcher inside Role Defaults tab ──
+function switchPermRole(role){
+  _permCurrentRole = role;
+  var acctId = _permCurrentAcct || (window.currentAcctId||'a1');
+  // Update button styles
+  document.querySelectorAll('#perm-role-tabs button').forEach(function(b){
+    b.className = b.textContent.toLowerCase()===role ? 'btn-gold' : 'btn-ghost';
+    b.style.cssText = 'font-size:12px;padding:6px 14px';
+  });
+  renderPermRoleGrid(acctId, role);
+}
+
+// ── renderPermEditor: called when account selector changes ──
+function renderPermEditor(acctId){
+  _permCurrentAcct = acctId;
+  switchPermTab(_permCurrentTab);
+}
+
+// ── Account Screens Grid (Tab 1: block/unblock entire screens per account) ──
+function renderPermScreenGrid(acctId){
+  var grid = document.getElementById('perm-screen-grid'); if(!grid) return;
+  var blocks = _getAcctScreenBlocks(acctId);
+  grid.innerHTML = ALL_PERM_SCREENS.map(function(sc){
+    var blocked = blocks[sc] && blocks[sc].view === false;
+    var label = sc.charAt(0).toUpperCase()+sc.slice(1).replace(/-/g,' ');
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">'
+      + '<span style="font-size:13px;font-weight:700;color:var(--ink)">'+label+'</span>'
+      + '<label style="display:flex;align-items:center;gap:6px;cursor:pointer">'
+      + '<input type="checkbox" '+(blocked?'':'checked')+' onchange="toggleAcctScreen(''+acctId+'',''+sc+'',this.checked)" style="width:16px;height:16px;cursor:pointer">'
+      + '<span style="font-size:11px;font-weight:700;color:'+(blocked?'var(--muted)':'var(--green,#22c55e)')+'">'+( blocked?'Off':'On')+'</span>'
+      + '</label></div>';
+  }).join('');
+}
+
+function toggleAcctScreen(acctId, screen, enabled){
+  var blocks = _getAcctScreenBlocks(acctId);
+  if(!enabled){
+    blocks[screen] = {view:false,edit:false,create:false,delete:false};
+  } else {
+    delete blocks[screen];
+  }
+  _saveAcctScreenBlocks(acctId, blocks);
+  renderPermScreenGrid(acctId);
+  // Rebuild nav if this affects current account
+  if(acctId===(window.currentAcctId||'a1') && typeof rebuildNavForRole==='function') rebuildNavForRole();
+  showToast((enabled?'Enabled':'Disabled')+' "'+screen+'" for this account','gold');
+}
+
+// ── Role Defaults Grid (Tab 2: set view/edit/create/delete per role per screen) ──
+function renderPermRoleGrid(acctId, role){
+  var grid = document.getElementById('perm-role-grid'); if(!grid) return;
+  var data = _getAcctPerms(acctId);
+  var rp = (data.rolePermissions||{});
+  var actions = ['view','edit','create','delete'];
+  grid.innerHTML = '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'
+    + '<thead><tr style="border-bottom:2px solid var(--border)">'
+    + '<th style="text-align:left;padding:8px 10px;font-weight:800;color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.05em">Screen</th>'
+    + actions.map(function(a){ return '<th style="text-align:center;padding:8px 6px;font-weight:800;color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.05em">'+a+'</th>'; }).join('')
+    + '</tr></thead><tbody>'
+    + ALL_PERM_SCREENS.map(function(sc){
+        var stored = (rp[role]||{})[sc] || {};
+        var rad = (ROLE_ACTION_DEFAULTS[role]||ROLE_ACTION_DEFAULTS.user||{});
+        var defSc = rad[sc] || rad['_default'] || {view:false,edit:false,create:false,delete:false};
+        return '<tr style="border-bottom:1px solid var(--border)">'
+          + '<td style="padding:8px 10px;font-weight:700;color:var(--ink)">'+sc.charAt(0).toUpperCase()+sc.slice(1).replace(/-/g,' ')+'</td>'
+          + actions.map(function(a){
+              var val = typeof stored[a]==='boolean' ? stored[a] : !!defSc[a];
+              return '<td style="text-align:center;padding:8px 6px">'
+                + '<input type="checkbox" '+(val?'checked':'')+' onchange="setRolePerm(''+acctId+'',''+role+'',''+sc+'',''+a+'',this.checked)" style="width:15px;height:15px;cursor:pointer">'
+                + '</td>';
+            }).join('')
+          + '</tr>';
+      }).join('')
+    + '</tbody></table></div>'
+    + '<div style="margin-top:12px;display:flex;gap:8px">'
+    + '<button class="btn-primary" style="font-size:12px" onclick="saveRolePermsForAcct(''+acctId+'',''+role+'')">Save Role Defaults</button>'
+    + '<button class="btn-ghost" style="font-size:12px" onclick="resetRolePerms(''+acctId+'',''+role+'')">Reset to Defaults</button>'
+    + '</div>';
+}
+
+function setRolePerm(acctId, role, screen, action, val){
+  var data = _getAcctPerms(acctId);
+  if(!data.rolePermissions) data.rolePermissions={};
+  if(!data.rolePermissions[role]) data.rolePermissions[role]={};
+  if(!data.rolePermissions[role][screen]) data.rolePermissions[role][screen]={};
+  data.rolePermissions[role][screen][action] = val;
+  _saveAcctPerms(acctId, data);
+}
+
+function saveRolePermsForAcct(acctId, role){
+  if(acctId===(window.currentAcctId||'a1') && typeof rebuildNavForRole==='function') rebuildNavForRole();
+  showToast('Role defaults saved for '+role,'gold');
+}
+
+function resetRolePerms(acctId, role){
+  var data = _getAcctPerms(acctId);
+  if(data.rolePermissions && data.rolePermissions[role]) delete data.rolePermissions[role];
+  _saveAcctPerms(acctId, data);
+  renderPermRoleGrid(acctId, role);
+  showToast('Reset '+role+' to system defaults','gold');
+}
+
+// ── User Overrides List (Tab 3) ──
+function renderPermUserList(acctId){
+  var host = document.getElementById('perm-user-list'); if(!host) return;
+  var data = _getAcctPerms(acctId);
+  var uov  = data.userOverrides || {};
+
+  // Get users for this account from USERS store + session store
+  var acctUsers = [];
+  try {
+    var stored = JSON.parse(localStorage.getItem('cal-users-'+acctId)||'[]');
+    acctUsers = acctUsers.concat(stored);
+  } catch(e){}
+  // Also check global USERS object
+  if(window.USERS){
+    Object.keys(window.USERS).forEach(function(email){
+      var u = window.USERS[email];
+      if(u && !acctUsers.find(function(x){ return x.email===email; })){
+        acctUsers.push({email:email, name:u.name||email, role:u.role||'user'});
+      }
+    });
+  }
+
+  if(!acctUsers.length){
+    host.innerHTML='<div class="card card-pad" style="text-align:center;color:var(--muted);font-size:13px;font-weight:600">No users in this account yet. Invite members from the + Invite button above.</div>';
+    return;
+  }
+
+  host.innerHTML = acctUsers.map(function(u){
+    var ov = uov[u.email] || {};
+    var rows = ALL_PERM_SCREENS.map(function(sc){
+      var v  = typeof (ov[sc]||{}).view   === 'boolean' ? ov[sc].view   : null;
+      var e  = typeof (ov[sc]||{}).edit   === 'boolean' ? ov[sc].edit   : null;
+      var mk = function(action, val){
+        var checked = val===true ? 'checked' : '';
+        var neutral = val===null ? ' style="opacity:.35"' : '';
+        return '<input type="checkbox" '+checked+neutral+' title="'+action+'" onchange="setUserPerm(''+acctId+'',''+u.email+'',''+sc+'',''+action+'',this.checked)" style="width:14px;height:14px;cursor:pointer">';
+      };
+      return null; // skip inline for now — show collapsed
+    });
+    var hasOverrides = Object.keys(ov).length > 0;
+    return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:8px">'
+      + '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">'
+      + '<div>'
+      + '<div style="font-size:13px;font-weight:800;color:var(--ink)">'+permEsc(u.name||u.email)+'</div>'
+      + '<div style="font-size:11px;color:var(--muted);font-weight:600">'+permEsc(u.email)+' · '+permEsc(u.role||'user')+(hasOverrides?' · <span style="color:var(--gold)">Custom overrides</span>':'')+'</div>'
+      + '</div>'
+      + '<div style="display:flex;gap:6px">'
+      + '<button class="btn-view" style="font-size:11px" onclick="openUserPermModal(''+acctId+'',''+permArg(u.email)+'',''+permArg(u.name||u.email)+'')">Edit Permissions</button>'
+      + (hasOverrides?'<button class="btn-ghost" style="font-size:11px;color:#ef4444" onclick="clearUserPerms(''+acctId+'',''+permArg(u.email)+'')">Clear</button>':'')
+      + '</div></div></div>';
+  }).join('');
+}
+
+function setUserPerm(acctId, email, screen, action, val){
+  var data = _getAcctPerms(acctId);
+  if(!data.userOverrides) data.userOverrides={};
+  if(!data.userOverrides[email]) data.userOverrides[email]={};
+  if(!data.userOverrides[email][screen]) data.userOverrides[email][screen]={};
+  data.userOverrides[email][screen][action] = val;
+  _saveAcctPerms(acctId, data);
+  if(typeof rebuildNavForRole==='function') rebuildNavForRole();
+}
+
+function clearUserPerms(acctId, email){
+  var data = _getAcctPerms(acctId);
+  if(data.userOverrides && data.userOverrides[email]) delete data.userOverrides[email];
+  _saveAcctPerms(acctId, data);
+  renderPermUserList(acctId);
+  if(typeof rebuildNavForRole==='function') rebuildNavForRole();
+  showToast('Cleared custom permissions for '+email,'gold');
+}
+
+// ── User Permission Modal (full CRUD per screen) ──
+function openUserPermModal(acctId, email, name){
+  var data  = _getAcctPerms(acctId);
+  var ov    = (data.userOverrides||{})[email] || {};
+  var actions = ['view','edit','create','delete'];
+  var body  = document.getElementById('modal-body');
+  var wrap  = document.getElementById('modal-wrap');
+  if(!wrap){ wrap=document.getElementById('upm-modal'); }
+  if(!body){ openModal('perm-invite-modal'); return; }
+
+  // Build a simple modal content
+  body.innerHTML = '<div style="padding:0">'
+    + '<h3 style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--ink);margin:0 0 4px">Edit Permissions</h3>'
+    + '<p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 16px">'+permEsc(name)+' · '+permEsc(email)+'</p>'
+    + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'
+    + '<thead><tr style="border-bottom:2px solid var(--border)">'
+    + '<th style="text-align:left;padding:7px 8px;font-weight:800;color:var(--muted);font-size:10px;text-transform:uppercase">Screen</th>'
+    + actions.map(function(a){ return '<th style="text-align:center;padding:7px 6px;font-weight:800;color:var(--muted);font-size:10px;text-transform:uppercase">'+a+'</th>'; }).join('')
+    + '<th style="padding:7px 6px"></th>'
+    + '</tr></thead><tbody>'
+    + ALL_PERM_SCREENS.map(function(sc){
+        var sc_ov = ov[sc] || {};
+        return '<tr style="border-bottom:1px solid var(--border)">'
+          + '<td style="padding:7px 8px;font-weight:700;color:var(--ink)">'+sc.charAt(0).toUpperCase()+sc.slice(1).replace(/-/g,' ')+'</td>'
+          + actions.map(function(a){
+              var val = sc_ov[a];
+              return '<td style="text-align:center;padding:7px 6px">'
+                + '<select onchange="setUserPerm(''+acctId+'',''+email+'',''+sc+'',''+a+'',this.value==='true'?true:this.value==='false'?false:null)" style="font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--ink)">'
+                + '<option value="inherit" '+(val===null||val===undefined?'selected':'')+'>Inherit</option>'
+                + '<option value="true" '+(val===true?'selected':'')+'>Allow</option>'
+                + '<option value="false" '+(val===false?'selected':'')+'>Deny</option>'
+                + '</select></td>';
+            }).join('')
+          + '<td></td></tr>';
+      }).join('')
+    + '</tbody></table></div>'
+    + '<div style="margin-top:14px;display:flex;gap:8px">'
+    + '<button class="btn-primary" onclick="saveUserPermModal(''+acctId+'',''+email+'')">Save</button>'
+    + '<button class="btn-ghost" onclick="closeModal()">Cancel</button>'
+    + '</div></div>';
+  openModal('modal-wrap');
+}
+
+function saveUserPermModal(acctId, email){
+  if(typeof rebuildNavForRole==='function') rebuildNavForRole();
+  closeModal();
+  showToast('Permissions saved for '+email,'gold');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TASK 19: ROLE PREVIEW MODE
+// CAL Marketing can impersonate a role to see what the portal looks like
+// ═══════════════════════════════════════════════════════════════
+
+function startPreviewRole(role){
+  if(!role){ stopPreviewRole(); return; }
+  _previewRole = role;
+  // Inject preview banner
+  var banner = document.getElementById('preview-role-banner');
+  if(!banner){
+    banner = document.createElement('div');
+    banner.id = 'preview-role-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#7c3aed;color:#fff;text-align:center;padding:10px 16px;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:16px;box-shadow:0 2px 8px rgba(0,0,0,.3)';
+    document.body.insertBefore(banner, document.body.firstChild);
+    // Push content down
+    var app = document.getElementById('app')||document.body;
+    app.style.paddingTop = '42px';
+  }
+  banner.innerHTML = '👁 Previewing as <strong>'+role.toUpperCase()+'</strong> &nbsp;'
+    + '<button onclick="stopPreviewRole()" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;cursor:pointer;font-weight:700">✕ Exit Preview</button>';
+
+  // Temporarily override currentRole for nav rendering
+  var savedRole = currentRole;
+  var savedUser = currentUser ? Object.assign({},currentUser) : null;
+  window._previewSavedRole = savedRole;
+  window._previewSavedUser = savedUser;
+  currentRole = role;
+  if(currentUser) currentUser.role = role;
+
+  if(typeof rebuildNavForRole==='function') rebuildNavForRole();
+  if(typeof nav==='function') nav('home');
+  showToast('Previewing portal as '+role,'gold');
+}
+
+
+function doCalPublish(){
+  var targetAcctId = document.getElementById('publish-target-acct') ? document.getElementById('publish-target-acct').value : '';
+  var contentType  = document.getElementById('publish-content-type') ? document.getElementById('publish-content-type').value : 'note';
+  var body         = document.getElementById('publish-content-body') ? document.getElementById('publish-content-body').value.trim() : '';
+  if(!targetAcctId){ showToast('Select a client account first','gold'); return; }
+  if(!body){ showToast('Enter content to publish','gold'); return; }
+  calPublishToAccount(targetAcctId, contentType, { title: contentType+' from CAL Marketing', body: body });
+  document.getElementById('publish-content-body').value = '';
+}
+
+function initPublishTargetDropdown(){
+  var sel = document.getElementById('publish-target-acct'); if(!sel) return;
+  var accts = permAccountsList().filter(function(a){ return !a.isMaster; });
+  sel.innerHTML = '<option value="">Select client account…</option>'
+    + accts.map(function(a){ return '<option value="'+permEsc(a.id)+'">'+permEsc(a.name)+'</option>'; }).join('');
+}
+function stopPreviewRole(){
+  _previewRole = null;
+  var banner = document.getElementById('preview-role-banner');
+  if(banner){ banner.remove(); }
+  var app = document.getElementById('app')||document.body;
+  app.style.paddingTop = '';
+  // Restore real role
+  if(window._previewSavedRole){
+    currentRole = window._previewSavedRole;
+    if(currentUser && window._previewSavedUser) currentUser.role = window._previewSavedUser.role;
+    window._previewSavedRole = null;
+    window._previewSavedUser = null;
+  }
+  if(typeof rebuildNavForRole==='function') rebuildNavForRole();
+  showToast('Preview ended — restored your role','gold');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TASK 20: CROSS-ACCOUNT CONTENT PUBLISH (from CAL Marketing)
+// Pushes a published report/note into a target client account's data store
+// ═══════════════════════════════════════════════════════════════
+
+function calPublishToAccount(targetAcctId, contentType, payload){
+  if((currentRole!=='agency'&&currentRole!=='superadmin')&&!_previewRole){
+    showToast('Only CAL Marketing can publish to client accounts.','gold'); return;
+  }
+  try{
+    var storeKey = 'cal-published-'+contentType+'-'+targetAcctId;
+    var items = JSON.parse(localStorage.getItem(storeKey)||'[]');
+    items.unshift(Object.assign({}, payload, {
+      publishedBy: currentUser ? currentUser.email : 'agency',
+      publishedAt: new Date().toISOString(),
+      fromAccount: 'cal'
+    }));
+    localStorage.setItem(storeKey, JSON.stringify(items));
+    showToast('Published to '+targetAcctId+' ✓','gold');
+  }catch(e){ showToast('Publish failed: '+e.message,'red'); }
+}
+
+function calGetPublishedForAccount(targetAcctId, contentType){
+  try{
+    return JSON.parse(localStorage.getItem('cal-published-'+contentType+'-'+targetAcctId)||'[]');
+  }catch(e){ return []; }
+}
+
+
 function updatePermInviteNote(role){
   var note=document.getElementById('pi-role-note');
   if(!note) return;
