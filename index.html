@@ -7578,16 +7578,8 @@ function isStaffUser(){
   return window.currentRole==='user';
 }
 function checkAndPromptGoogleConnect(){
-  var role=window.currentRole||'';
-  if(role!=='admin') return; // Only business owners (admin) connect Google
-  var company=window.currentCompanyId||'default';
-  var dismissed=localStorage.getItem('cal-google-prompt-dismissed-'+company);
-  if(dismissed) return;
-  fetch('/api/google/status?company='+encodeURIComponent(company))
-    .then(function(r){ return r.json(); })
-    .then(function(d){
-      if(!d.connected){ setTimeout(function(){ openModal('google-connect-prompt-modal'); },1200); }
-    }).catch(function(){});
+  // Auto-popup disabled by request — Google connect is still available from
+  // Settings > Integrations, it just no longer nags the user on login.
 }
 function renderIntegrationsGrid(){
   if(window.currentRole!=='admin'&&window.currentRole!=='agency') {
