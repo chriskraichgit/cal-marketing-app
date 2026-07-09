@@ -2509,10 +2509,11 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
     <!-- NFC Card Tap Log -->
     <div class="nfc-tap-log" style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:14px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0;letter-spacing:.2px">NFC Card Taps</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:900;color:var(--ink);margin:0;letter-spacing:.2px">NFC Performance</p>
         <button onclick="loadNfcTaps()" style="background:rgba(27,58,107,.08);color:var(--blue);border:none;border-radius:6px;padding:4px 10px;font-size:12px;cursor:pointer;font-weight:700;">Refresh</button>
       </div>
+      <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 14px">Per-card tap stats · auto-refreshes every 30s</p>
       <div id="nfcTapList" style="font-size:13px;color:var(--muted);font-weight:600">Loading…</div>
     </div>
 
@@ -8411,6 +8412,11 @@ function nav(screen){
     if(grc){ grc.style.display=(currentRole==='agency'||currentRole==='test')?'':'none'; }
     if(currentRole==='agency'||currentRole==='test') initGenReportAcctDropdown();
     initReportSelector();
+  }
+  if(screen==='reviews'){
+    if(typeof loadNfcTaps==='function') loadNfcTaps();
+    if(typeof loadGoogleReviews==='function') loadGoogleReviews();
+    if(typeof loadLeaderboard==='function') loadLeaderboard();
   }
 }
 function initHomeScreen(){
@@ -16695,23 +16701,74 @@ function updateReviewLinkDisplay() {
 async function loadNfcTaps() {
   var el = document.getElementById('nfcTapList');
   if (!el) return;
-  try {
-    var token = localStorage.getItem('cal-meta-session-token');
-    var account = localStorage.getItem('cal-current-acct') || '';
-    var headers = {};
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-    var r = await fetch('/api/nfc/taps?account=' + encodeURIComponent(account), { headers: headers });
-    var data = await r.json();
-    if (!data.taps || data.taps.length === 0) { el.textContent = 'No taps recorded yet.'; return; }
-    el.innerHTML = data.taps.map(function(t) {
-      var d = new Date(t.tapped_at);
-      var timeStr = d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">'
-        + '<span>👷 ' + (t.person_name || 'Unknown') + '</span>'
-        + '<span style="color:var(--muted);">' + timeStr + '</span>'
-        + '</div>';
-    }).join('');
-  } catch(e) { el.textContent = 'Error loading taps.'; }
+  el.innerHTML = '<span style="color:var(--muted);font-size:12px;">Loading…</span>';
+  var token = localStorage.getItem('cal-meta-session-token');
+  var account = localStorage.getItem('cal-current-acct') || '';
+  var headers = {};
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+
+  // Fetch per-card stats + recent taps in parallel
+  Promise.all([
+    fetch('/api/nfc/stats?accountId=' + encodeURIComponent(account), { headers: headers }).then(function(r){ return r.json(); }).catch(function(){ return {}; }),
+    fetch('/api/nfc/taps?account=' + encodeURIComponent(account), { headers: headers }).then(function(r){ return r.json(); }).catch(function(){ return {}; })
+  ]).then(function(results) {
+    var statsData = results[0];
+    var tapsData = results[1];
+    var html = '';
+
+    // Per-card stats grid
+    var cards = statsData.cards || [];
+    if (cards.length > 0) {
+      html += '<div style="margin-bottom:16px">'
+        + '<p style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:0 0 10px">Card Performance</p>'
+        + '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px">';
+      cards.forEach(function(c) {
+        var convColor = c.conversion >= 20 ? 'var(--green,#22c55e)' : c.conversion >= 10 ? 'var(--gold,#f59e0b)' : 'var(--muted)';
+        html += '<div style="background:var(--bg,#0f172a);border:1px solid var(--border);border-radius:10px;padding:12px">'
+          + '<div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">👷 ' + (c.name||c.cardId||'?') + '</div>'
+          + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 8px;font-size:11px;color:var(--muted);font-weight:600">'
+          + '<span>Total</span><span style="color:var(--ink);font-weight:800">' + (c.total||0) + '</span>'
+          + '<span>Today</span><span style="color:var(--ink);font-weight:800">' + (c.today||0) + '</span>'
+          + '<span>Week</span><span style="color:var(--ink);font-weight:800">' + (c.week||0) + '</span>'
+          + '<span>Conv.</span><span style="color:'+convColor+';font-weight:800">' + (c.conversion||0) + '%</span>'
+          + '</div>'
+          + (c.lastTap ? '<div style="font-size:10px;color:var(--muted);margin-top:6px">Last: ' + new Date(c.lastTap).toLocaleDateString() + '</div>' : '')
+          + '</div>';
+      });
+      html += '</div></div>';
+    }
+
+    // Recent taps list
+    var taps = tapsData.taps || [];
+    if (taps.length === 0 && cards.length === 0) {
+      el.textContent = 'No taps recorded yet.';
+      return;
+    }
+    if (taps.length > 0) {
+      html += '<p style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:0 0 8px">Recent Taps</p>';
+      html += taps.slice(0,20).map(function(t) {
+        var d = new Date(t.tapped_at || t.ts);
+        var timeStr = isNaN(d) ? '—' : d.toLocaleDateString() + ' ' + d.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+        return '<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);">'
+          + '<span>👷 ' + (t.person_name || t.person || 'Unknown') + '</span>'
+          + '<span style="color:var(--muted);font-size:12px">' + timeStr + '</span>'
+          + '</div>';
+      }).join('');
+      if (taps.length > 20) html += '<div style="font-size:11px;color:var(--muted);padding:6px 0;text-align:center">+'+(taps.length-20)+' more</div>';
+    }
+
+    el.innerHTML = html || '<span style="color:var(--muted);font-size:12px;">No NFC activity yet.</span>';
+
+    // Auto-refresh every 30 seconds
+    if (!el._nfcRefreshTimer) {
+      el._nfcRefreshTimer = setInterval(function(){
+        if(document.getElementById('s-reviews') && document.getElementById('s-reviews').classList.contains('active')){
+          el._nfcRefreshTimer = null;
+          loadNfcTaps();
+        }
+      }, 30000);
+    }
+  }).catch(function(e){ el.textContent = 'Error loading NFC data.'; });
 }
 
 
