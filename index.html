@@ -1433,9 +1433,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 </div>
 
 <!-- SUPERADMIN USER MANAGEMENT PANEL -->
-<div id="s-admin-users" style="display:none;min-height:100vh;background:var(--page);padding:24px 16px;max-width:680px;margin:0 auto">
+<div id="s-users" class="screen" style="min-height:100vh;background:var(--page);padding:24px 16px;max-width:680px;margin:0 auto">
   <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
-    <button onclick="closeAdminUsers()" style="background:var(--surface);border:1.5px solid var(--border);border-radius:8px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)">← Back</button>
     <div>
       <div style="font-size:20px;font-weight:900">User Management</div>
       <div style="font-size:12px;color:var(--muted)">Create and manage driver &amp; client accounts</div>
@@ -1641,7 +1640,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </button>
 
       <div class="nav-label">Settings</div>
-      <button class="nav-btn" onclick="openAdminUsers()" id="nav-user-mgmt-btn">
+      <button class="nav-btn" data-screen="users" onclick="nav('users')" id="nav-user-mgmt-btn">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Users
       </button>
       <button class="nav-btn" onclick="nav('settings')">
@@ -5603,6 +5602,7 @@ function companyParam(extra) {
   return extra ? p + '&' + extra : p;
 }
 var TITLES = {
+  users:'User Management',
   home:'Home',analytics:'Analytics',roi:'ROI Tracker',campaigns:'Campaigns',leads:'Leads',
   content:'Content AI',projects:'Projects',schedule:'Schedule',inbox:'Inbox',files:'Files',
   billing:'Billing',plans:'Change Plan',reports:'Reports',settings:'Settings',
@@ -5661,9 +5661,9 @@ var POS_OB_STEPS = [
 
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
-  agency:   ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo','leaderboard','admin-users','users'],
-  admin:    ['home','onboarding','maintenance','campaigns','reviews','leads','files','billing','reports','inbox','schedule','todos','notes','nps','referrals','settings','notifications','help','profile','admin-users','users'],
-  owner:    ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','schedule','inbox','notes','todos','files','billing','reports','nps','referrals','settings','notifications','help','profile','admin-users','users','social','seo','booking'],
+  agency:   ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','agency-admin','pos','invoicing','proposals','whitelabel','revenue','nps','referrals','booking','settings','profile','notifications','help','permissions','social','seo','leaderboard','users','users'],
+  admin:    ['home','onboarding','maintenance','campaigns','reviews','leads','files','billing','reports','inbox','schedule','todos','notes','nps','referrals','settings','notifications','help','profile','users','users'],
+  owner:    ['home','onboarding','goals','analytics','roi','campaigns','reviews','leads','content','schedule','inbox','notes','todos','files','billing','reports','nps','referrals','settings','notifications','help','profile','users','users','social','seo','booking'],
   operator: ['home','reviews','leads','inbox','todos','notes','schedule','notifications','help','profile','social'],
   driver:   ['home','reviews','todos','notifications','help','profile'],
   user:     ['todos','notes','files','inbox','profile'],
@@ -6206,29 +6206,13 @@ function sendMagicLink(){
   });
 }
 
-// ── Admin User Management ──
-function openAdminUsers(){
-  // Hide all screens and show s-admin-users like a proper screen
-  document.querySelectorAll('.screen').forEach(function(el){ el.style.display='none'; el.classList.remove('active'); });
-  var panel = document.getElementById('s-admin-users');
-  if (panel) {
-    panel.style.display = 'block';
-    panel.classList.add('active');
-  }
-  // Also hide s-admin-users from the "all screens" hide loop in nav()
-  currentScreen = 'admin-users';
+// ── User Management Screen ──
+function openAdminUsers(){ nav('users'); } // legacy alias kept for safety
+function renderUsersPage(){
   auLoadUsers();
-  loadNfcCards();
+  if(typeof loadNfcCards==='function') loadNfcCards();
 }
-function closeAdminUsers(){
-  var panel = document.getElementById('s-admin-users');
-  if (panel) panel.style.display = 'none';
-  // Return to main app
-  var app = document.getElementById('app');
-  if (app) app.style.display = 'block';
-  var appShell = document.getElementById('app-shell');
-  if (appShell) appShell.style.display = '';
-}
+function closeAdminUsers(){ nav('home'); } // legacy alias — nav back to home
 function auRoleChange(){
   var role = document.getElementById('au-role') ? document.getElementById('au-role').value : 'driver';
   var dnWrap = document.getElementById('au-drivername-wrap');
@@ -8389,13 +8373,10 @@ function rebuildNavForRole(){
 function nav(screen){
   if(!screen) return;
   // admin-users is handled by openAdminUsers
-  if(screen==='admin-users'){ openAdminUsers(); return; }
   if(!hasPermission(screen)){ showToast('You do not have access to this section.','gold'); return; }
   closeProfileDd();
   document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
-  // Also hide the admin-users panel if it's showing
-  var adminPanel=document.getElementById('s-admin-users');
-  if(adminPanel) adminPanel.style.display='none';
+  // s-users is now a proper .screen div — handled by the querySelectorAll loop above
   currentScreen=screen;
   saveState('lastNav',screen);
   var target=document.getElementById('s-'+screen);
@@ -8412,6 +8393,7 @@ function nav(screen){
   closeSidebar(); closeMoreSheet();
   if(screen!=='projects') closeProject();
   if(screen==='home') initHomeScreen();
+  if(screen==='users'){ if(typeof renderUsersPage==='function') renderUsersPage(); }
   if(screen==='leads') initLeads();
   if(screen==='notes'){ if(typeof _loadNotesForAcct==='function') _loadNotesForAcct(); renderNotesList(); openNote(currentNoteIndex); }
   if(screen==='plans') setTimeout(highlightCurrentPlan,50);
