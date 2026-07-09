@@ -6338,6 +6338,7 @@ function auLoadUsers(){
   });
 }
 function auDeleteUser(email){
+  if(!canDelete('users')){ showToast('You do not have permission to delete users.','gold'); return; }
   if (!confirm('Delete account for ' + email + '? This cannot be undone.')) return;
   fetch('/api/users/delete', {
     method: 'POST',
@@ -9043,6 +9044,7 @@ function saveProfile(){
   showToast('Profile saved!','green');
 }
 function saveSettingsProfile(){
+  if(!canEdit('settings')){ showToast('You do not have permission to edit settings.','gold'); return; }
   var name=(document.getElementById('stab-pf-name')||{value:''}).value.trim();
   var email=(document.getElementById('stab-pf-email')||{value:''}).value.trim();
   var phone=(document.getElementById('stab-pf-phone')||{value:''}).value.trim();
@@ -9067,6 +9069,7 @@ function saveSettingsProfile(){
   showToast('Profile saved!','green');
 }
 function saveSettingsPassword(){
+  if(!canEdit('settings')){ showToast('You do not have permission to edit settings.','gold'); return; }
   var cur=(document.getElementById('stab-pw-current')||{value:''}).value;
   var nw=(document.getElementById('stab-pw-new')||{value:''}).value;
   var cf=(document.getElementById('stab-pw-confirm')||{value:''}).value;
@@ -9518,6 +9521,7 @@ function setLeadStatus(btn,status){
 }
 
 function saveLeadNotes(){
+  if(!canEdit('leads')){ showToast('You do not have permission to edit leads.','gold'); return; }
   if(!_currentLeadId){showToast('Notes saved.','green');return;}
   var ta=document.getElementById('lp-notes-ta');if(!ta)return;
   var lead=_leadsDb.find(function(l){return l.id===_currentLeadId;});
@@ -9529,6 +9533,7 @@ function saveLeadNotes(){
 }
 
 function addLeadSubmit(){
+  if(!canCreate('leads')){ showToast('You do not have permission to add leads.','gold'); return; }
   var name=(document.getElementById('al-name')||{value:''}).value.trim();
   var phone=(document.getElementById('al-phone')||{value:''}).value.trim()||'—';
   var email=(document.getElementById('al-email')||{value:''}).value.trim()||'—';
@@ -10378,6 +10383,7 @@ function renderNotesList(){
   }).join('');
 }
 function createNewNote(){
+  if(!canCreate('notes')){ showToast('You do not have permission to create notes.','gold'); return; }
   var now=new Date().toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
   NOTES_DATA.unshift({title:'Untitled Note',content:'Start typing...',color:'#c9a84c',updatedAt:now});
   currentNoteIndex=0;
@@ -10396,7 +10402,9 @@ function startNoteSave(){
   },1500);
 }
 function execCmd(cmd){ document.execCommand(cmd,false,null); var nb=document.getElementById('note-body'); if(nb) nb.focus(); }
-function createTaskFromNote(){ var title=document.getElementById('note-title'); var inp=document.querySelector('#new-task-modal input[placeholder="e.g. Write May blog post"]'); if(inp&&title) inp.value='Task from: '+title.value; openModal('new-task-modal'); }
+function createTaskFromNote(){
+  if(!canCreate('notes')){ showToast('You do not have permission to create tasks from notes.','gold'); return; }
+  var title=document.getElementById('note-title'); var inp=document.querySelector('#new-task-modal input[placeholder="e.g. Write May blog post"]'); if(inp&&title) inp.value='Task from: '+title.value; openModal('new-task-modal'); }
 
 // ============ TODOS ============
 function toggleTodo(el){
@@ -10995,7 +11003,9 @@ function addInvLine(){
   row.innerHTML='<td style="padding:6px 4px"><input class="input-std" placeholder="Description" oninput="calcInvoice()"></td><td style="padding:6px 4px;text-align:center"><input class="input-std" type="number" value="1" min="1" style="text-align:center;width:60px" oninput="calcInvoice()"></td><td style="padding:6px 4px;text-align:right"><input class="input-std" type="number" placeholder="0.00" style="text-align:right" oninput="calcInvoice()"></td><td style="padding:6px 4px;text-align:right;font-weight:800;color:var(--ink)" class="item-total">$0.00</td>';
   body.appendChild(row);
 }
-function saveInvoiceDraft(){ closeInvoiceCreator(); showToast('Invoice saved as draft!','gold'); }
+function saveInvoiceDraft(){
+  if(!canCreate('billing')){ showToast('You do not have permission to create invoices.','gold'); return; }
+  closeInvoiceCreator(); showToast('Invoice saved as draft!','gold'); }
 function viewInvoice(num){ showToast('Viewing '+num+'...','gold'); }
 function sendInvoiceConfirm(client,email){ _invoiceSendClient=client; _invoiceSendEmail=email; var cn=document.getElementById('send-inv-client'); var ce=document.getElementById('send-inv-email'); if(cn) cn.textContent=client; if(ce) ce.textContent=email; openModal('send-invoice-modal'); }
 function confirmSendInvoice(){ closeModal('send-invoice-modal'); closeInvoiceCreator(); showToast('Invoice sent to '+_invoiceSendClient+'!','green'); }
@@ -11451,6 +11461,7 @@ function openReportModal(key){
 }
 
 function saveReportNotes(notesKey){
+  if(!canEdit('reports')){ showToast('You do not have permission to edit reports.','gold'); return; }
   var ta=document.getElementById('report-notes-ta');
   if(!ta) return;
   try{localStorage.setItem(notesKey,ta.value);}catch(e){}
@@ -14719,8 +14730,8 @@ function sendWaReply() {
 
   window.cpToggle=function(id){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===id;}); if(c){ c.expanded=!c.expanded; cpSave(st); renderClientProjects(); } };
   window.cpToggleTask=function(cid,tid){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; var t=c.tasks.find(function(x){return x.id===tid;}); if(t){ t.done=!t.done; cpSave(st); renderClientProjects(); } };
-  window.cpAddTask=function(cid){ var inp=document.getElementById('cp-newtask-'+cid); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var sel=document.getElementById('cp-newassign-'+cid); var who=sel?sel.value:''; var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks.push({id:cpUid(),text:v,done:false,assignee:who||''}); cpSave(st); renderClientProjects(); };
-  window.cpDelTask=function(cid,tid){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks=c.tasks.filter(function(x){return x.id!==tid;}); cpSave(st); renderClientProjects(); };
+  window.cpAddTask=function(cid){ if(!canCreate('tasks')){ showToast('You do not have permission to add tasks.','gold'); return; } var inp=document.getElementById('cp-newtask-'+cid); if(!inp) return; var v=(inp.value||'').trim(); if(!v) return; var sel=document.getElementById('cp-newassign-'+cid); var who=sel?sel.value:''; var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks.push({id:cpUid(),text:v,done:false,assignee:who||''}); cpSave(st); renderClientProjects(); };
+  window.cpDelTask=function(cid,tid){ if(!canDelete('tasks')){ showToast('You do not have permission to delete tasks.','gold'); return; } var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; c.tasks=c.tasks.filter(function(x){return x.id!==tid;}); cpSave(st); renderClientProjects(); };
   window.cpSetAssignee=function(cid,tid,who){ var st=cpLoad(); var c=st.clients.find(function(x){return x.id===cid;}); if(!c) return; var t=c.tasks.find(function(x){return x.id===tid;}); if(t){ t.assignee=who||''; cpSave(st); renderClientProjects(); } };
   window.cpSetFilter=function(f){ cpFilter=f; renderClientProjects(); };
   window.cpOnAccountChange=function(sel){ var ci=document.getElementById('cp-custom-name'); if(!ci) return; if(sel.value==='__custom__'){ ci.style.display=''; ci.value=''; ci.focus(); } else { ci.style.display='none'; } };
@@ -17190,6 +17201,7 @@ function showDriverDetail(driver) {
 
   /* ── Modal open / close ── */
   window.openPublishReportModal = function(){
+    if(!canCreate('reports')){ showToast('You do not have permission to publish reports.','gold'); return; }
     /* Populate account selector */
     var acctSel = document.getElementById('pr-acct-sel');
     if(acctSel){
@@ -17224,6 +17236,7 @@ function showDriverDetail(driver) {
 
   /* ── Submit ── */
   window.submitPublishReport = function(status){
+    if(!canCreate('reports')){ showToast('You do not have permission to publish reports.','gold'); return; }
     var acctId  = (document.getElementById('pr-acct-sel')||{}).value;
     var period  = (document.getElementById('pr-period-sel')||{}).value;
     var title   = ((document.getElementById('pr-title')||{}).value||'').trim();
@@ -17445,6 +17458,7 @@ function showDriverDetail(driver) {
 
   /* ── Delete a report ── */
   window.deleteReport = function(acctId, itemId){
+    if(!canDelete('reports')){ showToast('You do not have permission to delete reports.','gold'); return; }
     if(!confirm('Delete this report? This cannot be undone.')) return;
     window.deletePublishedItem(acctId, itemId);
     showToast('Report deleted.', 'gold');
