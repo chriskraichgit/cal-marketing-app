@@ -1737,7 +1737,7 @@ const server = http.createServer(async (req, res) => {
     await new Promise(r => req.on('end', r));
     let pin = '';
     try { pin = JSON.parse(body).pin || ''; } catch(e) {}
-    const AGENCY_PIN = process.env.AGENCY_PIN || '1234';
+    const AGENCY_PIN = process.env.AGENCY_PIN || '2026';
     if (pin !== AGENCY_PIN) {
       jsonResponse(res, 401, { ok: false, error: 'Invalid PIN' });
       return;
