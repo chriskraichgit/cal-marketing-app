@@ -47,6 +47,7 @@ const SERVER_USERS = {
   'client@apexlegal.com':          { pwHash: '7e166f079a275064a2118127d7102a9471f671acb67a65a2c628684606b5e11f', role: 'admin',       calRole: 'client',     accounts: ['client@apexlegal.com'] },
   'staff@apexlegal.com':           { pwHash: '7df64b2903b0ac2dc591ee097c36f4acdae759753bd197eaf11008093e2966ca', role: 'user',        calRole: 'client',     accounts: ['client@apexlegal.com'] },
   'info@unitedsewerservice.com':   { pwHash: 'c87b71ef7b9882f404028ae7d5431cc6fdb73b64cfe52e9dc0501ff3dbe1a580', role: 'admin',       calRole: 'client',     accounts: ['info@unitedsewerservice.com'] },
+  'james@unitedsewerservice.com':  { pwHash: 'ca80fdf769702c2df89da970932c4cc20627ad056b0e1bc104cc2c216d5a0bae', role: 'user',        calRole: 'client',     accounts: ['info@unitedsewerservice.com'] },
 };
 
 const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (non-driver)
