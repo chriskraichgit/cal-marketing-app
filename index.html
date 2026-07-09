@@ -44,7 +44,7 @@ a{text-decoration:none}
 
 /* LOGIN */
 #login-view{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:32px 18px;background:#ffffff}
-.login-card{width:100%;max-width:580px}
+.login-card{width:100%;max-width:580px;position:relative}
 .login-logo-wrap{text-align:center;margin-bottom:32px}
 .login-logo{width:min(180px,55vw);height:auto}
 .login-title{font-family:'Barlow Condensed',sans-serif;font-size:clamp(32px,8vw,44px);font-weight:900;text-align:center;color:var(--ink);margin-bottom:6px}
@@ -1276,11 +1276,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <div id="cal-login-error" style="display:none;color:#e53935;font-size:12px;font-weight:700;margin-bottom:8px;text-align:center"></div>
           <button onclick="calDoLogin()" id="cal-login-btn" style="width:100%;background:var(--gold);color:#000;font-weight:900;border:none;padding:13px;border-radius:10px;font-size:15px;cursor:pointer">Sign In &rarr;</button>
         </div>
-        <!-- Send magic link row -->
-        <div style="text-align:center;margin-top:4px;margin-bottom:2px">
-          <a href="javascript:void(0)" onclick="showMagicLinkForm()" style="font-size:12px;font-weight:700;color:var(--muted);text-decoration:none">Forgot password? Send me a sign-in link →</a>
-        </div>
-        <!-- Magic link form (hidden by default) -->
+        <!-- Magic link form (hidden by default; no longer linked from UI) -->
         <div id="magic-link-form" style="display:none;width:100%;margin-top:10px">
           <div class="field" style="margin-bottom:8px">
             <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Your Email</label>
@@ -1291,16 +1287,16 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <button onclick="hideMagicLinkForm()" style="width:100%;background:none;border:none;color:var(--muted);font-size:12px;font-weight:700;padding:8px;cursor:pointer;margin-top:4px">← Back to password login</button>
         </div>
         <div class="login-error" id="login-error" style="width:100%;text-align:center;margin-top:8px">Access not granted. Contact your administrator.</div>
-        <!-- Agency PIN login -->
-        <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--border)">
-          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;text-align:center;margin-bottom:8px">Agency Login</div>
-          <div style="display:flex;gap:8px;justify-content:center">
-            <input id="agency-pin" type="password" maxlength="6" placeholder="PIN" style="width:100px;text-align:center;font-size:18px;font-weight:900;border:2px solid var(--gold);border-radius:8px;padding:8px 12px;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')agencyPinLogin()">
-            <button onclick="agencyPinLogin()" style="background:var(--gold);color:#000;font-weight:900;border:none;padding:10px 18px;border-radius:8px;font-size:14px;cursor:pointer">Enter →</button>
-          </div>
-          <div id="agency-pin-error" style="display:none;color:#e53935;font-size:11px;margin-top:6px;text-align:center"></div>
-        </div>
       </div>
+    </div>
+    <!-- Agency PIN login (discreet corner trigger) -->
+    <div id="agency-pin-toggle" onclick="toggleAgencyPinBox()" title="Agency Login" style="position:absolute;bottom:14px;right:16px;font-size:10px;font-weight:700;color:var(--muted);opacity:.3;cursor:pointer;letter-spacing:.04em;text-transform:uppercase;transition:opacity .15s">Agency</div>
+    <div id="agency-pin-box" style="display:none;position:absolute;bottom:40px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;box-shadow:0 6px 24px rgba(0,0,0,.14)">
+      <div style="display:flex;gap:6px">
+        <input id="agency-pin" type="password" maxlength="6" placeholder="PIN" style="width:90px;text-align:center;font-size:16px;font-weight:900;border:2px solid var(--gold);border-radius:8px;padding:6px 10px;background:var(--surface);color:var(--text)" onkeydown="if(event.key==='Enter')agencyPinLogin()">
+        <button onclick="agencyPinLogin()" style="background:var(--gold);color:#000;font-weight:900;border:none;padding:8px 14px;border-radius:8px;font-size:13px;cursor:pointer">→</button>
+      </div>
+      <div id="agency-pin-error" style="display:none;color:#e53935;font-size:11px;margin-top:6px;text-align:center"></div>
     </div>
     <div id="create-panel" style="display:none">
       <div class="login-form" style="align-items:center">
@@ -6206,6 +6202,20 @@ function hideMagicLinkForm(){
   var msg = document.getElementById('magic-link-msg');
   if (msg) { msg.style.display = 'none'; msg.textContent = ''; }
 }
+function toggleAgencyPinBox(){
+  var box = document.getElementById('agency-pin-box');
+  if(!box) return;
+  var showing = box.style.display !== 'none';
+  box.style.display = showing ? 'none' : 'block';
+  if(!showing){ var pin = document.getElementById('agency-pin'); if(pin) pin.focus(); }
+}
+document.addEventListener('click', function(e){
+  var box = document.getElementById('agency-pin-box');
+  var toggle = document.getElementById('agency-pin-toggle');
+  if(!box || box.style.display === 'none') return;
+  if(box.contains(e.target) || (toggle && toggle.contains(e.target))) return;
+  box.style.display = 'none';
+});
 function agencyPinLogin(){
   var pin = (document.getElementById('agency-pin')||{}).value||'';
   var errEl = document.getElementById('agency-pin-error');
