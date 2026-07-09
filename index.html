@@ -12190,7 +12190,7 @@ function sendWaReply() {
       <div class="form-field"><label class="form-label">Start Date</label><input class="input-std" id="nc-start" type="date"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn-gold" onclick="(function(){ var n=document.getElementById('nc-name').value.trim(); if(!n){showToast('Campaign name required.','gold');return;} showToast('Campaign ''+n+'' created!','green'); closeModal('new-campaign-modal'); })()">Launch Campaign</button>
+      <button class="btn-gold" onclick="(function(){ var n=document.getElementById('nc-name').value.trim(); if(!n){showToast('Campaign name required.','gold');return;} showToast('Campaign '+n+' created!','green'); closeModal('new-campaign-modal'); })()">Launch Campaign</button>
       <button class="btn-ghost" onclick="closeModal('new-campaign-modal')">Cancel</button>
     </div>
   </div>
@@ -16775,7 +16775,7 @@ function renderPermScreenGrid(acctId){
     return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">'
       + '<span style="font-size:13px;font-weight:700;color:var(--ink)">'+label+'</span>'
       + '<label style="display:flex;align-items:center;gap:6px;cursor:pointer">'
-      + '<input type="checkbox" '+(blocked?'':'checked')+' onchange="toggleAcctScreen(''+acctId+'',''+sc+'',this.checked)" style="width:16px;height:16px;cursor:pointer">'
+      + '<input type="checkbox" '+(blocked?'':'checked')+' onchange="toggleAcctScreen(\''+acctId+'\',\''+sc+'\',this.checked)" style="width:16px;height:16px;cursor:pointer">'
       + '<span style="font-size:11px;font-weight:700;color:'+(blocked?'var(--muted)':'var(--green,#22c55e)')+'">'+( blocked?'Off':'On')+'</span>'
       + '</label></div>';
   }).join('');
@@ -16815,15 +16815,15 @@ function renderPermRoleGrid(acctId, role){
           + actions.map(function(a){
               var val = typeof stored[a]==='boolean' ? stored[a] : !!defSc[a];
               return '<td style="text-align:center;padding:8px 6px">'
-                + '<input type="checkbox" '+(val?'checked':'')+' onchange="setRolePerm(''+acctId+'',''+role+'',''+sc+'',''+a+'',this.checked)" style="width:15px;height:15px;cursor:pointer">'
+                + '<input type="checkbox" '+(val?'checked':'')+' onchange="setRolePerm(\''+acctId+'\',\''+role+'\',\''+sc+'\',\''+a+'\',this.checked)" style="width:15px;height:15px;cursor:pointer">'
                 + '</td>';
             }).join('')
           + '</tr>';
       }).join('')
     + '</tbody></table></div>'
     + '<div style="margin-top:12px;display:flex;gap:8px">'
-    + '<button class="btn-primary" style="font-size:12px" onclick="saveRolePermsForAcct(''+acctId+'',''+role+'')">Save Role Defaults</button>'
-    + '<button class="btn-ghost" style="font-size:12px" onclick="resetRolePerms(''+acctId+'',''+role+'')">Reset to Defaults</button>'
+    + '<button class="btn-primary" style="font-size:12px" onclick="saveRolePermsForAcct(\''+acctId+'\',\''+role+'\')">Save Role Defaults</button>'
+    + '<button class="btn-ghost" style="font-size:12px" onclick="resetRolePerms(\''+acctId+'\',\''+role+'\')">Reset to Defaults</button>'
     + '</div>';
 }
 
@@ -16884,7 +16884,7 @@ function renderPermUserList(acctId){
       var mk = function(action, val){
         var checked = val===true ? 'checked' : '';
         var neutral = val===null ? ' style="opacity:.35"' : '';
-        return '<input type="checkbox" '+checked+neutral+' title="'+action+'" onchange="setUserPerm(''+acctId+'',''+u.email+'',''+sc+'',''+action+'',this.checked)" style="width:14px;height:14px;cursor:pointer">';
+        return '<input type="checkbox" '+checked+neutral+' title="'+action+'" onchange="setUserPerm(\''+acctId+'\',\''+u.email+'\',\''+sc+'\',\''+action+'\',this.checked)" style="width:14px;height:14px;cursor:pointer">';
       };
       return null; // skip inline for now — show collapsed
     });
@@ -16896,8 +16896,8 @@ function renderPermUserList(acctId){
       + '<div style="font-size:11px;color:var(--muted);font-weight:600">'+permEsc(u.email)+' · '+permEsc(u.role||'user')+(hasOverrides?' · <span style="color:var(--gold)">Custom overrides</span>':'')+'</div>'
       + '</div>'
       + '<div style="display:flex;gap:6px">'
-      + '<button class="btn-view" style="font-size:11px" onclick="openUserPermModal(''+acctId+'',''+permArg(u.email)+'',''+permArg(u.name||u.email)+'')">Edit Permissions</button>'
-      + (hasOverrides?'<button class="btn-ghost" style="font-size:11px;color:#ef4444" onclick="clearUserPerms(''+acctId+'',''+permArg(u.email)+'')">Clear</button>':'')
+      + '<button class="btn-view" style="font-size:11px" onclick="openUserPermModal(\''+acctId+'\',\''+permArg(u.email)+'\',\''+permArg(u.name||u.email)+'\')">Edit Permissions</button>'
+      + (hasOverrides?'<button class="btn-ghost" style="font-size:11px;color:#ef4444" onclick="clearUserPerms(\''+acctId+'\',\''+permArg(u.email)+'\')">Clear</button>':'')
       + '</div></div></div>';
   }).join('');
 }
@@ -16933,7 +16933,7 @@ function openUserPermModal(acctId, email, name){
 
   // Build a simple modal content
   body.innerHTML = '<div style="padding:0">'
-    + '<h3 style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--ink);margin:0 0 4px">Edit Permissions</h3>'
+    + '<h3 style="font-family:\'Barlow Condensed\',sans-serif;font-size:20px;font-weight:900;color:var(--ink);margin:0 0 4px">Edit Permissions</h3>'
     + '<p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 16px">'+permEsc(name)+' · '+permEsc(email)+'</p>'
     + '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'
     + '<thead><tr style="border-bottom:2px solid var(--border)">'
@@ -16948,7 +16948,7 @@ function openUserPermModal(acctId, email, name){
           + actions.map(function(a){
               var val = sc_ov[a];
               return '<td style="text-align:center;padding:7px 6px">'
-                + '<select onchange="setUserPerm(''+acctId+'',''+email+'',''+sc+'',''+a+'',this.value==='true'?true:this.value==='false'?false:null)" style="font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--ink)">'
+                + '<select onchange="setUserPerm(\''+acctId+'\',\''+email+'\',\''+sc+'\',\''+a+'\',this.value===\'true\'?true:this.value===\'false\'?false:null)" style="font-size:11px;padding:2px 4px;border-radius:4px;border:1px solid var(--border);background:var(--surface);color:var(--ink)">'
                 + '<option value="inherit" '+(val===null||val===undefined?'selected':'')+'>Inherit</option>'
                 + '<option value="true" '+(val===true?'selected':'')+'>Allow</option>'
                 + '<option value="false" '+(val===false?'selected':'')+'>Deny</option>'
@@ -16958,7 +16958,7 @@ function openUserPermModal(acctId, email, name){
       }).join('')
     + '</tbody></table></div>'
     + '<div style="margin-top:14px;display:flex;gap:8px">'
-    + '<button class="btn-primary" onclick="saveUserPermModal(''+acctId+'',''+email+'')">Save</button>'
+    + '<button class="btn-primary" onclick="saveUserPermModal(\''+acctId+'\',\''+email+'\')">Save</button>'
     + '<button class="btn-ghost" onclick="closeModal()">Cancel</button>'
     + '</div></div>';
   openModal('modal-wrap');
@@ -17862,8 +17862,8 @@ function showDriverDetail(driver) {
           +(m.roas    ? '<span style="font-size:12px;font-weight:700;color:var(--blue)">'+m.roas+'× ROAS</span>' : '')
         +'</div>'
         +'<div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">'
-          +(item.status==='draft' ? '<button class="btn-gold" style="font-size:12px;padding:6px 14px" onclick="publishExistingReport(''+item.accountId+'',''+item.id+'')">Publish →</button>' : '')
-          +'<button class="btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--red)" onclick="deleteReport(''+item.accountId+'',''+item.id+'')">Delete</button>'
+          +(item.status==='draft' ? '<button class="btn-gold" style="font-size:12px;padding:6px 14px" onclick="publishExistingReport(\''+item.accountId+'\',\''+item.id+'\')">Publish →</button>' : '')
+          +'<button class="btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--red)" onclick="deleteReport(\''+item.accountId+'\',\''+item.id+'\')">Delete</button>'
         +'</div>'
         +'</div>';
     }).join('');
@@ -18227,7 +18227,7 @@ function showDriverDetail(driver) {
     section.style.display='';
     list.innerHTML = items.map(function(item){
       var d = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-      return '<div class="note-list-item" onclick="openSharedNote(''+item.id+'')" data-shared-id="'+item.id+'">'
+      return '<div class="note-list-item" onclick="openSharedNote(\''+item.id+'\')" data-shared-id="'+item.id+'">'
         +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
           +'<div style="width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0"></div>'
           +'<p class="note-item-title">'+item.title+'</p>'
@@ -18298,7 +18298,7 @@ function showDriverDetail(driver) {
     list.innerHTML = items.map(function(item){
       var d = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : '';
       var unread = !item.read;
-      return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border)'+(unread?';background:rgba(0,82,204,.04)':'')+'" onclick="openAgencyMessage(''+item.id+'')">'
+      return '<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;cursor:pointer;border-bottom:1px solid var(--border)'+(unread?';background:rgba(0,82,204,.04)':'')+'" onclick="openAgencyMessage(\''+item.id+'\')">'
         +'<div style="width:8px;height:8px;border-radius:50%;background:'+(unread?'var(--blue)':'transparent')+';flex-shrink:0;margin-top:5px"></div>'
         +'<div style="flex:1;min-width:0">'
           +'<p style="font-size:12px;font-weight:'+(unread?'900':'700')+';color:var(--ink);margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+item.subject+'</p>'
