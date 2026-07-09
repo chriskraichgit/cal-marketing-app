@@ -6011,7 +6011,7 @@ window.addEventListener('DOMContentLoaded',function(){
               if (payload.accounts && payload.accounts[0]) {
                 try { localStorage.setItem('cal-current-acct', payload.accounts[0]); } catch(e){}
               }
-              document.addEventListener('DOMContentLoaded', function(){ showDriverDashboard(); });
+              showDriverDashboard();
               return; // skip Replit auth check
             }
             if (calRole === 'superadmin' || calRole === 'agency') {
@@ -6036,22 +6036,20 @@ window.addEventListener('DOMContentLoaded',function(){
                 // accounts array has server keys — map first one to a1
                 savedAcctId = 'a1';
               }
-              document.addEventListener('DOMContentLoaded', function(){
-                if (typeof launchApp === 'function') {
-                  launchApp();
-                  // Restore last known account after launch — refreshTenantContext reads from storage
-                  setTimeout(function(){
-                    var acctId = null;
-                    try { acctId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
-                    if (typeof refreshTenantContext === 'function') {
-                      refreshTenantContext(acctId || 'a1');
-                    } else if (typeof setCurrentAcct === 'function') {
-                      setCurrentAcct(acctId || 'a1');
-                    }
-                    if (typeof nav === 'function') nav('home');
-                  }, 100);
-                }
-              });
+              if (typeof launchApp === 'function') {
+                launchApp();
+                // Restore last known account after launch — refreshTenantContext reads from storage
+                setTimeout(function(){
+                  var acctId = null;
+                  try { acctId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
+                  if (typeof refreshTenantContext === 'function') {
+                    refreshTenantContext(acctId || 'a1');
+                  } else if (typeof setCurrentAcct === 'function') {
+                    setCurrentAcct(acctId || 'a1');
+                  }
+                  if (typeof nav === 'function') nav('home');
+                }, 100);
+              }
               return; // skip Replit auth check
             }
           } else {
@@ -6064,6 +6062,13 @@ window.addEventListener('DOMContentLoaded',function(){
 
   // Check for existing CAL session token first, then fall back to Replit auth
   (function(){
+    // DOMContentLoaded may already have fired by the time the fetch below
+    // resolves (it's async, parsing this large doc can finish first) — a
+    // listener added after the fact never runs. Run immediately if so.
+    function onDomReady(fn){
+      if(document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', fn); }
+      else { fn(); }
+    }
     var calToken = '';
     try { calToken = localStorage.getItem('cal-meta-session-token') || ''; } catch(e){}
     var headers = {'Accept':'application/json'};
@@ -6081,7 +6086,7 @@ window.addEventListener('DOMContentLoaded',function(){
         window.currentCompanyId = currentCompanyId;
         if(role === 'agency' || role === 'superadmin'){
           // Agency: launch directly, set up accounts
-          document.addEventListener('DOMContentLoaded', function(){
+          onDomReady(function(){
             if(typeof launchApp==='function'){
               launchApp();
               setTimeout(function(){
@@ -6097,7 +6102,7 @@ window.addEventListener('DOMContentLoaded',function(){
             }
           });
         } else {
-          document.addEventListener('DOMContentLoaded', function(){
+          onDomReady(function(){
             if(typeof window._loginToMetaServer==='function'){
               window._loginToMetaServer('','',function(){ launchApp(); });
             } else {
@@ -6108,13 +6113,13 @@ window.addEventListener('DOMContentLoaded',function(){
         return;
       }
       // No valid CAL token — show login screen
-      document.addEventListener('DOMContentLoaded', function(){
+      onDomReady(function(){
         var lv = document.getElementById('login-view');
         if(lv) lv.style.display='';
       });
     })
     .catch(function(){
-      document.addEventListener('DOMContentLoaded', function(){
+      onDomReady(function(){
         var lv = document.getElementById('login-view');
         if(lv) lv.style.display='';
       });
