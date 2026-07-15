@@ -1594,32 +1594,20 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
     <!-- ═══ AGENCY NAV (shown for agency role) ═══ -->
     <div id="nav-agency" style="display:none">
-      <div class="nav-label">Main</div>
-      <button class="nav-btn" onclick="nav('home')">
+      <button class="nav-btn" onclick="nav('home')" id="nav-home-agency">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
       </button>
-      <button id="nav-analytics-btn" class="nav-btn" onclick="nav('analytics')" style="display:none">
-        <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics
-      </button>
-      
-      <button class="nav-btn" onclick="nav('reviews')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC
+      <button class="nav-btn" onclick="nav('reviews')" id="nav-reviews-agency">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews
         <span class="nav-badge" id="reviews-badge">3</span>
       </button>
-      <button class="nav-btn" onclick="nav('leads')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Leads
+
+      <div class="nav-label">Performance</div>
+      <button class="nav-btn" onclick="nav('leaderboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg>Leaderboard
       </button>
-      <button class="nav-btn" onclick="nav('schedule')" style="display:none">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
-      </button>
-      <button class="nav-btn" onclick="nav('files')" style="display:none">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Files
-      </button>
-      <button class="nav-btn" onclick="nav('billing')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
-      </button>
-      <button class="nav-btn" onclick="nav('reports')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports
+      <button class="nav-btn" onclick="nav('drivers')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Driver Cards
       </button>
 
       <div class="nav-label">Operations</div>
@@ -1630,16 +1618,19 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="nav-btn" onclick="window.obSelectedAcctKey=null;nav('onboarding')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
       </button>
-      <button class="nav-btn" onclick="nav('agency-todos')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>To-Dos
-      </button>
-      <button class="nav-btn" onclick="nav('notes')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Notes
-      </button>
 
-      <div class="nav-label">Settings</div>
+      <div class="nav-label">Account</div>
       <button class="nav-btn" data-screen="users" onclick="nav('users')" id="nav-user-mgmt-btn">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>Users
+      </button>
+      <button class="nav-btn" onclick="nav('team')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Team
+      </button>
+      <button class="nav-btn" onclick="nav('permissions')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Permissions
+      </button>
+      <button class="nav-btn" onclick="nav('billing')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
       </button>
       <button class="nav-btn" onclick="nav('settings')">
         <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
@@ -1648,41 +1639,23 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
     <!-- ═══ ADMIN NAV (shown for admin role) ═══ -->
     <div id="nav-admin" style="display:none">
-      <div class="nav-label">Main</div>
       <button class="nav-btn" onclick="nav('home')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
       </button>
-      
       <button class="nav-btn" onclick="nav('reviews')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews
         <span class="nav-badge" id="reviews-badge-admin">3</span>
       </button>
-      <button class="nav-btn" onclick="nav('leads')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Leads
+
+      <div class="nav-label">Performance</div>
+      <button class="nav-btn" onclick="nav('leaderboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg>Leaderboard
       </button>
-      <button class="nav-btn" onclick="nav('content')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Content
-      </button>
-      <button class="nav-btn" onclick="nav('analytics')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics
-      </button>
-      <button class="nav-btn" onclick="nav('goals')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals
-      </button>
-      <button class="nav-btn" onclick="nav('schedule')" style="display:none">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
-      </button>
-      <button class="nav-btn" onclick="nav('files')" style="display:none">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Files
-      </button>
-      <button class="nav-btn" onclick="nav('billing')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
-      </button>
-      <button class="nav-btn" onclick="nav('reports')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports
+      <button class="nav-btn" onclick="nav('drivers')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Driver Cards
       </button>
 
-      <div class="nav-label">Client Tools</div>
+      <div class="nav-label">Operations</div>
       <button class="nav-btn" onclick="nav('inbox')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Inbox
         <span class="nav-badge" id="inbox-badge-admin">2</span>
@@ -1690,21 +1663,11 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="nav-btn" id="nav-admin-onboarding-btn" onclick="window.obSelectedAcctKey=null;nav('onboarding')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg><span id="nav-admin-onboarding-label">Onboarding</span>
       </button>
-      <button class="nav-btn" onclick="nav('todos')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>To-Dos
-      </button>
-      <button class="nav-btn" onclick="nav('notes')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Notes
-      </button>
-      <button class="nav-btn" onclick="nav('projects')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Projects
-      </button>
 
-      <div class="nav-label">Engagement</div>
-      
-      
-
-      <div class="nav-label">Settings</div>
+      <div class="nav-label">Account</div>
+      <button class="nav-btn" onclick="nav('billing')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
+      </button>
       <button class="nav-btn" onclick="nav('settings')">
         <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
       </button>
@@ -1712,65 +1675,22 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
     <!-- ═══ TEST/ADVANCED NAV (shown for test role — everything) ═══ -->
     <div id="nav-test" style="display:none">
-      <div class="nav-label">Overview</div>
       <button class="nav-btn" onclick="nav('home')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
       </button>
-      <button class="nav-btn" onclick="nav('analytics')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics
-      </button>
-      <div class="nav-label">Marketing</div>
-      
       <button class="nav-btn" onclick="nav('reviews')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews
         <span class="nav-badge">3</span>
       </button>
-      <button class="nav-btn" onclick="nav('leads')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Leads
-      </button>
-      <button class="nav-btn" onclick="nav('content')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Content AI
-      </button>
-      <div class="nav-label">Client</div>
-      <button class="nav-btn" onclick="nav('schedule')" style="display:none">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
-      </button>
-      <button class="nav-btn" onclick="nav('files')" style="display:none">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Files
-      </button>
-      <button class="nav-btn" onclick="nav('billing')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
-      </button>
+
       <div class="nav-label">Performance</div>
-      <button class="nav-btn" onclick="nav('goals')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals
-      </button>
-      <button class="nav-btn" onclick="nav('roi')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>ROI Tracker
-      </button>
       <button class="nav-btn" onclick="nav('leaderboard')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg>Leaderboard
       </button>
-      
-      
-      <button class="nav-btn" onclick="nav('reports')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Reports
+      <button class="nav-btn" onclick="nav('drivers')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Driver Cards
       </button>
-      <div class="nav-label">Sales</div>
-      <button class="nav-group-btn" id="nav-sales-btn" onclick="toggleNavGroup('sales-sub',this)">
-        <span class="nav-group-inner">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14v2.92z"/></svg>Sales
-        </span>
-        <svg class="nav-chevron" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>
-      </button>
-      <div class="nav-sub-group" id="sales-sub">
-        <button class="nav-btn" onclick="nav('sales');showSalesTab('dashboard')">
-          <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Dashboard
-        </button>
-        <button class="nav-btn" onclick="nav('sales');showSalesTab('training')">
-          <svg class="nav-icon" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>Training
-        </button>
-      </div>
+
       <div class="nav-label">Operations</div>
       <button class="nav-btn" onclick="nav('inbox')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Inbox
@@ -1779,60 +1699,19 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       <button class="nav-btn" id="nav-onboarding-btn" onclick="window.obSelectedAcctKey=null;nav('onboarding')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>Onboarding
       </button>
-      <button class="nav-btn" onclick="nav('client-projects')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a2 2 0 00-2 2v9a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2z"/><line x1="2" y1="13" x2="22" y2="13"/></svg>Client Projects
-      </button>
-      <button class="nav-btn" onclick="nav('agency-todos')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>My To-Dos
-      </button>
-      <button class="nav-btn" onclick="nav('todos')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>To-Dos
-      </button>
-      <button class="nav-btn" onclick="nav('notes')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10,9 9,9 8,9"/></svg>Notes
-      </button>
-      <button class="nav-btn" onclick="nav('job-logging')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>Job Tracker
-      </button>
-      <div class="nav-label">Tools</div>
-      <button class="nav-btn" onclick="nav('seo')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>SEO
-      </button>
-      <button class="nav-btn" onclick="nav('social')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Social Media
-      </button>
-      
-      <button class="nav-btn" onclick="nav('invoicing')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Invoicing
-      </button>
-      <button class="nav-btn" onclick="nav('booking')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="12" y1="14" x2="12" y2="18"/><line x1="10" y1="16" x2="14" y2="16"/></svg>Book a Call
-      </button>
-      <button class="nav-btn" onclick="nav('proposals')">
-        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.66V20a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h5.34"/><polygon points="18,2 22,6 12,16 8,16 8,12 18,2"/></svg>Proposals
-      </button>
+
       <div class="nav-label">Admin</div>
       <button class="nav-btn" onclick="nav('team')">
         <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Team
       </button>
-      
       <button class="nav-btn" onclick="nav('permissions')">
         <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Permissions
       </button>
-      
-      
-      <div class="nav-label">Settings</div>
+      <button class="nav-btn" onclick="nav('billing')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
+      </button>
       <button class="nav-btn" onclick="nav('settings')">
         <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings
-      </button>
-      <button class="nav-btn" onclick="nav('profile')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile Settings
-      </button>
-      <button class="nav-btn" onclick="nav('notifications')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Notifications
-      </button>
-      <button class="nav-btn" onclick="nav('help')">
-        <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Help &amp; Support
       </button>
     </div>
   </div>
@@ -1850,42 +1729,15 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button class="nav-btn" onclick="nav('home')">
       <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
     </button>
-    <button class="nav-btn" onclick="nav('leads')">
-      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Leads
-    </button>
-    <button class="nav-btn" onclick="nav('content')">
-      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Content
-    </button>
     <button class="nav-btn" onclick="nav('inbox')">
       <svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Inbox
       <span class="nav-badge" id="inbox-badge-user">2</span>
     </button>
     <div class="nav-label">Tools</div>
-    <button class="nav-btn" onclick="nav('analytics')">
-      <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics
-    </button>
-    <button class="nav-btn" onclick="nav('goals')">
-      <svg class="nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals
-    </button>
     <button class="nav-btn" onclick="nav('reviews')">
       <svg class="nav-icon" viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC
     </button>
     
-    <button class="nav-btn" onclick="nav('projects')">
-      <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Projects
-    </button>
-    <button class="nav-btn" onclick="nav('todos')">
-      <svg class="nav-icon" viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>To-Dos
-    </button>
-    <button class="nav-btn" onclick="nav('notes')">
-      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Notes
-    </button>
-    <button class="nav-btn" onclick="nav('schedule')" style="display:none">
-      <svg class="nav-icon" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule
-    </button>
-    <button class="nav-btn" onclick="nav('files')" style="display:none">
-      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Files
-    </button>
     <button class="nav-btn" onclick="nav('billing')">
       <svg class="nav-icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing
     </button>
@@ -1975,7 +1827,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div class="field-home-greeting" id="field-greeting">Good morning</div>
     <div class="field-home-sub" id="field-sub">Here's where things stand right now</div>
     <div class="field-stat-grid">
-      <div class="field-stat" style="background:rgba(244,185,66,.1);border:1.5px solid rgba(244,185,66,.25)" onclick="nav('todos')">
+      <div class="field-stat" style="background:rgba(244,185,66,.1);border:1.5px solid rgba(244,185,66,.25)" onclick="nav('reviews')">
         <div class="field-stat-num" style="color:var(--gold)" id="field-open-tasks">—</div>
         <div class="field-stat-label">Open Tasks</div>
       </div>
@@ -1984,10 +1836,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <div class="field-stat-label">Unread Messages</div>
       </div>
     </div>
-    <button class="field-cta" onclick="nav('todos')">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-      View My Tasks
-    </button>
     <button class="field-cta-ghost" onclick="nav('inbox')">
       <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       Open Inbox
@@ -2044,8 +1892,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 
     <p class="admin-section-label">Quick Actions</p>
     <div class="grid g3">
-      <button class="card card-pad admin-cta" onclick="nav('leads')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div><p class="admin-cta-title">New Leads</p><p class="admin-cta-sub">4 new this week</p></div></button>
-      <button class="card card-pad admin-cta" onclick="nav('reports')"><div class="admin-cta-ico" style="background:var(--blue)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><p class="admin-cta-title">Monthly Report</p><p class="admin-cta-sub">See your results</p></div></button>
       <button class="card card-pad admin-cta" onclick="nav('billing')"><div class="admin-cta-ico" style="background:var(--green)"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div><div><p class="admin-cta-title">Billing</p><p class="admin-cta-sub">Invoices &amp; payments</p></div></button>
       <button class="card card-pad admin-cta" id="admin-onb-cta" onclick="nav('onboarding')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg></div><div><p class="admin-cta-title">Onboarding</p><p class="admin-cta-sub">Track your setup</p></div></button>
       <button class="card card-pad admin-cta" onclick="nav('reviews')"><div class="admin-cta-ico" style="background:var(--gold)"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg></div><div><p class="admin-cta-title">Reviews</p><p class="admin-cta-sub">4.8★ rating</p></div></button>
@@ -2074,8 +1920,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <div class="hero-score-label">CAL HEALTH SCORE</div>
     <p class="hero-insight" id="h-insight">Your campaigns are performing above benchmark. Lead response time is strong and content approval rate is at 94%.</p>
     <div class="hero-actions">
-      <button class="hero-btn" onclick="nav('leads')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>New Leads <span id="new-lead-count" style="background:var(--gold);color:#000;border-radius:999px;padding:1px 7px;font-size:10px;margin-left:2px">4</span></button>
-      <button class="hero-btn" onclick="nav('reports')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>Monthly Report</button>
       
       <button class="hero-btn" onclick="openAiPanel()"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>Ask CAL AI</button>
     </div>
@@ -2160,204 +2004,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
 </div>
 
-<div class="screen" id="s-client-projects"></div>
-<div class="screen" id="s-agency-todos"></div>
-
-<!-- ============ SCREEN: GOALS ============ -->
-<div class="screen" id="s-goals">
-  <div class="sec-head">
-    <div><h2>Client Goals</h2><p>Track progress against monthly targets</p></div>
-    <button class="btn-view" onclick="openModal('set-goals-modal')">Set Goals</button>
-  </div>
-  <div class="grid g3">
-    <!-- Monthly Leads -->
-    <div class="card card-pad" style="text-align:center">
-      <div class="goal-ring-wrap">
-        <svg width="120" height="120" class="goal-ring-svg" viewBox="0 0 120 120" style="overflow:visible">
-          <circle class="goal-ring-track" cx="60" cy="60" r="45"/>
-          <circle class="goal-ring-fill" cx="60" cy="60" r="45" stroke-dasharray="282.74" stroke-dashoffset="48.8"/>
-          <text class="goal-ring-center" x="60" y="60" style="fill:var(--blue)">83%</text>
-        </svg>
-        <div class="goal-vals">Monthly Leads<strong>248 / 300</strong><span style="font-size:11px;color:var(--muted)">52 more to goal</span></div>
-      </div>
-    </div>
-    <!-- ROAS (exceeded) -->
-    <div class="card card-pad" style="text-align:center">
-      <div class="goal-ring-wrap">
-        <svg width="120" height="120" class="goal-ring-svg" viewBox="0 0 120 120" style="overflow:visible">
-          <circle class="goal-ring-track" cx="60" cy="60" r="45"/>
-          <circle class="goal-ring-fill goal-ring-exceeded" cx="60" cy="60" r="45" stroke-dasharray="282.74" stroke-dashoffset="0"/>
-          <text class="goal-ring-center" x="60" y="60" style="fill:var(--green)">✓</text>
-        </svg>
-        <div class="goal-vals">Target ROAS<strong>4.2x / 4.0x</strong><span style="font-size:11px;color:var(--green);font-weight:800">Goal exceeded!</span></div>
-      </div>
-    </div>
-    <!-- New Reviews -->
-    <div class="card card-pad" style="text-align:center">
-      <div class="goal-ring-wrap">
-        <svg width="120" height="120" class="goal-ring-svg" viewBox="0 0 120 120" style="overflow:visible">
-          <circle class="goal-ring-track" cx="60" cy="60" r="45"/>
-          <circle class="goal-ring-fill" cx="60" cy="60" r="45" stroke-dasharray="282.74" stroke-dashoffset="84.8" style="stroke:var(--blue)"/>
-          <text class="goal-ring-center" x="60" y="60" style="fill:var(--blue)">70%</text>
-        </svg>
-        <div class="goal-vals">New Reviews<strong>7 / 10</strong><span style="font-size:11px;color:var(--muted)">3 more to goal</span></div>
-      </div>
-    </div>
-  </div>
-  <div class="grid g2" style="margin-top:14px">
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Goal Timeline</span></div>
-      <div class="timeline">
-        <div class="t-step done"><div class="t-dot">✓</div><div><strong>Jan</strong><p>248 leads, 3.8x ROAS</p></div></div>
-        <div class="t-step done"><div class="t-dot">✓</div><div><strong>Feb</strong><p>262 leads, 3.9x ROAS</p></div></div>
-        <div class="t-step done"><div class="t-dot">✓</div><div><strong>Mar</strong><p>271 leads, 4.1x ROAS</p></div></div>
-        <div class="t-step done"><div class="t-dot">✓</div><div><strong>Apr</strong><p>280 leads, 4.2x ROAS</p></div></div>
-        <div class="t-step current"><div class="t-dot">●</div><div><strong>May</strong><p>In progress — 248/300</p></div></div>
-      </div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">AI Recommendations</span></div>
-      <div class="ai-card card" style="padding:12px;margin-bottom:10px">
-        <strong style="font-size:12px;font-weight:900;color:var(--ink)">Leads Gap: 52 Remaining</strong>
-        <p style="font-size:12px;color:var(--muted);margin-top:4px;font-weight:600;line-height:1.5">Increase Google Ads daily budget by $40 and launch a retargeting campaign to close the gap in 10 days.</p>
-      </div>
-      <div class="ai-card card" style="padding:12px;margin-bottom:10px">
-        <strong style="font-size:12px;font-weight:900;color:var(--ink)">Reviews: 3 More Needed</strong>
-        <p style="font-size:12px;color:var(--muted);margin-top:4px;font-weight:600;line-height:1.5">Send NFC tap reminders to last 10 satisfied clients. Response rate averages 40%.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============ SCREEN: ANALYTICS ============ -->
-<div class="screen" id="s-analytics">
-  <div class="sec-head"><div><h2>Analytics</h2><p>Campaign performance across all channels</p></div><span class="pill pill-gold" id="analytics-live-pill">LIVE DATA</span></div>
-  <div class="card card-pad" id="analytics-gate" style="display:none;text-align:center;padding:44px 20px">
-    <div style="width:56px;height:56px;border-radius:16px;background:var(--page);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" width="26" height="26"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg></div>
-    <h3 style="font-size:17px;font-weight:900;color:var(--ink);margin-bottom:6px">No analytics data yet</h3>
-    <p style="font-size:13px;color:var(--muted);font-weight:600;max-width:380px;margin:0 auto 18px;line-height:1.6">Analytics are powered by your connected platforms. Connect a data source to see live performance metrics.</p>
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-      
-      
-      <button class="btn-connect" onclick="openOAuthModal('gbp')">Connect Google Business</button>
-    </div>
-  </div>
-  <div class="kpi-row">
-    <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Impressions</span></div><span class="stat-val">284k</span><div class="stat-foot"><span class="up">↑ 18%</span><span>vs last month</span></div></div>
-    <div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Clicks</span></div><span class="stat-val">9.2k</span><div class="stat-foot"><span class="up">↑ 11%</span><span>CTR 3.24%</span></div></div>
-    <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Conversions</span></div><span class="stat-val">248</span><div class="stat-foot"><span class="up">↑ 14%</span><span>CVR 2.7%</span></div></div>
-    <div class="card stat-card" style="--accent:var(--red)"><div class="stat-top"><span class="stat-label">Cost Per Lead</span></div><span class="stat-val">$16.90</span><div class="stat-foot"><span class="up">↓ 6%</span><span>improving</span></div></div>
-  </div>
-  <div class="grid g2" style="margin-top:14px">
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Channel Breakdown</span></div>
-      <table class="tbl"><thead><tr><th>Channel</th><th>Leads</th><th>Cost</th><th>ROAS</th></tr></thead><tbody>
-        <tr><td>Google Search</td><td>124</td><td>$2,100</td><td class="up">4.8x</td></tr>
-        <tr><td>Google Display</td><td>42</td><td>$680</td><td>3.1x</td></tr>
-        <tr><td>Meta Ads</td><td>66</td><td>$1,100</td><td class="up">4.2x</td></tr>
-        <tr><td>Organic SEO</td><td>16</td><td>$320</td><td class="up">6.1x</td></tr>
-      </tbody></table>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Top Keywords</span></div>
-      <table class="tbl"><thead><tr><th>Keyword</th><th>Clicks</th><th>Conv.</th></tr></thead><tbody>
-        <tr><td>personal injury lawyer miami</td><td>284</td><td>18</td></tr>
-        <tr><td>car accident attorney</td><td>196</td><td>14</td></tr>
-        <tr><td>slip and fall lawyer</td><td>142</td><td>9</td></tr>
-        <tr><td>wrongful death attorney</td><td>88</td><td>6</td></tr>
-      </tbody></table>
-    </div>
-  </div>
-  <div class="card card-pad" style="margin-top:14px">
-    <div class="card-head"><span class="card-title">Integrations</span><button class="btn-view" onclick="nav('settings')">Manage</button></div>
-    <div class="grid g3">
-      
-      
-      <div class="int-card"><div class="int-card-icon"><img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3b028aee187be68968c604.jpg" style="width:34px;border-radius:6px"></div><span class="int-card-name">GBP</span><span class="int-card-sub">Not connected</span><button class="btn-connect" onclick="openOAuthModal('gbp')">Connect</button></div>
-    </div>
-  </div>
-  <div class="card card-pad" id="analytics-embed-panel" style="display:none;margin-top:14px">
-    <div class="card-head"><span class="card-title" id="analytics-embed-title">Live Dashboard</span><button class="btn-view" onclick="openDashboardUrlModal(window._currentEmbedPlatform||'gbp')">Edit URL</button></div>
-    <p style="font-size:12px;color:var(--muted);font-weight:600;margin:0 0 12px">Your connected dashboard is embedded below. Data updates live from the source.</p>
-    <div id="analytics-embed-tabs" style="display:flex;gap:8px;margin-bottom:12px"></div>
-    <div style="position:relative;width:100%;border-radius:12px;overflow:hidden;border:1px solid var(--border)">
-      <iframe id="analytics-embed-frame" src="" style="width:100%;height:600px;border:none;display:block" allowfullscreen></iframe>
-    </div>
-  </div>
-</div>
-
-<!-- ============ SCREEN: ROI ============ -->
-<div class="screen" id="s-roi">
-  <div class="sec-head"><div><h2>ROI Tracker</h2><p>Return on investment across all CAL services</p></div></div>
-  <div class="card card-pad" id="roi-gate" style="text-align:center;padding:44px 20px">
-    <div style="width:56px;height:56px;border-radius:16px;background:var(--page);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 14px"><svg viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" width="26" height="26"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-    <h3 style="font-size:17px;font-weight:900;color:var(--ink);margin-bottom:6px">No ROI data yet</h3>
-    <p style="font-size:13px;color:var(--muted);font-weight:600;max-width:380px;margin:0 auto 18px;line-height:1.6">ROI is calculated from real ad spend and attributed revenue. Connect your ad platforms to see real numbers.</p>
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-      
-      
-    </div>
-  </div>
-  <div class="kpi-row">
-    <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Total Spend</span></div><span class="stat-val">$4,200</span><div class="stat-foot"><span>This month</span></div></div>
-    <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Revenue Attributed</span></div><span class="stat-val">$17.6k</span><div class="stat-foot"><span class="up">4.2x ROAS</span></div></div>
-    <div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Cost Per Lead</span></div><span class="stat-val">$16.90</span><div class="stat-foot"><span class="up">↓ 6% MoM</span></div></div>
-    <div class="card stat-card" style="--accent:var(--red)"><div class="stat-top"><span class="stat-label">Net ROI</span></div><span class="stat-val">319%</span><div class="stat-foot"><span class="up">↑ Exceeding</span></div></div>
-  </div>
-  <div class="card card-pad" style="margin-top:14px">
-    <div class="card-head"><span class="card-title">Service Breakdown</span></div>
-    <table class="tbl"><thead><tr><th>Service</th><th>Cost</th><th>Leads</th><th>Revenue</th><th>ROI</th></tr></thead><tbody>
-      <tr><td>Google Ads Management</td><td>$1,200</td><td>166</td><td>$8,400</td><td class="up">600%</td></tr>
-      <tr><td>Meta Ads Management</td><td>$900</td><td>66</td><td>$4,200</td><td class="up">367%</td></tr>
-      <tr><td>SEO / Content</td><td>$600</td><td>16</td><td>$2,800</td><td class="up">367%</td></tr>
-      <tr><td>GBP Optimization</td><td>$300</td><td>—</td><td>Est. $1,600</td><td class="up">433%</td></tr>
-      <tr><td>Email Marketing</td><td>$200</td><td>—</td><td>Est. $600</td><td class="up">200%</td></tr>
-    </tbody></table>
-  </div>
-</div>
 <!-- ============ SCREEN: CAMPAIGNS ============ -->
-
-
-<!-- ============ SCREEN: SEO ============ -->
-<div class="screen" id="s-seo">
-  <div class="sec-head"><div><h2>SEO</h2><p>Search engine performance and keyword tracking</p></div><button class="btn-view" onclick="openOAuthModal('gbp')">Connect GBP</button></div>
-
-  <div class="card card-pad" style="margin-bottom:20px;border-left:4px solid var(--blue)">
-    <p style="font-size:14px;font-weight:900;color:var(--blue);margin-bottom:6px">Connect Your Platforms</p>
-    <p style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:12px">Connect Google Search Console and Google Business Profile to pull live SEO data. No fake numbers — real data only.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn-connect" onclick="openOAuthModal('gbp')">Connect Google Business Profile</button>
-      <button class="btn-connect" onclick="openOAuthModal('google-search-console')">Connect Search Console</button>
-    </div>
-  </div>
-
-  <div class="grid g3" style="margin-bottom:20px">
-    <div class="kpi-card"><p class="kpi-label">Organic Clicks</p><p class="kpi-value" style="color:var(--muted);font-size:18px">Connect GSC</p></div>
-    <div class="kpi-card"><p class="kpi-label">Avg Position</p><p class="kpi-value" style="color:var(--muted);font-size:18px">Connect GSC</p></div>
-    <div class="kpi-card"><p class="kpi-label">GBP Views</p><p class="kpi-value" style="color:var(--muted);font-size:18px">Connect GBP</p></div>
-  </div>
-
-  <div class="grid g2">
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Top Keywords</span></div>
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;gap:12px">
-        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <p style="font-size:13px;font-weight:700;color:var(--muted2);text-align:center">Connect Google Search Console to see keyword rankings and click data</p>
-        <button class="btn-connect" onclick="openOAuthModal('google-search-console')">Connect Now</button>
-      </div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">GBP Performance</span></div>
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:180px;gap:12px">
-        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <p style="font-size:13px;font-weight:700;color:var(--muted2);text-align:center">Connect Google Business Profile to see views, calls, and direction requests</p>
-        <button class="btn-connect" onclick="openOAuthModal('gbp')">Connect Now</button>
-      </div>
-    </div>
-  </div>
-
-</div>
-
 <!-- ============ SCREEN: REVIEWS & NFC ============ -->
 <div class="screen" id="s-reviews">
 
@@ -2447,225 +2094,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 </div>
 
 <!-- NFC Register Card Modal -->
-
-<!-- ============ SCREEN: LEADS ============ -->
-<div class="screen" id="s-leads">
-  <div class="sec-head">
-    <div><h2 style="display:flex;align-items:center">Leads<span class="live-dot" id="leads-live-dot"></span></h2><p>All inbound leads from campaigns</p></div>
-    <button class="btn-view" onclick="openModal('add-lead-modal')">+ Add Lead</button>
-  </div>
-  <div id="leads-summary-bar" style="margin-bottom:14px"></div>
-  <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:14px">
-    <div class="filter-row" id="leads-status-tabs" style="margin-bottom:0;flex-wrap:wrap"></div>
-    <select id="leads-source-filter" class="input-std" style="width:148px;padding:6px 10px;height:36px" onchange="renderLeads()">
-      <option value="">All Sources</option>
-      <option>Google Ads</option><option>Meta Ads</option><option>Google Business Profile</option>
-      <option>Organic / SEO</option><option>Website Direct</option><option>Word of Mouth</option>
-      <option>Referral</option><option>Social Media</option><option>Other</option>
-    </select>
-  </div>
-  <div id="leads-list"></div>
-</div>
-
-<!-- ============ SCREEN: CONTENT AI ============ -->
-<div class="screen" id="s-content">
-  <div class="sec-head"><div><h2>Content AI</h2><p>Generate, approve and publish marketing content</p></div></div>
-  <div class="grid g2">
-    <div class="card card-pad ai-card">
-      <div class="card-head"><span class="card-title">AI Generator</span><span class="pill pill-gold">GPT-4</span></div>
-      <div style="display:grid;gap:10px">
-        <div class="form-field">
-          <label class="form-label">Content Type</label>
-          <select class="input-std" style="height:40px" id="content-type">
-            <option>Instagram Caption</option><option>Facebook Post</option><option>Google Ad Copy</option><option>Email Subject Line</option><option>Blog Intro</option><option>SMS Campaign</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Topic / Prompt</label>
-          <textarea class="notes-textarea" id="content-prompt" placeholder="E.g. 'Personal injury case wins for car accident victims in Miami...'"></textarea>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn-gold" style="flex:1;height:40px" onclick="generateContent()">Generate</button>
-          <button class="btn-ghost" style="height:40px;padding:0 14px;font-size:12px" onclick="document.getElementById('content-prompt').value=''">Clear</button>
-        </div>
-      </div>
-    </div>
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Generated Content</span></div>
-      <div id="content-result-wrap" style="display:none">
-        <div id="content-result" style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.75;padding:12px;background:var(--page);border-radius:10px;border:1px solid var(--border);min-height:100px"></div>
-        <div class="content-action-row">
-          <button class="btn-approve" onclick="approveContent(this)">✓ Approve &amp; Send</button>
-          <button class="btn-changes" onclick="requestChanges(this)">↩ Request Changes</button>
-        </div>
-        <div class="approved-state" id="content-approved-state">
-          <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>Content approved and queued for publish
-        </div>
-        <div id="changes-feedback-wrap" style="display:none;margin-top:8px">
-          <textarea class="notes-textarea" id="changes-feedback" placeholder="Describe what you'd like changed..."></textarea>
-          <button class="btn-gold" style="height:34px;padding:0 14px;font-size:12px;margin-top:6px" onclick="submitChanges()">Submit Feedback</button>
-        </div>
-        <div style="display:flex;gap:6px;margin-top:8px">
-          <button class="btn-view" onclick="copyContent()">Copy</button>
-          <button class="btn-view" onclick="generateContent()">Regenerate</button>
-        </div>
-      </div>
-      <div id="content-empty-state" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;gap:10px">
-        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="var(--border)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-        <p style="font-size:12px;color:var(--muted2);font-weight:700">Generated content will appear here</p>
-      </div>
-    </div>
-  </div>
-  <div class="card card-pad" style="margin-top:14px">
-    <div class="card-head"><span class="card-title">Content Queue</span><span class="pill pill-blue">4 pending</span></div>
-    <table class="tbl"><thead><tr><th>Type</th><th>Title</th><th>Created</th><th>Status</th><th></th></tr></thead><tbody>
-      <tr><td><span class="pill pill-blue">Instagram</span></td><td>Case Win — Car Accident Settlement</td><td>Jun 18</td><td><span class="pill pill-gold">PENDING</span></td><td><button class="btn-view">Review</button></td></tr>
-      <tr><td><span class="pill pill-purple">Facebook</span></td><td>Free Consultation — Injury Cases</td><td>Jun 16</td><td><span class="pill pill-green">APPROVED</span></td><td><button class="btn-view">View</button></td></tr>
-      <tr><td><span class="pill pill-muted">Email</span></td><td>June Newsletter — Client Updates</td><td>Jun 14</td><td><span class="pill pill-green">PUBLISHED</span></td><td><button class="btn-view">View</button></td></tr>
-    </tbody></table>
-  </div>
-</div>
-<!-- ============ SCREEN: PROJECTS ============ -->
-<div class="screen" id="s-projects">
-  <div class="sec-head"><div><h2>Projects</h2><p>Active deliverables and timelines</p></div></div>
-  <div id="proj-list-view">
-    <div class="grid" style="gap:12px">
-      <div class="card card-pad">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
-          <div><strong style="font-size:16px;font-weight:900;color:var(--ink)">Website Redesign</strong><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Due Jun 30 · Design, Dev, SEO</p></div>
-          <span class="pill pill-gold">IN PROGRESS</span>
-        </div>
-        <div class="bar-wrap" style="margin:12px 0 6px"><div class="bar-fill" style="width:65%"></div></div>
-        <div style="display:flex;align-items:center;justify-content:space-between"><p style="font-size:11px;color:var(--muted);font-weight:700">65% complete</p><button class="btn-view" onclick="openProject('p1')">Open Project</button></div>
-      </div>
-      <div class="card card-pad">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
-          <div><strong style="font-size:16px;font-weight:900;color:var(--ink)">Google Ads Audit &amp; Rebuild</strong><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Due Jul 5 · Ads, Strategy</p></div>
-          <span class="pill pill-blue">REVIEW</span>
-        </div>
-        <div class="bar-wrap" style="margin:12px 0 6px"><div class="bar-fill" style="width:90%;--bar-col:var(--blue)"></div></div>
-        <div style="display:flex;align-items:center;justify-content:space-between"><p style="font-size:11px;color:var(--muted);font-weight:700">90% complete</p><button class="btn-view" onclick="openProject('p2')">Open Project</button></div>
-      </div>
-      <div class="card card-pad">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">
-          <div><strong style="font-size:16px;font-weight:900;color:var(--ink)">SEO Content — 12 Articles</strong><p style="font-size:12px;color:var(--muted);font-weight:700;margin-top:2px">Due Jul 20 · SEO, Content</p></div>
-          <span class="pill pill-muted">PLANNING</span>
-        </div>
-        <div class="bar-wrap" style="margin:12px 0 6px"><div class="bar-fill" style="width:20%;--bar-col:var(--muted)"></div></div>
-        <div style="display:flex;align-items:center;justify-content:space-between"><p style="font-size:11px;color:var(--muted);font-weight:700">20% complete</p><button class="btn-view" onclick="openProject('p3')">Open Project</button></div>
-      </div>
-    </div>
-  </div>
-
-  <div id="proj-detail-view" style="display:none">
-    <div class="project-detail-header">
-      <button class="back-btn" onclick="closeProject()"><svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>Back to Projects</button>
-      <div><h2 id="proj-detail-title" style="font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:900;color:var(--blue)"></h2></div>
-      <span class="pill pill-gold" id="proj-detail-status" style="margin-left:auto">IN PROGRESS</span>
-    </div>
-    <div class="grid g2">
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Checklist</span></div>
-        <ul class="proj-checklist" id="proj-checklist"></ul>
-      </div>
-      <div class="card card-pad">
-        <div class="card-head"><span class="card-title">Comments</span></div>
-        <div id="proj-comments"></div>
-        <div class="comment-input-row">
-          <input placeholder="Add a comment..." id="proj-comment-input">
-          <button class="btn-post" onclick="addComment()">Post</button>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ============ SCREEN: SCHEDULE ============ -->
-<div class="screen" id="s-schedule">
-  <div class="sec-head">
-    <div><h2>Schedule</h2><p>Calendar events and meetings</p></div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <button class="btn-view" onclick="openModal('add-event-modal')">+ Add Event</button>
-      <button class="btn-ghost" style="font-size:11px;padding:5px 10px" onclick="loadGoogleCalendarEvents()">↻ Refresh</button>
-      <button id="push-event-btn" class="btn-ghost" style="font-size:11px;padding:5px 10px;color:var(--blue);border-color:rgba(0,82,204,.3);display:none" onclick="openPushEventModal()">↑ Push to Client</button>
-    </div>
-  </div>
-
-  <!-- Agency pushed events (client view only) -->
-  <div id="agency-events-section" style="display:none;margin-bottom:16px">
-    <p style="font-size:11px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">📌 From Your Agency</p>
-    <div id="agency-events-list" style="display:flex;flex-direction:column;gap:8px"></div>
-  </div>
-
-  <!-- Google Calendar connect banner -->
-  <div class="int-card" id="gcal-connect-card" style="margin-bottom:16px">
-    <div class="int-card-icon"><img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:34px;height:34px;object-fit:contain" alt="Google Calendar"></div>
-    <span class="int-card-name">Google Calendar</span>
-    <span class="int-card-sub" id="gcal-banner-sub">Connect Google Calendar to sync your meetings &amp; events directly into CAL OS</span>
-    <select id="gcal-calendar-select" onchange="gcalSelectCalendar(this.value)" style="display:none;height:34px;border-radius:8px;border:1px solid var(--border);font-size:12px;font-weight:700;padding:0 8px;margin-right:8px;max-width:180px" title="Choose which Google Calendar to sync"></select>
-    <button class="btn-connect" id="gcal-connect-btn" onclick="openOAuthModal('google-calendar')">Connect</button>
-  </div>
-
-  <!-- Upcoming Meetings (live) -->
-  <div class="grid g2" style="margin-bottom:16px">
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">Upcoming Meetings</span></div>
-      <div id="gcal-upcoming-list" style="display:flex;flex-direction:column;gap:6px;margin-top:4px">
-        <div style="padding:18px;text-align:center;border:1px dashed var(--border);border-radius:10px">
-          <span style="font-size:12px;font-weight:700;color:var(--muted)">Loading events…</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- This Week (live) -->
-    <div class="card card-pad">
-      <div class="card-head"><span class="card-title">This Week</span></div>
-      <div id="gcal-week-list" style="display:flex;flex-direction:column;gap:0;margin-top:4px">
-        <div style="padding:18px;text-align:center;border:1px dashed var(--border);border-radius:10px">
-          <span style="font-size:12px;font-weight:700;color:var(--muted)">Loading…</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Calendar Grid View with Month/Week/Day toggles -->
-  <div class="card card-pad" id="gcal-live-card" style="margin-bottom:16px">
-    <div class="card-head" style="flex-wrap:wrap;gap:8px">
-      <span class="card-title" id="gcal-grid-title">Live Google Calendar</span>
-      <div style="display:flex;gap:4px;margin-left:auto">
-        <button id="gcal-view-month" class="btn-ghost" style="font-size:11px;padding:4px 10px;background:var(--gold);color:#fff;border-color:var(--gold)" onclick="setCalendarView('month')">Month</button>
-        <button id="gcal-view-week" class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="setCalendarView('week')">Week</button>
-        <button id="gcal-view-day" class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="setCalendarView('day')">Day</button>
-        <button class="btn-ghost" style="font-size:11px;padding:4px 8px" onclick="navCalendar(-1)">&#8249;</button>
-        <button class="btn-ghost" style="font-size:11px;padding:4px 8px" onclick="navCalendar(1)">&#8250;</button>
-        <button class="btn-ghost" style="font-size:11px;padding:4px 10px" onclick="navCalendarToday()">Today</button>
-      </div>
-    </div>
-    <div id="gcal-grid-body" style="margin-top:12px">
-      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:52px 20px;border:2px dashed var(--border);border-radius:14px;background:var(--page)">
-        <div style="width:72px;height:72px;border-radius:18px;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.10);display:flex;align-items:center;justify-content:center">
-          <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a3ed3cbe2763b2eec19f753.png" style="width:48px;height:48px;object-fit:contain" alt="Google Calendar">
-        </div>
-        <div style="text-align:center">
-          <p style="font-size:16px;font-weight:900;color:var(--ink);margin:0">Not connected</p>
-          <p style="font-size:12px;font-weight:700;color:var(--muted);margin:6px 0 0;max-width:340px;line-height:1.5">Connect Google Calendar above to see your live calendar here.</p>
-        </div>
-        <button class="btn-gold" style="height:40px;padding:0 24px;font-size:13px" onclick="openOAuthModal('google-calendar')">Connect Google Calendar</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Content Calendar (unified Google + manual items) -->
-  <div class="card card-pad" id="gcal-content-card">
-    <div class="card-head"><span class="card-title">Content Calendar</span><span style="font-size:11px;font-weight:700;color:var(--muted)">Next 30 days · Google + manual</span></div>
-    <div id="gcal-content-list" style="margin-top:8px">
-      <div style="padding:14px;text-align:center;border:1px dashed var(--border);border-radius:10px">
-        <span style="font-size:12px;font-weight:700;color:var(--muted)">Loading content calendar…</span>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ============ SCREEN: INBOX ============ -->
 <div class="screen" id="s-inbox">
   <div class="sec-head"><div><h2>Inbox</h2><p>Client messages and support</p></div></div>
@@ -2822,78 +2250,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
   </div>
 </div>
-
-<!-- ============ SCREEN: FILES ============ -->
-<div class="screen" id="s-files">
-  <div class="sec-head"><div><h2>Files</h2><p>Shared documents, assets and videos</p></div>
-    <div style="display:flex;gap:8px">
-      <button class="btn-view" onclick="openUploadModal()">Upload File</button>
-      <button class="btn-view" style="color:var(--gold);border-color:rgba(201,168,76,.4)" onclick="openVideoUploadModal()">Upload Video</button>
-    </div>
-  </div>
-  <div class="int-card" id="files-gdrive-card" style="margin-bottom:14px">
-    <div class="int-card-icon"><img src="https://upload.wikimedia.org/wikipedia/commons/1/12/Google_Drive_icon_%282020%29.svg" style="width:30px"></div>
-    <span class="int-card-name">Google Drive</span>
-    <span class="int-card-sub" id="gdrive-card-sub">Connect Google Drive to access and upload files directly from your Drive</span>
-    <button class="btn-connect" id="gdrive-card-btn" onclick="connectGoogleDrive()" style="display:none">Connect</button>
-  </div>
-
-  <div id="gdrive-files-section" style="display:none;margin-bottom:18px">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-      <div style="flex:1;position:relative">
-        <input id="gdrive-search-inp" class="input-std" placeholder="Search Google Drive…" style="padding-left:36px;height:38px" onkeydown="gdriveSearch(event)">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="var(--muted2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="position:absolute;left:12px;top:50%;transform:translateY(-50%)"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </div>
-      <button class="btn-view" onclick="gdriveSearch()" style="height:38px;white-space:nowrap">Search</button>
-    </div>
-    <div class="card" id="gdrive-files-list" style="padding:0"></div>
-  </div>
-
-  <div class="filter-row">
-    <button class="f-btn active" onclick="switchFilesTab('all',this)">All</button>
-    <button class="f-btn" onclick="switchFilesTab('docs',this)">Documents</button>
-    <button class="f-btn" onclick="switchFilesTab('images',this)">Images</button>
-    <button class="f-btn" onclick="switchFilesTab('videos',this)">Videos</button>
-    <button class="f-btn" onclick="switchFilesTab('reports',this)">Reports</button>
-  </div>
-
-  <div id="files-docs-view">
-    <div class="card">
-      <div class="file-card"><div class="file-icon" style="background:rgba(27,58,107,.08)"><svg viewBox="0 0 24 24" color="var(--blue)"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><p class="file-name">Monthly Report — June 2026.pdf</p><p class="file-date">Jun 18 · 2.4 MB</p></div><button class="btn-dl" onclick="openModal('report-modal')">View</button></div>
-      <div class="file-card"><div class="file-icon" style="background:rgba(46,125,50,.08)"><svg viewBox="0 0 24 24" color="var(--green)"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><p class="file-name">Lead Report — Q2 2026.xlsx</p><p class="file-date">Jun 15 · 1.1 MB</p></div><button class="btn-dl">Download</button></div>
-      <div class="file-card"><div class="file-icon" style="background:rgba(201,168,76,.1)"><svg viewBox="0 0 24 24" color="var(--gold)"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div><div><p class="file-name">Brand Assets — Apex Legal.zip</p><p class="file-date">Jun 10 · 8.2 MB</p></div><button class="btn-dl">Download</button></div>
-      <div class="file-card"><div class="file-icon" style="background:rgba(27,58,107,.08)"><svg viewBox="0 0 24 24" color="var(--blue)"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div><p class="file-name">Strategy Deck — June 2026.pptx</p><p class="file-date">Jun 8 · 4.6 MB</p></div><button class="btn-dl">Download</button></div>
-    </div>
-  </div>
-
-  <div id="files-videos-view" style="display:none">
-    <div id="files-testimonials-folder"></div>
-    <div class="video-grid">
-      <div class="video-card">
-        <div class="video-thumb" onclick="openVideoPlayer('Case Win Testimonial — Maria G.')">
-          <div style="position:absolute;inset:0;background:linear-gradient(135deg,#1b3a6b,#254a83);opacity:.7"></div>
-          <div class="video-play-btn"><svg viewBox="0 0 24 24" width="20" height="20"><polygon points="5,3 19,12 5,21 5,3"/></svg></div>
-        </div>
-        <div class="video-info"><p class="video-title">Case Win Testimonial — Maria G.</p><p class="video-meta">Jun 15 · 2:34 · Client Testimonial</p></div>
-      </div>
-      <div class="video-card">
-        <div class="video-thumb" onclick="openVideoPlayer('Office Tour — Apex Legal HQ')">
-          <div style="position:absolute;inset:0;background:linear-gradient(135deg,#2e7d32,#388e3c);opacity:.7"></div>
-          <div class="video-play-btn"><svg viewBox="0 0 24 24" width="20" height="20"><polygon points="5,3 19,12 5,21 5,3"/></svg></div>
-        </div>
-        <div class="video-info"><p class="video-title">Office Tour — Apex Legal HQ</p><p class="video-meta">Jun 10 · 1:48 · Brand Video</p></div>
-      </div>
-      <div class="video-card">
-        <div class="video-thumb" onclick="openVideoPlayer('Personal Injury FAQ — 2026')">
-          <div style="position:absolute;inset:0;background:linear-gradient(135deg,#7c3aed,#6d28d9);opacity:.7"></div>
-          <div class="video-play-btn"><svg viewBox="0 0 24 24" width="20" height="20"><polygon points="5,3 19,12 5,21 5,3"/></svg></div>
-        </div>
-        <div class="video-info"><p class="video-title">Personal Injury FAQ — 2026</p><p class="video-meta">Jun 5 · 4:12 · Educational</p></div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ============ SCREEN: BILLING ============ -->
 <div class="screen" id="s-billing">
   <div class="sec-head"><div><h2>Billing</h2><p id="billing-sub">Subscription, payment method and invoices</p></div></div>
@@ -2993,112 +2349,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   </div>
   <p style="font-size:12px;color:var(--muted);font-weight:700;text-align:center;margin-top:10px">Questions? Contact your account manager or <a href="#" style="color:var(--gold);font-weight:800">schedule a call</a>.</p>
 </div>
-
-<!-- ============ SCREEN: REPORTS ============ -->
-<div class="screen" id="s-reports">
-  <div class="sec-head">
-    <div><h2 id="reports-title">Reports</h2><p id="reports-subtitle">Monthly performance summaries</p></div>
-    <button class="btn-gold" id="reports-new-btn" onclick="openPublishReportModal()" style="display:none">+ New Report</button>
-  </div>
-
-  <!-- CLIENT VIEW: year/month selector + published list -->
-  <div id="reports-client-view">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-      <span style="font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap">Year</span>
-      <select id="report-year-sel" class="input-std" style="width:110px;padding:6px 10px" onchange="renderReportMonthPills()"></select>
-    </div>
-    <div id="report-month-pills" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px"></div>
-    <div id="report-inline-card" style="margin-bottom:4px"></div>
-    <div id="reports-published-list" style="display:flex;flex-direction:column;gap:12px;margin-top:8px"></div>
-  </div>
-
-  <!-- AGENCY VIEW: account filter + report list -->
-  <div id="reports-agency-view" style="display:none">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <label class="form-label" style="white-space:nowrap;margin:0">Account:</label>
-      <select class="input-std" id="reports-acct-filter" style="max-width:240px" onchange="renderAgencyReportsList()">
-        <option value="all">All Accounts</option>
-      </select>
-    </div>
-    <div id="reports-agency-list" style="display:flex;flex-direction:column;gap:12px"></div>
-  </div>
-
-  
-
-  <!-- Generate Report (agency only — legacy card kept for nav() compat) -->
-  <div class="card card-pad" id="generate-report-card" style="margin-top:12px;display:none">
-    <div class="card-head" style="margin-bottom:16px">
-      <span class="card-title">Generate Report</span>
-      <span class="pill pill-gold">AGENCY</span>
-    </div>
-    <div class="grid g2" style="gap:14px;align-items:start">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="form-field">
-          <label class="form-label">Client Account</label>
-          <select class="input-std" id="gen-report-acct">
-            <option value="all">All Accounts</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Report Type</label>
-          <select class="input-std" id="gen-report-type" onchange="updateGenReportDates()">
-            <option value="monthly">Monthly Report</option>
-            <option value="quarterly">Quarterly Report</option>
-            <option value="custom">Custom Range</option>
-          </select>
-        </div>
-        <div class="form-field" id="gen-report-date-wrap">
-          <label class="form-label">Period</label>
-          <select class="input-std" id="gen-report-period">
-            <option>June 2026</option>
-            <option>May 2026</option>
-            <option>April 2026</option>
-            <option>March 2026</option>
-            <option>February 2026</option>
-            <option>January 2026</option>
-          </select>
-        </div>
-        <div class="form-field" id="gen-report-custom-wrap" style="display:none">
-          <label class="form-label">Date Range</label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input type="date" class="input-std" id="gen-report-from" style="flex:1">
-            <span style="font-size:12px;font-weight:700;color:var(--muted)">to</span>
-            <input type="date" class="input-std" id="gen-report-to" style="flex:1">
-          </div>
-        </div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <div class="form-field">
-          <label class="form-label" style="margin-bottom:8px">Sections to Include</label>
-          <div style="display:flex;flex-direction:column;gap:8px" id="gen-report-sections">
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> Executive Summary</label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> Google Ads Performance</label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> Meta Ads Performance</label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> SEO &amp; Organic Traffic</label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" checked style="width:16px;height:16px;accent-color:var(--gold)"> Google Business Profile</label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--gold)"> Lead Attribution</label>
-            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--ink)"><input type="checkbox" style="width:16px;height:16px;accent-color:var(--gold)"> ROI &amp; Revenue</label>
-          </div>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Delivery Format</label>
-          <div style="display:flex;gap:8px;margin-top:4px">
-            <button id="gen-fmt-pdf" onclick="selectGenFmt('pdf')" style="flex:1;padding:8px;border-radius:8px;border:2px solid var(--gold);background:rgba(201,168,76,.1);font-size:12px;font-weight:900;color:var(--gold);cursor:pointer">PDF</button>
-            <button id="gen-fmt-email" onclick="selectGenFmt('email')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:900;color:var(--muted);cursor:pointer">Email</button>
-            <button id="gen-fmt-both" onclick="selectGenFmt('both')" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--card);font-size:12px;font-weight:900;color:var(--muted);cursor:pointer">Both</button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap">
-      <button class="btn-view" onclick="previewGenReport()">Preview</button>
-      <button class="btn-gold" onclick="generateReport()">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:5px"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
-        Generate Report
-      </button>
-    </div>
-  </div>
-</div>
 <!-- ============ SCREEN: SETTINGS ============ -->
 <div class="screen" id="s-settings">
   <div class="sec-head"><div><h2>Settings</h2><p>Manage your account and preferences</p></div></div>
@@ -3173,7 +2423,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
           <div style="width:34px;height:34px;border-radius:8px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
           <div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">CAL Marketing Website</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">cal.marketing</p></div>
         </a>
-        <div onclick="nav('schedule')" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div onclick="nav('inbox')" style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;background:var(--page);border:1px solid var(--border);cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">
           <div style="width:34px;height:34px;border-radius:8px;background:#25D366;display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" width="16" height="16"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
           <div><p style="font-size:13px;font-weight:800;color:var(--ink);margin:0">Book a Strategy Call</p><p style="font-size:11px;color:var(--muted);font-weight:600;margin:0">Schedule time with your account manager</p></div>
         </div>
@@ -3360,392 +2610,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
   </div>
 </div>
-<!-- ============ SCREEN: SALES TEAM ============ -->
-<div class="screen" id="s-sales">
-  <div class="sec-head"><div><h2>Sales Team</h2><p>Call performance, coaching, and training</p></div><button class="btn-view" onclick="openModal('add-lead-modal')">Log Call</button></div>
-  <!-- Sub-tabs -->
-  <div class="tabs-row" style="margin-bottom:16px">
-    <button class="tab-btn sales-tab-btn active" data-tab="dashboard" onclick="showSalesTab('dashboard')">Dashboard</button>
-    <button class="tab-btn sales-tab-btn" data-tab="training" onclick="showSalesTab('training')">Training</button>
-  </div>
-
-  <!-- DASHBOARD TAB -->
-  <div id="sales-tab-panel-dashboard" class="sales-tab-panel">
-  <!-- HERO -->
-  <div class="hero" style="margin-bottom:14px">
-    <div class="hero-eyebrow">Team Close Rate</div>
-    <div class="hero-score">34%</div>
-    <div class="hero-score-label">AVG CLOSE RATE — JUNE 2026</div>
-    <p class="hero-insight">84 calls this month. James leads at 52%. 6 deals need manager review before closing.</p>
-  </div>
-
-  <div class="kpi-row" style="margin-bottom:14px">
-    <div class="card stat-card" style="--accent:var(--gold)"><div class="stat-top"><span class="stat-label">Total Calls</span></div><span class="stat-val">84</span><div class="stat-foot"><span class="up">↑ 12%</span><span>vs last month</span></div></div>
-    <div class="card stat-card" style="--accent:var(--green)"><div class="stat-top"><span class="stat-label">Close Rate</span></div><span class="stat-val">34%</span><div class="stat-foot"><span class="up">↑ 4%</span></div></div>
-    <div class="card stat-card" style="--accent:var(--blue)"><div class="stat-top"><span class="stat-label">Revenue Closed</span></div><span class="stat-val">$28.4k</span><div class="stat-foot"><span class="up">↑ 18%</span></div></div>
-    <div class="card stat-card" style="--accent:var(--red)"><div class="stat-top"><span class="stat-label">Review Needed</span></div><span class="stat-val">6</span><div class="stat-foot"><span style="color:var(--red)">Pending mgr</span></div></div>
-  </div>
-
-  <!-- REPS -->
-  <div class="grid g3" style="margin-bottom:14px">
-    <div class="sales-rep-card">
-      <div class="rep-header">
-        <div class="rep-avatar" style="background:#1b3a6b">JR</div>
-        <div><p class="rep-name">James Rodriguez</p><p class="rep-role-label">Senior Closer · 28 calls</p></div>
-      </div>
-      <div class="rep-close-rate good">52%</div>
-      <p style="font-size:11px;color:var(--muted);font-weight:700;margin:4px 0 8px">14 closed · $14,200 revenue</p>
-      <div class="bar-wrap"><div class="bar-fill" style="width:52%;--bar-col:var(--green)"></div></div>
-      <div class="rep-ai-note">AI Coach: James excels at objection handling. Suggest pairing with newer reps for mentoring sessions.</div>
-    </div>
-    <div class="sales-rep-card">
-      <div class="rep-header">
-        <div class="rep-avatar" style="background:#c9a84c;color:#000">SM</div>
-        <div><p class="rep-name">Sarah Martinez</p><p class="rep-role-label">Account Executive · 34 calls</p></div>
-      </div>
-      <div class="rep-close-rate avg">31%</div>
-      <p style="font-size:11px;color:var(--muted);font-weight:700;margin:4px 0 8px">11 closed · $9,900 revenue</p>
-      <div class="bar-wrap"><div class="bar-fill" style="width:31%;--bar-col:var(--gold)"></div></div>
-      <div class="rep-ai-note">AI Coach: Strong discovery calls. Closing consistency needs work — recommend reviewing call #14 and #21.</div>
-    </div>
-    <div class="sales-rep-card">
-      <div class="rep-header">
-        <div class="rep-avatar" style="background:#7c3aed">JK</div>
-        <div><p class="rep-name">John Kim</p><p class="rep-role-label">Junior Rep · 22 calls</p></div>
-      </div>
-      <div class="rep-close-rate low">18%</div>
-      <p style="font-size:11px;color:var(--muted);font-weight:700;margin:4px 0 8px">4 closed · $4,300 revenue</p>
-      <div class="bar-wrap"><div class="bar-fill" style="width:18%;--bar-col:var(--red)"></div></div>
-      <div class="rep-ai-note">AI Coach: Needs improvement in handling price objections and follow-up cadence. Enroll in Module 3 training.</div>
-    </div>
-  </div>
-
-  <div class="grid g2">
-    <!-- CALL RECORDINGS -->
-    <div class="card">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-        <span class="card-title" style="font-size:16px">Call Recordings</span>
-        <div style="display:flex;gap:6px">
-          <button class="f-btn active" onclick="setFilterActive(this)">All</button><button class="f-btn" onclick="setFilterActive(this)">Flagged</button>
-        </div>
-      </div>
-      <div class="recording-card">
-        <div class="recording-header">
-          <div class="rec-avatar" style="background:#1b3a6b">JR</div>
-          <div>
-            <p style="font-size:13px;font-weight:900;color:var(--ink)">James Rodriguez — Michael Torres</p>
-            <p class="recording-meta">Jun 18 · 14:22 · Personal Injury <span class="pill pill-green" style="margin-left:4px">CLOSED</span></p>
-          </div>
-        </div>
-        <p class="ai-summary-text">AI: Strong close. Addressed budget objection with value framing. Recommend using as training example.</p>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn-view" onclick="openCallPanel('JR','James Rodriguez','Michael Torres','Jun 18','14:22','Closed — $1,800','Strong objection handling, excellent value framing. Used social proof at 8:42 mark. Client went from hesitant to committed in under 3 minutes.')">Analyze</button>
-          <button class="btn-view" onclick="toggleAudio(this)">▶ Play</button>
-          <button class="btn-view">Download</button>
-        </div>
-        <div class="audio-player"><span style="font-size:10px;color:var(--muted2);white-space:nowrap">0:00</span><div class="audio-progress"><div class="audio-progress-fill"></div></div><span class="audio-time">14:22</span></div>
-      </div>
-      <div class="recording-card">
-        <div class="recording-header">
-          <div class="rec-avatar" style="background:#c9a84c;color:#000">SM</div>
-          <div>
-            <p style="font-size:13px;font-weight:900;color:var(--ink)">Sarah Martinez — David Ramos</p>
-            <p class="recording-meta">Jun 17 · 9:48 · Car Accident <span class="pill pill-gold" style="margin-left:4px">PENDING</span></p>
-          </div>
-        </div>
-        <p class="ai-summary-text">AI: Good discovery but lost momentum at pricing. Follow up with case study packet. Flag for manager review.</p>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="btn-view" onclick="openCallPanel('SM','Sarah Martinez','David Ramos','Jun 17','9:48','Pending follow-up','Discovery was thorough. Momentum dropped at the 6:20 pricing discussion. Recommend sending case study packet and following up within 48 hours.')">Analyze</button>
-          <button class="btn-view" onclick="toggleAudio(this)">▶ Play</button>
-        </div>
-        <div class="audio-player"><span style="font-size:10px;color:var(--muted2);white-space:nowrap">0:00</span><div class="audio-progress"><div class="audio-progress-fill"></div></div><span class="audio-time">9:48</span></div>
-      </div>
-      <div class="recording-card">
-        <div class="recording-header">
-          <div class="rec-avatar" style="background:#7c3aed">JK</div>
-          <div>
-            <p style="font-size:13px;font-weight:900;color:var(--ink)">John Kim — Amanda Rivera</p>
-            <p class="recording-meta">Jun 15 · 6:14 · Slip &amp; Fall <span class="pill pill-red" style="margin-left:4px">LOST</span></p>
-          </div>
-        </div>
-        <p class="ai-summary-text">AI: Price objection not handled. Closed too early before building value. Review Module 3 training material.</p>
-        <div style="display:flex;gap:6px">
-          <button class="btn-view" onclick="openCallPanel('JK','John Kim','Amanda Rivera','Jun 15','6:14','Lost','Price objection appeared at 2:30. John attempted to close without addressing it. Recommend Module 3: Handling Price Objections. This call should be used as a learning example.')">Analyze</button>
-          <button class="btn-view" onclick="toggleAudio(this)">▶ Play</button>
-        </div>
-        <div class="audio-player"><span style="font-size:10px;color:var(--muted2);white-space:nowrap">0:00</span><div class="audio-progress"><div class="audio-progress-fill"></div></div><span class="audio-time">6:14</span></div>
-      </div>
-    </div>
-  </div><!-- /sales-tab-panel-dashboard -->
-  </div>
-
-  <!-- TRAINING TAB -->
-  <div id="sales-tab-panel-training" class="sales-tab-panel" style="display:none">
-    <div class="card card-pad" style="margin-bottom:14px">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
-        <div style="display:flex;align-items:center;gap:14px;min-width:0">
-          <div style="width:48px;height:48px;border-radius:12px;background:rgba(201,168,76,.12);color:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-          </div>
-          <div style="min-width:0">
-            <p style="font-size:15px;font-weight:900;color:var(--ink)">Training Platform</p>
-            <p style="font-size:12px;font-weight:700;color:var(--muted)">Connect your training platform to sync courses and track rep progress.</p>
-          </div>
-        </div>
-        <button class="btn-primary" id="training-connect-btn" style="width:auto;height:40px;padding:0 26px" onclick="connectTrainingPlatform(this)">Connect</button>
-      </div>
-    </div>
-    <div style="margin-bottom:14px;padding:14px;background:rgba(217,45,32,.05);border:1px solid rgba(217,45,32,.15);border-radius:12px">
-      <p style="font-size:13px;font-weight:900;color:var(--red);margin-bottom:8px">Coaching Alerts This Week</p>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(217,45,32,.1)"><span style="font-size:13px;font-weight:800;color:var(--ink)">John Kim — Needs objection handling coaching</span><button class="btn-view" onclick="openModal('new-task-modal')">Send Note</button></div>
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0"><span style="font-size:13px;font-weight:800;color:var(--ink)">Sarah Martinez — 3 lost deals on pricing this week</span><button class="btn-view" onclick="openModal('new-task-modal')">Send Note</button></div>
-    </div>
-    <div class="card card-pad">
-    <div class="card-head"><span class="card-title">Training Modules</span><span class="pill pill-gold">4 active</span></div>
-      <div class="grid" style="gap:8px">
-        <div class="training-card">
-          <div class="training-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07"/></svg></div>
-          <p class="training-title">Module 1: Discovery Call Framework</p>
-          <p class="training-desc">Learn how to uncover client pain points and qualify leads in under 10 minutes.</p>
-          <div class="bar-wrap"><div class="bar-fill" style="width:100%;--bar-col:var(--green)"></div></div>
-          <p style="font-size:10px;font-weight:800;color:var(--green);margin-top:3px">Complete · All 3 reps</p>
-        </div>
-        <div class="training-card">
-          <div class="training-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
-          <p class="training-title">Module 2: Objection Handling</p>
-          <p class="training-desc">Scripts and frameworks for the 8 most common objections in legal services sales.</p>
-          <div class="bar-wrap"><div class="bar-fill" style="width:66%;--bar-col:var(--gold)"></div></div>
-          <p style="font-size:10px;font-weight:800;color:var(--gold);margin-top:3px">2/3 reps complete</p>
-        </div>
-        <div class="training-card">
-          <div class="training-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
-          <p class="training-title">Module 3: Price Objections</p>
-          <p class="training-desc">Turn price sensitivity into value conversations. Includes live call examples.</p>
-          <div class="bar-wrap"><div class="bar-fill" style="width:33%;--bar-col:var(--red)"></div></div>
-          <p style="font-size:10px;font-weight:800;color:var(--red);margin-top:3px">1/3 reps complete — John needs this</p>
-        </div>
-        <div class="training-card">
-          <div class="training-icon"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-          <p class="training-title">Module 4: Closing Frameworks</p>
-          <p class="training-desc">The assumptive close, urgency close, and recap close — when and how to use each.</p>
-          <div class="bar-wrap"><div class="bar-fill" style="width:0%;--bar-col:var(--muted)"></div></div>
-          <p style="font-size:10px;font-weight:800;color:var(--muted2);margin-top:3px">Not started</p>
-        </div>
-      </div>
-      <div style="margin-top:14px;padding:12px;background:rgba(27,58,107,.04);border-radius:10px">
-        <p style="font-size:12px;font-weight:900;color:var(--blue);margin-bottom:6px">Recording Integrations</p>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <span class="pill pill-green">JustCall ✓</span>
-          <button class="f-btn" onclick="openUploadModal()">Manual Upload</button>
-        </div>
-      </div>
-    </div>
-  </div><!-- /sales-tab-panel-training -->
-</div><!-- /s-sales -->
-<!-- ============ SCREEN: NOTES ============ -->
-<div class="screen" id="s-notes">
-  <div class="sec-head"><div><h2>Notes</h2><p>Private workspace for thoughts and research</p></div><button class="btn-view" onclick="createNewNote()">+ New Note</button></div>
-  <div class="notes-layout">
-    <div class="notes-list-panel">
-      <div class="notes-list-head">
-        <input class="input-std" style="height:34px;font-size:12px" placeholder="Search notes..." oninput="filterNotes(this.value)">
-      </div>
-      <div id="notes-list">
-        <div class="note-list-item active" onclick="openNote(0)">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div style="width:8px;height:8px;border-radius:50%;background:var(--gold);flex-shrink:0"></div><p class="note-item-title">Q3 Strategy Notes</p></div>
-          <p class="note-item-preview">Ideas for scaling Google Ads budget and launching new campaigns...</p>
-          <p class="note-item-date">Jun 18, 2026 · 2 min read</p>
-        </div>
-        <div class="note-list-item" onclick="openNote(1)">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div><p class="note-item-title">Apex Legal — Client Brief</p></div>
-          <p class="note-item-preview">Personal injury focus. Main KPIs are lead volume and ROAS...</p>
-          <p class="note-item-date">Jun 15, 2026 · 4 min read</p>
-        </div>
-        <div class="note-list-item" onclick="openNote(2)">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px"><div style="width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0"></div><p class="note-item-title">SEO Research — Keywords</p></div>
-          <p class="note-item-preview">Long-tail keywords for personal injury content cluster...</p>
-          <p class="note-item-date">Jun 10, 2026 · 6 min read</p>
-        </div>
-      </div>
-      <!-- Agency shared notes (client view) -->
-      <div id="shared-notes-section" style="display:none;border-top:2px solid var(--blue)">
-        <div style="padding:6px 10px;background:rgba(0,82,204,.06)">
-          <p style="font-size:10px;font-weight:800;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin:0">From Agency</p>
-        </div>
-        <div id="shared-notes-list"></div>
-      </div>
-    </div>
-    <div class="note-editor-panel" id="note-editor">
-      <input class="note-title-input" id="note-title" value="Q3 Strategy Notes" oninput="startNoteSave()">
-      <div class="note-toolbar">
-        <button class="toolbar-btn" onclick="execCmd('bold')"><b>B</b></button>
-        <button class="toolbar-btn" onclick="execCmd('italic')"><i>I</i></button>
-        <button class="toolbar-btn" onclick="execCmd('underline')"><u>U</u></button>
-        <button class="toolbar-btn" onclick="execCmd('insertUnorderedList')">• List</button>
-        <button class="toolbar-btn" onclick="execCmd('insertOrderedList')">1. List</button>
-        <button class="toolbar-btn" style="margin-left:auto;color:var(--gold);border-color:rgba(201,168,76,.4)" onclick="createTaskFromNote()">+ Create Task</button>
-        <button class="toolbar-btn" id="share-note-btn" style="color:var(--blue);border-color:rgba(0,82,204,.3);display:none" onclick="openShareNoteModal()">↑ Share with Client</button>
-      </div>
-      <div class="note-body" id="note-body" contenteditable="true" oninput="startNoteSave()">
-        <p><strong>Q3 Strategy Planning</strong></p>
-        <p>Key areas to address for Q3:</p>
-        <ul>
-          <li>Scale Google Ads budget from $2,100 to $3,500/month</li>
-          <li>Launch Meta Lookalike audience targeting personal injury</li>
-          <li>Add display remarketing campaign targeting legal research queries</li>
-          <li>Increase review volume to 20+/month via NFC card distribution</li>
-        </ul>
-        <p>Content ideas: Case win video series, FAQ blog post cluster, client testimonial compilation.</p>
-      </div>
-      <div class="note-save-indicator" id="note-save-ind">All changes saved</div>
-    </div>
-  </div>
-</div>
-
-<!-- ============ SCREEN: TO-DOS ============ -->
-<div class="screen" id="s-todos">
-  <div class="sec-head"><div><h2>To-Dos</h2><p id="todos-subtitle">Task board for your team</p></div><button class="btn-view" onclick="openModal('new-task-modal')">+ New Task</button></div>
-
-  <!-- Kanban (agency + admin) -->
-  <div class="kanban" id="todos-kanban">
-    <div class="kanban-col">
-      <div class="kanban-col-head">
-        <span class="kanban-col-title">To Do</span>
-        <span class="kanban-count" id="todo-count">4</span>
-      </div>
-      <div class="kanban-cards" id="col-todo">
-        <div class="task-card" onclick="openTaskPanel('Finalize Q3 Ad Creative','todo','Alex Torres','Jun 25','Prepare 3 ad variants for Google Search and Meta. Include headline, description, and creative brief for designer.')">
-          <p class="task-card-title">Finalize Q3 Ad Creative</p>
-          <div class="task-card-meta">
-            <span class="pill pill-blue">Ads</span>
-            <span class="task-assignee"><div class="task-assignee-av">AT</div>Alex T.</span>
-            <span class="task-due">Jun 25</span>
-          </div>
-        </div>
-        <div class="task-card" onclick="openTaskPanel('Upload June Content Calendar','todo','Chris Kraich','Jun 22','Upload the final June content calendar to Files and share link with Alex.')">
-          <p class="task-card-title">Upload June Content Calendar</p>
-          <div class="task-card-meta">
-            <span class="pill pill-gold">Content</span>
-            <span class="task-assignee"><div class="task-assignee-av" style="background:var(--gold);color:#000">CK</div>Chris K.</span>
-            <span class="task-due">Jun 22</span>
-          </div>
-        </div>
-        <div class="task-card" onclick="openTaskPanel('Review GBP Photos','todo','Maria Santos','Jun 28','Audit and refresh Google Business Profile photo gallery. Remove outdated images.')">
-          <p class="task-card-title">Review GBP Photos</p>
-          <div class="task-card-meta">
-            <span class="pill pill-green">SEO</span>
-            <span class="task-assignee"><div class="task-assignee-av" style="background:#7c3aed">MS</div>Maria S.</span>
-            <span class="task-due">Jun 28</span>
-          </div>
-        </div>
-        <div class="task-card" onclick="openTaskPanel('Send NFC Cards to Apex Reception','todo','Chris Kraich','Jun 30','Ship 5 branded NFC cards to Apex Legal Group front desk. Include setup instructions.')">
-          <p class="task-card-title">Send NFC Cards to Apex</p>
-          <div class="task-card-meta">
-            <span class="pill pill-muted">Reviews</span>
-            <span class="task-assignee"><div class="task-assignee-av" style="background:var(--gold);color:#000">CK</div>Chris K.</span>
-            <span class="task-due">Jun 30</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="kanban-col">
-      <div class="kanban-col-head">
-        <span class="kanban-col-title">In Progress</span>
-        <span class="kanban-count" id="inprogress-count">3</span>
-      </div>
-      <div class="kanban-cards" id="col-inprogress">
-        <div class="task-card" onclick="openTaskPanel('Website Redesign — Dev Phase','in-progress','Chris Kraich','Jun 30','Complete responsive layout, connect CMS, and submit for client review.')">
-          <p class="task-card-title">Website Redesign — Dev Phase</p>
-          <div class="task-card-meta">
-            <span class="pill pill-purple">Dev</span>
-            <span class="task-assignee"><div class="task-assignee-av" style="background:var(--gold);color:#000">CK</div>Chris K.</span>
-            <span class="task-due" style="color:var(--red)">Jun 30 🔴</span>
-          </div>
-        </div>
-        <div class="task-card" onclick="openTaskPanel('Google Ads Audit','in-progress','Alex Torres','Jul 5','Restructure ad groups, update negative keywords, and optimize bidding strategy.')">
-          <p class="task-card-title">Google Ads Audit</p>
-          <div class="task-card-meta">
-            <span class="pill pill-blue">Ads</span>
-            <span class="task-assignee"><div class="task-assignee-av">AT</div>Alex T.</span>
-            <span class="task-due">Jul 5</span>
-          </div>
-        </div>
-        <div class="task-card" onclick="openTaskPanel('SEO Article — PI Keywords','in-progress','Maria Santos','Jul 10','Write 1,200-word blog post targeting personal injury keywords cluster.')">
-          <p class="task-card-title">SEO Article — PI Keywords</p>
-          <div class="task-card-meta">
-            <span class="pill pill-green">SEO</span>
-            <span class="task-assignee"><div class="task-assignee-av" style="background:#7c3aed">MS</div>Maria S.</span>
-            <span class="task-due">Jul 10</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="kanban-col">
-      <div class="kanban-col-head">
-        <span class="kanban-col-title">Done</span>
-        <span class="kanban-count" id="done-count">5</span>
-      </div>
-      <div class="kanban-cards" id="col-done">
-        <div class="task-card" style="opacity:.65" onclick="openTaskPanel('May Monthly Report','done','Chris Kraich','Jun 5','Generate and deliver May performance report to client.')">
-          <p class="task-card-title" style="text-decoration:line-through">May Monthly Report</p>
-          <div class="task-card-meta"><span class="pill pill-green">Done ✓</span><span class="task-due">Jun 5</span></div>
-        </div>
-        <div class="task-card" style="opacity:.65" onclick="openTaskPanel('GBP Profile Optimization','done','Chris Kraich','Jun 8','Updated GBP description, categories, hours, and added 8 new photos.')">
-          <p class="task-card-title" style="text-decoration:line-through">GBP Profile Optimization</p>
-          <div class="task-card-meta"><span class="pill pill-green">Done ✓</span><span class="task-due">Jun 8</span></div>
-        </div>
-        <div class="task-card" style="opacity:.65">
-          <p class="task-card-title" style="text-decoration:line-through">Meta Pixel Setup</p>
-          <div class="task-card-meta"><span class="pill pill-green">Done ✓</span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Simple list (user role) -->
-  <div id="todos-simple" style="display:none">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <div>
-        <span id="todos-open-count" style="font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:900;color:var(--ink)">2</span>
-        <span style="font-size:13px;font-weight:700;color:var(--muted);margin-left:6px">open tasks</span>
-      </div>
-      <button class="btn-gold" style="height:38px;padding:0 16px;font-size:13px" onclick="openModal('new-task-modal')">+ Add Task</button>
-    </div>
-    <div class="card" id="todos-simple-list">
-      <div class="todo-simple-item" data-done="false">
-        <div class="todo-simple-check" onclick="toggleTodo(this)"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>
-        <div class="todo-simple-body">
-          <span class="todo-simple-title">Review GBP Photos</span>
-          <div class="todo-simple-meta">
-            <span class="todo-priority" style="background:var(--red)"></span>
-            <span class="todo-simple-due overdue">Jun 28 · Overdue</span>
-          </div>
-        </div>
-      </div>
-      <div class="todo-simple-item" data-done="true">
-        <div class="todo-simple-check done" onclick="toggleTodo(this)"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>
-        <div class="todo-simple-body">
-          <span class="todo-simple-title done-txt">May Report delivered</span>
-          <div class="todo-simple-meta">
-            <span class="todo-simple-due">Jun 5 · Done</span>
-          </div>
-        </div>
-      </div>
-      <div class="todo-simple-item" data-done="false">
-        <div class="todo-simple-check" onclick="toggleTodo(this)"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>
-        <div class="todo-simple-body">
-          <span class="todo-simple-title">SEO Article draft</span>
-          <div class="todo-simple-meta">
-            <span class="todo-priority" style="background:var(--gold)"></span>
-            <span class="todo-simple-due">Jul 10</span>
-          </div>
-        </div>
-      </div>
-    </div>
-    <p style="font-size:11px;color:var(--muted);font-weight:600;text-align:center;margin-top:14px">Tap the circle to mark a task complete</p>
-  </div>
-</div>
-
+<!-- /s-sales -->
 <!-- ============ SCREEN: TEAM ============ -->
 <div class="screen" id="s-team">
   <!-- AGENCY VIEW (agency/test) -->
@@ -3921,163 +2786,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     </div>
   </div>
 </div>
-
-<!-- ============ SCREEN: POS BUILDER ============ -->
-
-
-
-
-<div class="screen" id="s-invoicing">
-  <div class="sec-head">
-    <div><h2>Invoices</h2><p>Track, send and collect payments</p></div>
-    <button class="btn-primary" onclick="openInvoiceCreator()">+ Create Invoice</button>
-  </div>
-
-  <!-- Invoice list view -->
-  <div id="invoice-list-view">
-    <div class="tabs-row" style="margin-bottom:16px">
-      <button class="tab-btn active" onclick="switchTabGroup('invoice-tab-group','inv-all',this)">All</button>
-      <button class="tab-btn" onclick="switchTabGroup('invoice-tab-group','inv-draft',this)">Draft</button>
-      <button class="tab-btn" onclick="switchTabGroup('invoice-tab-group','inv-sent',this)">Sent</button>
-      <button class="tab-btn" onclick="switchTabGroup('invoice-tab-group','inv-paid',this)">Paid</button>
-      <button class="tab-btn" onclick="switchTabGroup('invoice-tab-group','inv-overdue',this)">Overdue</button>
-    </div>
-    <div id="invoice-tab-group">
-      <div id="inv-all" class="tab-panel">
-        <div class="table-wrap">
-          <table class="data-table">
-            <thead><tr><th>Invoice #</th><th>Client</th><th>Issued</th><th>Due</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>
-              <tr><td><strong>#INV-001</strong></td><td>Apex Legal Group</td><td>Jun 1</td><td>Jul 1</td><td><strong>$1,200</strong></td><td><span class="pill pill-green">PAID</span></td><td><button class="btn-view" onclick="viewInvoice('INV-001')">View</button></td></tr>
-              <tr><td><strong>#INV-002</strong></td><td>Green Collar Roofing</td><td>Jun 5</td><td>Jul 5</td><td><strong>$850</strong></td><td><span class="pill pill-blue">SENT</span></td><td style="display:flex;gap:6px"><button class="btn-view" onclick="viewInvoice('INV-002')">View</button><button class="btn-view" onclick="sendInvoiceConfirm('Green Collar Roofing','gc@greencollar.com')">Send</button></td></tr>
-              <tr><td><strong>#INV-003</strong></td><td>Willy Diamond Tree Care</td><td>May 20</td><td>Jun 20</td><td><strong>$2,100</strong></td><td><span class="pill" style="background:rgba(217,45,32,.1);color:var(--red)">OVERDUE</span></td><td style="display:flex;gap:6px"><button class="btn-view" onclick="viewInvoice('INV-003')">View</button><button class="btn-view" onclick="sendInvoiceConfirm('Willy Diamond','wd@willydiamond.com')">Send</button></td></tr>
-              <tr><td><strong>#INV-004</strong></td><td>Houses Auto Body</td><td>Jun 15</td><td>-</td><td><strong>$675</strong></td><td><span class="pill" style="background:var(--gold-pale);color:var(--gold)">DRAFT</span></td><td style="display:flex;gap:6px"><button class="btn-view" onclick="viewInvoice('INV-004')">View</button><button class="btn-view" onclick="openInvoiceCreator()">Edit</button></td></tr>
-              <tr><td><strong>#INV-005</strong></td><td>Apex Legal Group</td><td>May 1</td><td>Jun 1</td><td><strong>$1,200</strong></td><td><span class="pill pill-green">PAID</span></td><td><button class="btn-view" onclick="viewInvoice('INV-005')">View</button></td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-      <div id="inv-draft" class="tab-panel" style="display:none"><p class="empty-msg">1 draft invoice</p></div>
-      <div id="inv-sent" class="tab-panel" style="display:none"><p class="empty-msg">1 sent invoice</p></div>
-      <div id="inv-paid" class="tab-panel" style="display:none"><p class="empty-msg">2 paid invoices</p></div>
-      <div id="inv-overdue" class="tab-panel" style="display:none"><p class="empty-msg">1 overdue invoice</p></div>
-    </div>
-  </div>
-
-  <!-- Invoice Creator (full-screen internal view) -->
-  <div id="invoice-creator-view" style="display:none">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <button class="btn-view" onclick="closeInvoiceCreator()">← Back</button>
-      <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--ink)">New Invoice</h3>
-    </div>
-    <div class="grid g2" style="gap:20px;margin-bottom:20px">
-      <div class="card"><p class="form-label" style="font-weight:800;color:var(--muted);font-size:11px;margin-bottom:8px">BILL FROM</p><p style="font-weight:900;color:var(--ink)">CAL Marketing LLC</p><p style="font-size:12px;color:var(--muted);font-weight:600">Miami, FL 33101 · cikvi@cal.marketing</p></div>
-      <div class="card"><p class="form-label" style="font-weight:800;color:var(--muted);font-size:11px;margin-bottom:8px">BILL TO</p><select class="input-std" id="inv-client-sel"><option>Apex Legal Group</option><option>Green Collar Roofing</option><option>Willy Diamond Tree Care</option><option>Houses Auto Body</option></select></div>
-    </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="grid g3" style="gap:16px;margin-bottom:0">
-        <div class="form-field"><label class="form-label">Invoice #</label><input class="input-std" id="inv-number" value="INV-006"></div>
-        <div class="form-field"><label class="form-label">Issue Date</label><input class="input-std" type="date" id="inv-issue-date"></div>
-        <div class="form-field"><label class="form-label">Due Date</label><input class="input-std" type="date" id="inv-due-date"></div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:16px">
-      <p class="card-label" style="margin-bottom:12px">Line Items</p>
-      <table style="width:100%;border-collapse:collapse" id="inv-line-items">
-        <thead><tr style="border-bottom:2px solid var(--border)"><th style="text-align:left;padding:6px 8px;font-size:11px;font-weight:800;color:var(--muted)">DESCRIPTION</th><th style="text-align:center;padding:6px 8px;font-size:11px;font-weight:800;color:var(--muted);width:80px">QTY</th><th style="text-align:right;padding:6px 8px;font-size:11px;font-weight:800;color:var(--muted);width:120px">UNIT PRICE</th><th style="text-align:right;padding:6px 8px;font-size:11px;font-weight:800;color:var(--muted);width:100px">TOTAL</th></tr></thead>
-        <tbody id="inv-items-body">
-          <tr class="inv-item-row"><td style="padding:6px 4px"><input class="input-std" placeholder="e.g. Monthly SEO Management" oninput="calcInvoice()"></td><td style="padding:6px 4px;text-align:center"><input class="input-std" type="number" value="1" min="1" style="text-align:center;width:60px" oninput="calcInvoice()"></td><td style="padding:6px 4px;text-align:right"><input class="input-std" type="number" placeholder="0.00" style="text-align:right" oninput="calcInvoice()"></td><td style="padding:6px 4px;text-align:right;font-weight:800;color:var(--ink)" class="item-total">$0.00</td></tr>
-        </tbody>
-      </table>
-      <button class="btn-view" style="margin-top:10px" onclick="addInvLine()">+ Add Line Item</button>
-      <div style="display:flex;justify-content:flex-end;margin-top:16px">
-        <div style="min-width:220px">
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--muted);font-weight:700">Subtotal</span><span id="inv-subtotal" style="font-weight:800;color:var(--ink)">$0.00</span></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--muted);font-weight:700">Tax Rate</span><select id="inv-tax" style="border:none;background:transparent;font-weight:800;color:var(--ink)" onchange="calcInvoice()"><option value="0">0%</option><option value="7">7%</option><option value="8.5">8.5%</option><option value="10">10%</option></select></div>
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border)"><span style="font-size:13px;color:var(--muted);font-weight:700">Tax Amount</span><span id="inv-tax-amt" style="font-weight:800;color:var(--ink)">$0.00</span></div>
-          <div style="display:flex;justify-content:space-between;padding:10px 0"><span style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--ink)">TOTAL DUE</span><span id="inv-total" style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--gold)">$0.00</span></div>
-        </div>
-      </div>
-    </div>
-    <div class="card" style="margin-bottom:20px"><label class="form-label">Notes / Payment Instructions</label><textarea class="notes-textarea" placeholder="e.g. Please pay within 30 days via bank transfer or card link below." rows="3"></textarea></div>
-    <div style="display:flex;gap:10px">
-      <button class="btn-primary" onclick="saveInvoiceDraft()">Save as Draft</button>
-      <button class="btn-primary" style="background:var(--green)" onclick="sendInvoiceConfirm('Selected Client','client@example.com')">Send to Client</button>
-      <button class="btn-view" onclick="showToast('PDF preview coming soon!','gold')">Preview</button>
-    </div>
-  </div>
-</div>
-
 <!-- ============================================================ -->
 <!-- PROPOSALS & CONTRACTS SCREEN -->
-<!-- ============================================================ -->
-<div class="screen" id="s-proposals">
-  <div class="sec-head">
-    <div><h2>Proposals & Contracts</h2><p>Send, track and get proposals signed</p></div>
-    <button class="btn-primary" onclick="openProposalBuilder()">+ Create Proposal</button>
-  </div>
-  <div id="proposal-list-view">
-    <div class="tabs-row" style="margin-bottom:16px">
-      <button class="tab-btn active" onclick="switchTabGroup('prop-tab-grp','prop-all',this)">All</button>
-      <button class="tab-btn" onclick="switchTabGroup('prop-tab-grp','prop-draft',this)">Draft</button>
-      <button class="tab-btn" onclick="switchTabGroup('prop-tab-grp','prop-sent',this)">Sent</button>
-      <button class="tab-btn" onclick="switchTabGroup('prop-tab-grp','prop-viewed',this)">Viewed</button>
-      <button class="tab-btn" onclick="switchTabGroup('prop-tab-grp','prop-signed',this)">Signed</button>
-      <button class="tab-btn" onclick="switchTabGroup('prop-tab-grp','prop-declined',this)">Declined</button>
-    </div>
-    <div id="prop-tab-grp">
-      <div id="prop-all" class="tab-panel">
-        <div class="grid g2" style="gap:14px">
-          <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><p style="font-weight:900;color:var(--ink);font-size:15px">Deluxe Plan Proposal</p><p style="font-size:12px;color:var(--muted);font-weight:700">Apex Legal Group</p></div><span class="pill pill-green">SIGNED</span></div><p style="font-size:12px;color:var(--muted2);font-weight:700;margin-bottom:12px">Sent Jun 1 · Signed Jun 3 · $1,200/mo</p><div style="display:flex;gap:8px"><button class="btn-view" onclick="viewProposal('p1')">View</button></div></div>
-          <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><p style="font-weight:900;color:var(--ink);font-size:15px">Standard + SEO Package</p><p style="font-size:12px;color:var(--muted);font-weight:700">Green Collar Roofing</p></div><span class="pill pill-blue">VIEWED</span></div><p style="font-size:12px;color:var(--muted2);font-weight:700;margin-bottom:12px">Sent Jun 12 · Last viewed Jun 14 · $850/mo</p><div style="display:flex;gap:8px"><button class="btn-view" onclick="viewProposal('p2')">View</button><button class="btn-view" onclick="showToast('Reminder sent!','green')">Send Reminder</button></div></div>
-          <div class="card"><div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><p style="font-weight:900;color:var(--ink);font-size:15px">Premium Plan — Full Service</p><p style="font-size:12px;color:var(--muted);font-weight:700">Willy Diamond Tree Care</p></div><span class="pill" style="background:var(--gold-pale);color:var(--gold)">DRAFT</span></div><p style="font-size:12px;color:var(--muted2);font-weight:700;margin-bottom:12px">Created Jun 18 · $2,100/mo</p><div style="display:flex;gap:8px"><button class="btn-view" onclick="openProposalBuilder()">Edit</button></div></div>
-        </div>
-      </div>
-      <div id="prop-draft" class="tab-panel" style="display:none"><p class="empty-msg">1 draft</p></div>
-      <div id="prop-sent" class="tab-panel" style="display:none"><p class="empty-msg">0 sent</p></div>
-      <div id="prop-viewed" class="tab-panel" style="display:none"><p class="empty-msg">1 viewed</p></div>
-      <div id="prop-signed" class="tab-panel" style="display:none"><p class="empty-msg">1 signed</p></div>
-      <div id="prop-declined" class="tab-panel" style="display:none"><p class="empty-msg">0 declined</p></div>
-    </div>
-  </div>
-
-  <!-- Proposal Builder -->
-  <div id="proposal-builder-view" style="display:none">
-    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px">
-      <button class="btn-view" onclick="closeProposalBuilder()">← Back</button>
-      <h3 style="font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:900;color:var(--ink)">Proposal Builder</h3>
-    </div>
-    <div class="grid g2" style="gap:20px;align-items:start">
-      <!-- Config panel -->
-      <div>
-        <div class="card" style="margin-bottom:12px">
-          <div class="form-field"><label class="form-label">Proposal Title</label><input class="input-std" id="prop-title-inp" placeholder="e.g. Deluxe Plan Proposal" oninput="updatePropPreview()"></div>
-          <div class="form-field" style="margin-top:10px"><label class="form-label">Client</label><select class="input-std" id="prop-client-sel" onchange="updatePropPreview()"><option>Apex Legal Group</option><option>Green Collar Roofing</option><option>Willy Diamond Tree Care</option><option>Houses Auto Body</option></select></div>
-          <div class="form-field" style="margin-top:10px"><label class="form-label">Service Package</label><div class="grid g2" style="gap:8px;margin-top:6px"><div class="card" style="padding:10px;cursor:pointer;border:2px solid var(--gold)" onclick="selectPropPkg(this ,'Standard','$699/mo')"><p style="font-weight:900;font-size:13px;color:var(--ink)">Standard</p><p style="font-size:12px;color:var(--gold);font-weight:800">$699/mo</p></div><div class="card" style="padding:10px;cursor:pointer" onclick="selectPropPkg(this ,'Deluxe','$1,199/mo')"><p style="font-weight:900;font-size:13px;color:var(--ink)">Deluxe</p><p style="font-size:12px;color:var(--muted);font-weight:800">$1,199/mo</p></div><div class="card" style="padding:10px;cursor:pointer" onclick="selectPropPkg(this ,'Premium','$2,099/mo')"><p style="font-weight:900;font-size:13px;color:var(--ink)">Premium</p><p style="font-size:12px;color:var(--muted);font-weight:800">$2,099/mo</p></div><div class="card" style="padding:10px;cursor:pointer" onclick="selectPropPkg(this,'Partner','$3,499/mo')"><p style="font-weight:900;font-size:13px;color:var(--ink)">Partner</p><p style="font-size:12px;color:var(--muted);font-weight:800">$3,499/mo</p></div></div></div>
-          <div class="form-field" style="margin-top:10px"><label class="form-label">Intro Message</label><textarea class="notes-textarea" id="prop-intro" rows="3" placeholder="Thank you for considering CAL Marketing..." oninput="updatePropPreview()"></textarea></div>
-          <div class="form-field" style="margin-top:10px"><label class="form-label">Validity Period (days)</label><input class="input-std" type="number" value="30" id="prop-validity"></div>
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"><label class="form-label" style="margin:0">Require Digital Signature</label><div class="sw" onclick="toggleNotifPref(this,'s15')"></div></div>
-        </div>
-        <div style="display:flex;gap:10px">
-          <button class="btn-primary" onclick="savePropDraft()">Save as Draft</button>
-          <button class="btn-primary" style="background:var(--green)" onclick="showToast('Proposal sent to client!','green');closeProposalBuilder()">Send to Client</button>
-        </div>
-      </div>
-      <!-- Preview panel -->
-      <div class="card" style="background:var(--page);border:2px solid var(--border);min-height:400px" id="prop-preview">
-        <div style="background:var(--blue);padding:20px;border-radius:8px 8px 0 0;margin:-20px -20px 16px">
-          <img src="https://assets.cdn.filesafe.space/CWA7ybFILove8e29NqFc/media/6a381eca1c5d711b35cfdfbb.png" style="height:28px;object-fit:contain;filter:brightness(10)">
-        </div>
-        <p style="font-size:11px;font-weight:800;color:var(--muted);margin-bottom:4px">PREPARED FOR</p>
-        <p id="prev-client-name" style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:900;color:var(--ink)">Apex Legal Group</p>
-        <p id="prev-prop-title" style="font-size:14px;color:var(--muted);font-weight:700;margin-bottom:16px">Deluxe Plan Proposal</p>
-        <p id="prev-intro" style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.7;margin-bottom:16px">Your intro message will appear here...</p>
-        <div style="padding:14px;background:var(--surface);border-radius:10px;border:1px solid var(--border)"><p style="font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:900;color:var(--ink)" id="prev-pkg">Standard — $699/mo</p><p style="font-size:12px;color:var(--muted);font-weight:600;margin-top:4px">Includes: SEO, GBP, Google Ads, Monthly Reports</p></div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ============================================================ -->
 <!-- NPS SATISFACTION SCREEN -->
 
@@ -4086,123 +2796,8 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- REFERRALS SCREEN -->
 
 
-<div class="screen" id="s-job-logging">
-  <div class="sec-head">
-    <div><h2>Job Tracker</h2><p>Log closed jobs and connect revenue back to your marketing channels</p></div>
-    <button class="btn-primary" onclick="openModal('log-job-modal')">+ Log Job</button>
-  </div>
-  <!-- KPI row -->
-  <div class="grid g3" style="gap:14px;margin-bottom:20px">
-    <div class="kpi-card" style="border-left:4px solid var(--gold)"><p class="kpi-label">Jobs Logged</p><p class="kpi-value" id="job-count">0</p></div>
-    <div class="kpi-card" style="border-left:4px solid var(--green)"><p class="kpi-label">Revenue Tracked</p><p class="kpi-value" id="job-revenue">$0</p></div>
-    <div class="kpi-card" style="border-left:4px solid var(--blue)"><p class="kpi-label">Top Channel</p><p class="kpi-value" id="job-top-channel" style="font-size:22px">—</p></div>
-  </div>
-  <!-- Channel attribution breakdown -->
-  <div class="grid g2" style="gap:16px;margin-bottom:16px">
-    <div class="card">
-      <p class="card-label" style="margin-bottom:14px">Channel Attribution</p>
-      <div style="display:grid;gap:12px">
-        <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Google Ads</span><span style="font-size:12px;font-weight:900;color:var(--ink)" id="jt-google-pct">0%</span></div>
-          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div id="jt-google-bar" style="height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,#4285f4,#34a853)"></div></div>
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Google Business</span><span style="font-size:12px;font-weight:900;color:var(--ink)" id="jt-gbp-pct">0%</span></div>
-          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div id="jt-gbp-bar" style="height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,var(--gold),#f5a623)"></div></div>
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Meta Ads</span><span style="font-size:12px;font-weight:900;color:var(--ink)" id="jt-meta-pct">0%</span></div>
-          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div id="jt-meta-bar" style="height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,#1877f2,#6b44ff)"></div></div>
-        </div>
-        <div>
-          <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12px;font-weight:800;color:var(--ink)">Other / Organic</span><span style="font-size:12px;font-weight:900;color:var(--ink)" id="jt-other-pct">0%</span></div>
-          <div style="height:10px;border-radius:999px;background:rgba(27,58,107,.08)"><div id="jt-other-bar" style="height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,var(--muted),var(--muted2))"></div></div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <p class="card-label" style="margin-bottom:12px">Quick Log</p>
-      <p style="font-size:13px;color:var(--muted);font-weight:700;margin-bottom:14px">Log a closed job in seconds to keep your channel attribution accurate and ROI reporting up to date.</p>
-      <div style="display:grid;gap:10px">
-        <div><label style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Job / Project Name</label><input class="input-std" id="quick-job-name" placeholder="e.g. Roof replacement — Johnson" style="margin-top:5px"></div>
-        <div class="grid g2" style="gap:10px">
-          <div><label style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Revenue ($)</label><input class="input-std" id="quick-job-rev" type="number" placeholder="0" style="margin-top:5px"></div>
-          <div><label style="font-size:11px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Channel</label>
-            <select class="input-std" id="quick-job-channel" style="margin-top:5px">
-              <option>Google Ads</option>
-              <option>Google Business</option>
-              <option>Meta Ads</option>
-              <option>Organic / Referral</option>
-              <option>Other</option>
-            </select>
-          </div>
-        </div>
-        <button class="btn-primary" onclick="quickLogJob()">Log This Job</button>
-      </div>
-    </div>
-  </div>
-  <!-- Job log table -->
-  <div class="card">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-      <p class="card-label">Recent Closed Jobs</p>
-      <button class="btn-view" onclick="showToast('Job log exported.','green')">Export CSV</button>
-    </div>
-    <div id="job-log-list"><p class="empty-msg">No jobs logged yet. Use the form above or click + Log Job to get started.</p></div>
-  </div>
-</div>
-
 <!-- ============================================================ -->
 <!-- BOOK A CALL SCREEN -->
-<!-- ============================================================ -->
-<div class="screen" id="s-booking">
-  <div class="sec-head">
-    <div><h2>Book Time with Your Account Manager</h2><p>Schedule a strategy call, review, or check-in</p></div>
-  </div>
-  <div class="grid g2" style="gap:20px;align-items:start">
-    <!-- LEFT: Date picker + week slots -->
-    <div class="card">
-      <!-- Mini calendar header -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <p class="card-label" style="margin:0">Pick a Date</p>
-        <div style="display:flex;gap:4px;align-items:center">
-          <button class="btn-ghost" style="padding:3px 10px;font-size:14px;line-height:1" onclick="bookingPickMonth(-1)">&#8249;</button>
-          <span id="booking-cal-header" style="font-size:12px;font-weight:800;color:var(--ink);min-width:100px;text-align:center"></span>
-          <button class="btn-ghost" style="padding:3px 10px;font-size:14px;line-height:1" onclick="bookingPickMonth(1)">&#8250;</button>
-        </div>
-      </div>
-      <!-- Calendar grid -->
-      <div id="booking-cal-grid" style="margin-bottom:18px"></div>
-      <!-- Week slots label -->
-      <p class="card-label" id="booking-week-label" style="margin-bottom:12px">Available Slots</p>
-      <div class="booking-week-wrap"><div class="booking-week-inner"><div id="booking-week-cols" class="grid g5" style="gap:8px;grid-template-columns:repeat(5,1fr)"></div></div></div>
-    </div>
-    <!-- RIGHT: Confirm + Success panels -->
-    <div>
-      <div class="card" id="booking-confirm-panel" style="display:none">
-        <p class="card-label" style="margin-bottom:12px">Confirm Your Booking</p>
-        <div style="padding:12px;background:var(--gold-pale);border-radius:10px;border:1px solid rgba(201,168,76,.3);margin-bottom:16px">
-          <p style="font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:900;color:var(--ink)" id="booking-selected-time">—</p>
-          <p style="font-size:12px;color:var(--muted);font-weight:700">with Chris Kraich · CAL Marketing</p>
-        </div>
-        <div class="form-field" style="margin-bottom:12px"><label class="form-label">Call Type</label>
-          <select class="input-std" id="booking-type"><option>Strategy Call (45 min)</option><option>Campaign Review (30 min)</option><option>Quick Check-in (15 min)</option></select>
-        </div>
-        <div class="form-field" style="margin-bottom:14px"><label class="form-label">What would you like to discuss?</label><textarea class="notes-textarea" id="booking-notes" rows="3" placeholder="e.g. June performance review, new campaign ideas..."></textarea></div>
-        <div style="display:flex;gap:10px">
-          <button class="btn-primary" onclick="confirmBooking()">Confirm Booking</button>
-          <button class="btn-view" onclick="document.getElementById('booking-confirm-panel').style.display='none'">Back</button>
-        </div>
-      </div>
-      <div class="card" id="booking-success-panel" style="display:none;text-align:center;padding:32px">
-        <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 14px;display:block"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-        <p style="font-family:'Barlow Condensed',sans-serif;font-size:24px;font-weight:900;color:var(--ink);margin-bottom:8px">Booking Confirmed!</p>
-        <p id="booking-confirmed-time" style="font-size:14px;color:var(--muted);font-weight:700;margin-bottom:16px">—</p>
-        <p style="font-size:13px;color:var(--muted);font-weight:600">You'll receive a confirmation email. The meeting has been added to your Schedule.</p>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ============================================================ -->
 <!-- WHITE LABEL SETTINGS SCREEN -->
 
@@ -4223,40 +2818,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <p id="send-inv-client" style="font-weight:900;font-size:16px;color:var(--ink);margin-bottom:4px">—</p>
     <p id="send-inv-email" style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:20px">—</p>
     <div style="display:flex;gap:10px;justify-content:center"><button class="btn-primary" onclick="confirmSendInvoice()">Confirm Send</button><button class="btn-view" onclick="closeModal('send-invoice-modal')">Cancel</button></div>
-  </div>
-</div>
-
-<div class="screen" id="s-social">
-  <div class="sec-head">
-    <div><h2>Social Media</h2><p>Connect your platforms — CAL will manage, schedule and report on all of them</p></div>
-  </div>
-  <!-- Connected count banner -->
-  <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(27,58,107,.06),rgba(201,168,76,.06));border:1.5px solid rgba(201,168,76,.25)">
-    <div style="display:flex;align-items:center;gap:14px;padding:4px 0">
-      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--blue),#2d5ba3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-      </div>
-      <div style="flex:1">
-        <p style="font-size:14px;font-weight:900;color:var(--ink);margin-bottom:2px">Connect Your Social Platforms</p>
-        <p style="font-size:12px;color:var(--muted);font-weight:700">Once connected, CAL handles posting, scheduling, reporting and engagement tracking automatically.</p>
-      </div>
-      <span class="pill" style="background:rgba(27,58,107,.09);color:var(--ink);font-size:11px;white-space:nowrap">0 of 7 connected</span>
-    </div>
-  </div>
-  <!-- Platform cards grid -->
-  <div class="card" style="border-radius:14px;padding:20px;margin-bottom:14px"><div style="font-size:15px;font-weight:900;color:var(--blue);font-family:'Barlow Condensed',sans-serif;letter-spacing:.3px;margin-bottom:8px">Connect Your Social Platforms</div><p style="font-size:13px;color:var(--muted);font-weight:600;line-height:1.6;margin-bottom:14px">Your social platforms are managed and connected by your CAL Marketing account manager. Reach out to get Google Business, Instagram, Facebook, TikTok, LinkedIn, YouTube, or X connected to your portal.</p><a href="mailto:support@cal.marketing" style="display:inline-block;padding:9px 18px;background:transparent;border:1.5px solid var(--gold);border-radius:10px;color:var(--gold);font-size:12px;font-weight:800;text-decoration:none;font-family:'Barlow Condensed',sans-serif;letter-spacing:.3px">Contact Your Account Manager →</a></div>
-
-  <!-- Why connect note -->
-  <div class="card" style="background:rgba(27,58,107,.03);border:1.5px dashed rgba(27,58,107,.15)">
-    <div style="display:flex;align-items:flex-start;gap:14px">
-      <div style="width:36px;height:36px;border-radius:10px;background:rgba(201,168,76,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-      </div>
-      <div>
-        <p style="font-size:13px;font-weight:900;color:var(--ink);margin-bottom:4px">Why connect your platforms?</p>
-        <p style="font-size:12px;color:var(--muted);font-weight:700;line-height:1.6">When you connect a platform, CAL can post on your behalf, schedule content in advance, respond to reviews and comments, pull engagement analytics directly into your reports, and show you exactly how social media is impacting your lead flow. Contact your account manager to get any platform connected.</p>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -4281,12 +2842,6 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
     <button class="m-tab active" id="m-home" onclick="nav('home')">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
     </button>
-    <button class="m-tab" id="m-leads" onclick="nav('leads')">
-      <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>Leads
-    </button>
-    <button class="m-tab" id="m-content" onclick="nav('content')">
-      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>Content
-    </button>
     <button class="m-tab" id="m-inbox" onclick="nav('inbox')">
       <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Inbox
     </button>
@@ -4299,16 +2854,9 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
   <div class="more-overlay" id="more-overlay" onclick="closeMoreSheet()"></div>
   <div class="more-sheet" id="more-sheet">
     <div class="more-sheet-handle"></div>
-    <button id="more-analytics-btn" class="more-item" onclick="closeMoreSheet();nav('analytics')" style="display:none"><svg viewBox="0 0 24 24"><polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/></svg>Analytics</button>
-    <button class="more-item" onclick="closeMoreSheet();nav('goals')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>Goals</button>
     <button class="more-item" onclick="closeMoreSheet();nav('reviews')"><svg viewBox="0 0 24 24"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>Reviews &amp; NFC</button>
     <button class="more-item" onclick="closeMoreSheet();nav('drivers')"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Drivers</button>
-    <button class="more-item" onclick="closeMoreSheet();nav('campaigns')"><svg viewBox="0 0 24 24"><polygon points="12,2 2,7 12,12 22,7 12,2"/></svg>Campaigns</button>
-    <button class="more-item" onclick="closeMoreSheet();nav('projects')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/></svg>Projects</button>
-    <button class="more-item" onclick="closeMoreSheet();nav('todos')"><svg viewBox="0 0 24 24"><polyline points="9,11 12,14 22,4"/></svg>To-Dos</button>
-    <button class="more-item" onclick="closeMoreSheet();nav('notes')"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16"/></svg>Notes</button>
-    <button class="more-item" onclick="closeMoreSheet();nav('schedule')" style="display:none"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule</button>
-    <button class="more-item" onclick="closeMoreSheet();nav('files')" style="display:none"><svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>Files</button>
+    
     <button class="more-item" onclick="closeMoreSheet();nav('billing')"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Billing</button>
     <button class="more-item" onclick="closeMoreSheet();nav('settings')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/></svg>Settings</button>
   </div>
@@ -5151,16 +3699,22 @@ function companyParam(extra) {
   return extra ? p + '&' + extra : p;
 }
 var TITLES = {
-  users:'User Management',
-  home:'Home',analytics:'Analytics',roi:'ROI Tracker',campaigns:'Campaigns',leads:'Leads',
-  content:'Content AI',projects:'Projects',schedule:'Schedule',inbox:'Inbox',files:'Files',
-  billing:'Billing',plans:'Change Plan',reports:'Reports',settings:'Settings',
-  profile:'Profile Settings',notifications:'Notification Preferences',help:'Help & Support',
-  reviews:'Reviews & NFC',goals:'Goals',sales:'Sales Team',notes:'Notes',
-  todos:'To-Dos',team:'Team Management',pos:'POS Builder',
-  invoicing:'Invoicing',proposals:'Proposals & Contracts',nps:'Client Satisfaction',
-  referrals:'Referral Program',booking:'Book a Call',whitelabel:'White Label',revenue:'Revenue Dashboard',
-  permissions:'Permission Controls','job-logging':'Job Tracker',social:'Social Media Health',seo:'SEO',leaderboard:'Review Leaderboard'
+  home:'Home',
+  reviews:'Reviews & NFC',
+  leaderboard:'Review Leaderboard',
+  drivers:'Driver Cards',
+  inbox:'Inbox',
+  onboarding:'Onboarding',
+  billing:'Billing',
+  plans:'Change Plan',
+  settings:'Settings',
+  profile:'Profile Settings',
+  notifications:'Notification Preferences',
+  help:'Help & Support',
+  team:'Team Management',
+  permissions:'Permission Controls',
+  maintenance:'Maintenance',
+  users:'User Management'
 };
 var DEFAULT_ACCOUNTS = [
   {id:'cal',name:'CAL Marketing',initials:'CM',plan:'Master',color:'#c9a84c',serverKey:'cal-marketing',isMaster:true},
@@ -5212,14 +3766,14 @@ var POS_OB_STEPS = [
 
 // ============ PERMISSIONS ============
 var DEFAULT_PERMISSIONS = {
-  agency:   ['home','onboarding','goals','analytics','roi','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','team','invoicing','proposals','booking','settings','profile','notifications','help','permissions','social','seo','leaderboard','users','users'],
-  admin:    ['home','onboarding','maintenance','reviews','leads','files','billing','reports','inbox','schedule','todos','notes','settings','notifications','help','profile','users','users'],
-  owner:    ['home','onboarding','goals','analytics','roi','reviews','leads','content','schedule','inbox','notes','todos','files','billing','reports','settings','notifications','help','profile','users','users','social','seo','booking'],
-  operator: ['home','reviews','leads','inbox','todos','notes','schedule','notifications','help','profile','social'],
-  driver:   ['home','reviews','todos','notifications','help','profile'],
-  user:     ['todos','notes','files','inbox','profile'],
-  client:   ['home','reviews','leads','inbox','todos','notes','schedule','notifications','help','profile'],
-  test:     ['home','onboarding','maintenance','goals','analytics','roi','reviews','leads','content','projects','client-projects','agency-todos','schedule','inbox','notes','todos','files','billing','reports','sales','team','invoicing','proposals','booking','settings','profile','notifications','help','permissions','social','seo']
+  agency:   ['home','reviews','leaderboard','drivers','inbox','onboarding','team','permissions','billing','settings','profile','notifications','help','users','maintenance'],
+  admin:    ['home','reviews','leaderboard','drivers','inbox','onboarding','billing','settings','profile','notifications','help','maintenance'],
+  owner:    ['home','reviews','leaderboard','drivers','inbox','billing','settings','profile','notifications','help'],
+  operator: ['home','reviews','inbox','notifications','help','profile'],
+  driver:   ['home','reviews','notifications','help','profile'],
+  user:     ['home','reviews','inbox','profile'],
+  client:   ['home','reviews','inbox','notifications','help','profile'],
+  test:     ['home','reviews','leaderboard','drivers','inbox','onboarding','team','permissions','billing','settings','profile','notifications','help','users','maintenance','plans']
 };
 
 // Per-account role permission overrides: { accountId: { role: [screens] } }
@@ -7941,8 +6495,6 @@ function nav(screen){
   if(screen==='notes'){ if(typeof _loadNotesForAcct==='function') _loadNotesForAcct(); renderNotesList(); openNote(currentNoteIndex); }
   if(screen==='plans') setTimeout(highlightCurrentPlan,50);
   if(screen==='permissions') renderPermAccounts();
-  if(screen==='job-logging') renderJobLogs();
-  if(screen==='social'){ if(!currentAcctId) currentAcctId='local'; loadSocialConnections(); }
   if(screen==='files') initGDriveCard();
   if(screen==='drivers') loadDriverStats();
   if(screen==='schedule') loadGoogleCalendarEvents();
@@ -8496,41 +7048,7 @@ function clearBillingStripeCustomerId(){
 }
 
 // ============ ANALYTICS (connector-gated) ============
-function gateAnalytics(){
-  var screen=document.getElementById('s-analytics');
-  if(!screen) return;
-  var connected=false;
-  try{
-    var s=JSON.parse(localStorage.getItem('cal-integrations-'+(window.currentAcctId||'a1'))||'{}');
-    connected=!!(s['googlebusiness']||s['gbp']||s['googlebusinessprofile']);
-  }catch(e){}
-  var gate=document.getElementById('analytics-gate');
-  var pill=document.getElementById('analytics-live-pill');
-  Array.prototype.forEach.call(screen.children,function(ch){
-    if(ch.classList.contains('sec-head')||ch.id==='analytics-gate') return;
-    ch.style.display=connected?'':'none';
-  });
-  if(gate) gate.style.display=connected?'none':'';
-  if(pill) pill.style.display=connected?'':'none';
-}
 
-function gateDataScreen(screenId,gateId,keys){
-  var screen=document.getElementById(screenId);
-  if(!screen) return;
-  var connected=false;
-  try{
-    var s=JSON.parse(localStorage.getItem('cal-integrations-'+(window.currentAcctId||'a1'))||'{}');
-    connected=keys.some(function(k){ return !!s[k]; });
-  }catch(e){}
-  var gate=document.getElementById(gateId);
-  Array.prototype.forEach.call(screen.children,function(ch){
-    if(ch.classList.contains('sec-head')||ch.id===gateId) return;
-    ch.style.display=connected?'':'none';
-  });
-  if(gate) gate.style.display=connected?'none':'';
-}
-function gateRoi(){ gateDataScreen('s-roi','roi-gate',['googleads','metaads']); }
-function gateAllDataScreens(){ try{ gateAnalytics(); }catch(e){} try{ gateRoi(); }catch(e){} }
 
 // ============ PROFILE ============
 async function changePassword(){
@@ -9637,13 +8155,7 @@ function submitVideoTestimonial(file){
   items.unshift({name:name,date:dateStr});
   localStorage.setItem(key,JSON.stringify(items));
   closeModal('video-testimonial-modal');
-  nav('files');
-  setTimeout(function(){
-    var vBtn=null;
-    document.querySelectorAll('#s-files .f-btn').forEach(function(b){ if(b.textContent.trim()==='Videos') vBtn=b; });
-    switchFilesTab('videos',vBtn);
-    showToast('Saved to Files \u2192 Client Testimonials \uD83C\uDFA5','green');
-  },80);
+  showToast('Video saved!','success');},80);
 }
 function openVideoPlayer(title){ var el=document.getElementById('video-player-title'); if(el) el.textContent=title; openModal('video-player-modal'); }
 function startVideoUpload() {
@@ -10099,7 +8611,7 @@ function completeOAuth(){
     saved[platformTitle.textContent.toLowerCase().replace(/\s+/g,'')]=true;
     localStorage.setItem(connKey,JSON.stringify(saved));
   }
-  setTimeout(function(){ closeModal('oauth-modal'); showToast('Integration connected!','green'); refreshIntegrationsForAccount(currentAcctId); if(typeof renderBilling==='function') try{ renderBilling(); }catch(e){} if(typeof gateAllDataScreens==='function') try{ gateAllDataScreens(); }catch(e){} },2000);
+  setTimeout(function(){ closeModal('oauth-modal'); showToast('Integration connected!','green'); refreshIntegrationsForAccount(currentAcctId); if(typeof renderBilling==='function') try{ renderBilling(); }catch(e){} },2000);
 }
 function selectPaymentMethod(type){
   closeModal('update-payment-modal');
@@ -11894,10 +10406,7 @@ function sendWaReply() {
     if(window.currentScreen==='social') loadSocialConnections();
     if(window.currentScreen==='job-logging') renderJobLogs();
     if(window.currentScreen==='billing' && typeof renderBilling==='function') try{ renderBilling(); }catch(e){}
-    if(window.currentScreen==='analytics' && typeof gateAnalytics==='function') try{ gateAnalytics(); }catch(e){}
-    if(window.currentScreen==='roi' && typeof gateRoi==='function') try{ gateRoi(); }catch(e){}
-    if(window.currentScreen==='revenue' && typeof gateRevenue==='function') try{ gateRevenue(); }catch(e){}
-    if(window.currentScreen==='campaigns' && typeof gateCampaigns==='function') try{ gateCampaigns(); }catch(e){}
+
     if(window.currentScreen==='onboarding'){
       if(window.currentRole==='admin' && typeof renderOnboardingScreen==='function') try{ renderOnboardingScreen(); }catch(e){}
       else if(typeof renderOnboarding==='function') try{ renderOnboarding(); }catch(e){}
@@ -14928,7 +13437,7 @@ function sendWaReply() {
     if(onbBtn){
       if(role==='agency'||role==='test'){
         setNavLabel(onbBtn,'Onboarding'); onbBtn.setAttribute('onclick',"nav('onboarding')"); onbBtn.style.display='';
-        var cp=document.querySelector(".nav-btn[onclick=\"nav('client-projects')\"]");
+        var cp=document.querySelector(".nav-btn[onclick=\"nav('reviews')\"]");
         if(cp && cp.nextSibling!==onbBtn){ cp.parentNode.insertBefore(onbBtn,cp.nextSibling); }
       } else if(role==='admin'){
         var home=document.querySelector(".nav-btn[onclick=\"nav('home')\"]");
@@ -15962,7 +14471,7 @@ function openObAccount(key){
       }
     }
   }catch(e){}
-  nav('client-projects');
+  nav('onboarding');
 }
 function submitAddClient(){
   var nameEl=document.getElementById('add-client-name');
