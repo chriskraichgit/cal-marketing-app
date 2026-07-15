@@ -1384,13 +1384,21 @@ async function handlePlacesReviews(res, qs) {
       profile_photo_url: rev.profile_photo_url,
     }));
     const lowStarAlerts = reviews.filter(r => r.rating <= 2);
-    jsonResponse(res, 200, {
+    const out = {
       name: result.name || accountData.name,
       rating: result.rating || null,
       total: result.user_ratings_total || 0,
       reviews,
       lowStarAlerts,
-    });
+    };
+    // Cache reviews for home/stats aggregation
+    try {
+      const store = loadMetaStore();
+      store['reviews_cache_' + account] = reviews.map(r => ({ ...r, date: r.time ? new Date(r.time * 1000).toISOString() : null }));
+      store['reviews_cache_meta_' + account] = { rating: out.rating, total: out.total, name: out.name, cachedAt: new Date().toISOString() };
+      saveMetaStoreQueued(store);
+    } catch(e) {}
+    jsonResponse(res, 200, out);
   } catch(e) { jsonResponse(res, 200, { error: e.message, reviews: [] }); }
 }
 
@@ -1551,6 +1559,19 @@ function buildDriverPage(person, reviewUrl) {
     btn.addEventListener('click', function() {
       fetch('/api/nfc/click', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person: ${JSON.stringify(person)}, ts: new Date().toISOString() }) }).catch(() => {});
     });
+    // Auto-redirect after 2s if we have a real review URL
+    if (btn.getAttribute('href') && btn.getAttribute('href') !== '#') {
+      var bar = document.createElement('div');
+      bar.style.cssText = 'position:fixed;bottom:0;left:0;height:4px;background:linear-gradient(90deg,#f59e0b,#2563eb);animation:prog 2s linear forwards;';
+      var style = document.createElement('style');
+      style.textContent = '@keyframes prog{from{width:0}to{width:100%}}';
+      document.head.appendChild(style);
+      document.body.appendChild(bar);
+      setTimeout(function() {
+        fetch('/api/nfc/click', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ person: ${JSON.stringify(person)}, ts: new Date().toISOString() }) }).catch(() => {});
+        window.location.href = btn.getAttribute('href');
+      }, 2000);
+    }
   </script>
 </body>
 </html>`;
@@ -1885,7 +1906,27 @@ window.location.replace('/');
   // ── Places Reviews (no OAuth) ──
   if (urlPath === '/api/reviews/places' && req.method === 'GET') { await handlePlacesReviews(res, qs); return; }
 
-  // ── Driver Management ──
+  // ── Reviews cache write (client pushes reviews array for storage) ──
+  if (urlPath === '/api/reviews/cache' && req.method === 'POST') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    try {
+      const raw = await readRequestBody(req, 256 * 1024);
+      const body = JSON.parse(raw.toString('utf8'));
+      const acct = body.account || payload.email;
+      if (!isKeyAllowed(acct, payload)) { jsonResponse(res, 403, { error: 'FORBIDDEN' }); return; }
+      const reviews = Array.isArray(body.reviews) ? body.reviews : [];
+      const store = loadMetaStore();
+      store['reviews_cache_' + acct] = reviews;
+      if (body.meta) store['reviews_cache_meta_' + acct] = { ...body.meta, cachedAt: new Date().toISOString() };
+      await saveMetaStoreQueued(store);
+      jsonResponse(res, 200, { ok: true, count: reviews.length });
+    } catch(e) { jsonResponse(res, 400, { error: e.message }); }
+    return;
+  }
+
+    // ── Driver Management ──
   // ── Magic Link ──
   if (urlPath === '/api/auth/magic-link' && req.method === 'POST') {
     await handleMagicLinkRequest(req, res); return;
@@ -1953,6 +1994,44 @@ window.location.replace('/');
     }
     return;
   }
+  // ── Home Stats (aggregated for dashboard) ──
+  if (urlPath === '/api/home/stats' && req.method === 'GET') {
+    const rawToken = extractBearerToken(req);
+    const payload = rawToken ? verifyMetaToken(rawToken) : null;
+    if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+    const acct = qs.account || payload.email;
+    // NFC taps
+    const tapLog = path.join(__dirname, '.nfc-taps.json');
+    let taps = [];
+    try { taps = JSON.parse(fs.readFileSync(tapLog, 'utf8')); } catch(e) {}
+    const acctTaps = taps.filter(t => t.accountId === acct);
+    const now = new Date();
+    const weekAgo = new Date(now - 7*24*60*60*1000).toISOString();
+    const weekTaps = acctTaps.filter(t => t.ts >= weekAgo).length;
+    // Reviews from store
+    const store = loadMetaStore();
+    const reviews = store['reviews_cache_' + acct] || [];
+    const total = reviews.length;
+    const avgRaw = total ? reviews.reduce((s, r) => s + (r.rating || 0), 0) / total : 0;
+    const avg = avgRaw ? Math.round(avgRaw * 10) / 10 : null;
+    const weekReviews = reviews.filter(r => {
+      const d = r.date || r.createTime || r.time;
+      if (!d) return false;
+      return new Date(typeof d === 'number' ? d * 1000 : d).toISOString() >= weekAgo;
+    }).length;
+    const pending = reviews.filter(r => !r.reply && !r.reviewReply).length;
+    jsonResponse(res, 200, {
+      totalReviews: total,
+      avgRating: avg,
+      weekReviews,
+      pendingReplies: pending,
+      nfcTapsTotal: acctTaps.length,
+      nfcTapsWeek: weekTaps,
+    });
+    return;
+  }
+
+
   if (urlPath === '/api/nfc/taps' && req.method === 'GET') { await handleNfcTapsGet(req, res, qs); return; }
   if (urlPath === '/api/nfc/cards' && req.method === 'GET') { await handleNfcCardsGet(req, res, qs); return; }
   if (urlPath === '/api/nfc/cards' && req.method === 'POST') { await handleNfcCardsPost(req, res); return; }

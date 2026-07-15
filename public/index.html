@@ -11616,9 +11616,48 @@ function sendWaReply() {
 
     rvSyncGoogleUi().then(function(googleConnected){
       var anyConnected=googleConnected||connected.facebook||connected.yelp;
-      gate.style.display=anyConnected?'none':'block';
-      dash.style.display=anyConnected?'block':'none';
-      if(!anyConnected) return;
+      // Also try Places API reviews (placeId-based, no OAuth needed)
+      var _rvAcct=window.currentAcctId||'';
+      var _rvToken=localStorage.getItem('cal-meta-session-token')||'';
+      if(!anyConnected){
+        fetch('/api/reviews/places?account='+encodeURIComponent(_rvAcct),{headers:{'Authorization':'Bearer '+_rvToken}})
+          .then(function(r){return r.json();})
+          .then(function(pd){
+            if(pd&&pd.reviews&&pd.reviews.length){
+              // We have Places API reviews — show dashboard
+              gate.style.display='none';
+              dash.style.display='block';
+              var now=Date.now();
+              window._rvGoogleReviews=(pd.reviews||[]).map(function(rv){
+                var t=rv.time?rv.time*1000:NaN;
+                return {
+                  name:rv.author_name||'Anonymous',
+                  text:rv.text||'',
+                  rating:rv.rating||5,
+                  ago:rv.relative_time_description||'',
+                  platform:'google',
+                  recent:isFinite(t)?(now-t)<=30*24*3600000:true,
+                  ts:rv.time?new Date(rv.time*1000).toISOString():null
+                };
+              });
+              window._rvMockReviews=[];
+              rvRebuildReviewsList();
+              // Update KPI header
+              var ratingEl=document.getElementById('rv-kpi-avg');
+              if(ratingEl&&pd.rating) ratingEl.textContent=pd.rating.toFixed(1);
+            } else {
+              gate.style.display='block';
+              dash.style.display='none';
+            }
+          })
+          .catch(function(){
+            gate.style.display='block';
+            dash.style.display='none';
+          });
+        return;
+      }
+      gate.style.display='none';
+      dash.style.display='block';
 
       // Build platform-tagged mock reviews pool (Facebook / Yelp only)
       var PLATFORMS=['facebook','yelp'];
@@ -11726,14 +11765,41 @@ function sendWaReply() {
           };
         });
         rvRebuildReviewsList();
+        // Cache reviews server-side so home/stats and offline fallback work
+        try{
+          var _cacheToken=localStorage.getItem('cal-meta-session-token')||'';
+          var _cacheAcct=window.currentAcctId||'';
+          var _cachePayload=window._rvGoogleReviews.map(function(r){
+            return {name:r.name,text:r.text,rating:r.rating,date:r.ts||new Date().toISOString(),reply:r.reply||null};
+          });
+          fetch('/api/reviews/cache',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+_cacheToken},
+            body:JSON.stringify({account:_cacheAcct,reviews:_cachePayload,meta:{rating:null,total:_cachePayload.length}})
+          }).catch(function(){});
+        }catch(e){}
         if(!window._rvGoogleReviews.length&&list&&!(window._rvMockReviews&&window._rvMockReviews.length)){
           list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">No reviews returned yet for the selected Google Business Profile.</p>';
         }
       })
       .catch(function(e){
-        window._rvGoogleReviews=[];
-        rvRebuildReviewsList();
-        if(list&&!(window._rvMockReviews&&window._rvMockReviews.length)) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">'+rvGbpErrorMessage(e&&e.message)+'</p>';
+        // Try loading from server-side cache
+        var _fbToken=localStorage.getItem('cal-meta-session-token')||'';
+        var _fbAcct=window.currentAcctId||'';
+        fetch('/api/home/stats?account='+encodeURIComponent(_fbAcct),{headers:{'Authorization':'Bearer '+_fbToken}})
+          .then(function(r){return r.json();})
+          .then(function(d){
+            if(d.totalReviews>0){
+              if(list) list.innerHTML='<p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;padding:16px 0">Google Business Profile not connected — showing cached data.<br><a href="#" onclick="nav('settings');return false;" style="color:var(--gold)">Connect in Settings</a></p>';
+            } else {
+              window._rvGoogleReviews=[];
+              rvRebuildReviewsList();
+              if(list&&!(window._rvMockReviews&&window._rvMockReviews.length)) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">'+rvGbpErrorMessage(e&&e.message)+'</p>';
+            }
+          })
+          .catch(function(){
+            window._rvGoogleReviews=[];
+            rvRebuildReviewsList();
+            if(list&&!(window._rvMockReviews&&window._rvMockReviews.length)) list.innerHTML='<p style="font-size:13px;color:var(--muted);font-weight:600;text-align:center;padding:20px 0">'+rvGbpErrorMessage(e&&e.message)+'</p>';
+          });
       });
   }
 
@@ -16736,54 +16802,48 @@ function renderHomeStats(){
   var name=(u.name||'').split(' ')[0];
   var gEl=document.getElementById('home-greeting');
   if(gEl) gEl.textContent=name?greet+', '+name:greet;
-  // Load review stats from localStorage seed
-  var key='cal-reviews-'+(window.currentAcctId||'local');
-  var reviews=[];
-  try{ reviews=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){}
-  var total=reviews.length;
-  var avgRaw=total?reviews.reduce(function(s,r){return s+(r.rating||0);},0)/total:0;
-  var avg=avgRaw?avgRaw.toFixed(1):'—';
-  // This week
-  var weekAgo=Date.now()-7*24*60*60*1000;
-  var weekCount=reviews.filter(function(r){ return new Date(r.date||0).getTime()>weekAgo; }).length;
-  // Pending replies (no reply field)
-  var pending=reviews.filter(function(r){ return !r.reply; }).length;
-  // NFC taps
-  var tapKey='cal-nfc-taps-'+(window.currentAcctId||'local');
-  var taps=0;
-  try{ taps=(JSON.parse(localStorage.getItem(tapKey)||'[]')).length; }catch(e){}
-  // Update DOM
-  var els={
-    'home-avg-rating': avg,
-    'home-week-count': weekCount||'0',
-    'home-total-reviews': total||'0',
-    'home-pending-replies': pending||'0',
-    'home-nfc-taps': taps||'0'
-  };
-  Object.keys(els).forEach(function(id){
-    var el=document.getElementById(id);
-    if(el) el.textContent=els[id];
+  // Set skeleton placeholders
+  ['home-avg-rating','home-week-count','home-total-reviews','home-pending-replies','home-nfc-taps'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.textContent='—';
   });
-  // Stars
-  var starsEl=document.getElementById('home-rating-stars');
-  if(starsEl&&avgRaw){
-    var full=Math.floor(avgRaw);
-    var half=(avgRaw-full)>=0.5;
-    var s='';
-    for(var i=0;i<5;i++){
-      if(i<full) s+='★';
-      else if(i===full&&half) s+='½';
-      else s+='☆';
+  var acct=window.currentAcctId||'';
+  var token=localStorage.getItem('cal-meta-session-token')||'';
+  fetch('/api/home/stats?account='+encodeURIComponent(acct),{headers:{'Authorization':'Bearer '+token}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var avg=d.avgRating?d.avgRating.toFixed(1):'—';
+    var els={
+      'home-avg-rating': avg,
+      'home-week-count': d.weekReviews||'0',
+      'home-total-reviews': d.totalReviews||'0',
+      'home-pending-replies': d.pendingReplies||'0',
+      'home-nfc-taps': d.nfcTapsTotal||'0'
+    };
+    Object.keys(els).forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent=els[id];
+    });
+    // Stars
+    var starsEl=document.getElementById('home-rating-stars');
+    if(starsEl){
+      var r=parseFloat(d.avgRating)||0;
+      var full=Math.floor(r); var half=r-full>=0.5?1:0; var empty=5-full-half;
+      starsEl.textContent='★'.repeat(full)+( half?'½':'')+('☆'.repeat(empty));
     }
-    starsEl.textContent=s;
-    starsEl.style.color='#f4b942';
-  }
-  // Inbox badge
-  var inboxSub=document.getElementById('home-inbox-sub');
-  var inboxBadge=document.getElementById('inbox-badge');
-  if(inboxSub&&inboxBadge&&inboxBadge.textContent){
-    inboxSub.textContent=inboxBadge.textContent+' unread';
-  }
+  })
+  .catch(function(){
+    // fallback: localStorage
+    var key='cal-reviews-'+(window.currentAcctId||'local');
+    var reviews=[];
+    try{reviews=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+    var total=reviews.length;
+    var avgRaw=total?reviews.reduce(function(s,r){return s+(r.rating||0);},0)/total:0;
+    var avg=avgRaw?avgRaw.toFixed(1):'—';
+    var weekAgo=Date.now()-7*24*60*60*1000;
+    var weekCount=reviews.filter(function(r){return new Date(r.date||0).getTime()>weekAgo;}).length;
+    var pending=reviews.filter(function(r){return !r.reply;}).length;
+    var els={'home-avg-rating':avg,'home-week-count':weekCount||'0','home-total-reviews':total||'0','home-pending-replies':pending||'0','home-nfc-taps':'0'};
+    Object.keys(els).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=els[id];});
+  });
 }
 
 function renderHomeStatsAdmin(){
@@ -16793,30 +16853,44 @@ function renderHomeStatsAdmin(){
   var name=(u.name||'').split(' ')[0];
   var gEl=document.getElementById('home-greeting-admin');
   if(gEl) gEl.textContent=name?greet+', '+name:greet;
-  var key='cal-reviews-'+(window.currentAcctId||'local');
-  var reviews=[];
-  try{ reviews=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){}
-  var total=reviews.length;
-  var avgRaw=total?reviews.reduce(function(s,r){return s+(r.rating||0);},0)/total:0;
-  var avg=avgRaw?avgRaw.toFixed(1):'—';
-  var weekAgo=Date.now()-7*24*60*60*1000;
-  var weekCount=reviews.filter(function(r){ return new Date(r.date||0).getTime()>weekAgo; }).length;
-  var els={
-    'home-avg-rating-admin': avg,
-    'home-week-count-admin': weekCount||'0'
-  };
-  Object.keys(els).forEach(function(id){
-    var el=document.getElementById(id);
-    if(el) el.textContent=els[id];
+  ['home-avg-rating','home-week-count','home-total-reviews','home-pending-replies'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.textContent='—';
   });
-  var starsEl=document.getElementById('home-rating-stars-admin');
-  if(starsEl&&avgRaw){
-    var full=Math.floor(avgRaw);
-    var s='';
-    for(var i=0;i<5;i++){ s+=(i<full)?'★':'☆'; }
-    starsEl.textContent=s;
-    starsEl.style.color='#f4b942';
-  }
+  var acct=window.currentAcctId||'';
+  var token=localStorage.getItem('cal-meta-session-token')||'';
+  fetch('/api/home/stats?account='+encodeURIComponent(acct),{headers:{'Authorization':'Bearer '+token}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    var avg=d.avgRating?d.avgRating.toFixed(1):'—';
+    var els={
+      'home-avg-rating': avg,
+      'home-week-count': d.weekReviews||'0',
+      'home-total-reviews': d.totalReviews||'0',
+      'home-pending-replies': d.pendingReplies||'0'
+    };
+    Object.keys(els).forEach(function(id){
+      var el=document.getElementById(id); if(el) el.textContent=els[id];
+    });
+    var starsEl=document.getElementById('home-rating-stars');
+    if(starsEl){
+      var r=parseFloat(d.avgRating)||0;
+      var full=Math.floor(r); var half=r-full>=0.5?1:0; var empty=5-full-half;
+      starsEl.textContent='★'.repeat(full)+(half?'½':'')+('☆'.repeat(empty));
+    }
+  })
+  .catch(function(){
+    var key='cal-reviews-'+(window.currentAcctId||'local');
+    var reviews=[];
+    try{reviews=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+    var total=reviews.length;
+    var avgRaw=total?reviews.reduce(function(s,r){return s+(r.rating||0);},0)/total:0;
+    var avg=avgRaw?avgRaw.toFixed(1):'—';
+    var weekAgo=Date.now()-7*24*60*60*1000;
+    var weekCount=reviews.filter(function(r){return new Date(r.date||0).getTime()>weekAgo;}).length;
+    var pending=reviews.filter(function(r){return !r.reply;}).length;
+    var els={'home-avg-rating':avg,'home-week-count':weekCount||'0','home-total-reviews':total||'0','home-pending-replies':pending||'0'};
+    Object.keys(els).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=els[id];});
+  });
 }
 
 function renderHomeUserGreeting(){
@@ -16826,11 +16900,21 @@ function renderHomeUserGreeting(){
   var name=(u.name||'').split(' ')[0];
   var gEl=document.getElementById('field-greeting');
   if(gEl) gEl.textContent=name?greet+', '+name:greet;
-  var key='cal-reviews-'+(window.currentAcctId||'local');
-  var reviews=[];
-  try{ reviews=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){}
   var rc=document.getElementById('field-review-count');
-  if(rc) rc.textContent=reviews.length||'0';
+  if(rc) rc.textContent='—';
+  var acct=window.currentAcctId||'';
+  var token=localStorage.getItem('cal-meta-session-token')||'';
+  fetch('/api/home/stats?account='+encodeURIComponent(acct),{headers:{'Authorization':'Bearer '+token}})
+  .then(function(r){return r.json();})
+  .then(function(d){
+    if(rc) rc.textContent=d.totalReviews||'0';
+  })
+  .catch(function(){
+    var key='cal-reviews-'+(window.currentAcctId||'local');
+    var reviews=[];
+    try{reviews=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
+    if(rc) rc.textContent=reviews.length||'0';
+  });
 }
 </script>
 
