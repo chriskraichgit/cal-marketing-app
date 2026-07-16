@@ -1819,145 +1819,217 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
 <!-- ============ SCREEN: HOME ============ -->
 <div class="screen" id="s-home">
 
-  <!-- ── AGENCY / TEST HOME ── -->
+  <!-- ── GRADE HERO SHARED ── -->
+  <style>
+    .grade-ring { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+    .grade-ring svg { position:absolute; top:0; left:0; }
+    .grade-letter { font-family:'Barlow Condensed',sans-serif; font-weight:900; line-height:1; }
+    .score-grade-a-plus { color:#16a34a; }
+    .score-grade-a      { color:#22c55e; }
+    .score-grade-b      { color:#84cc16; }
+    .score-grade-c      { color:#f59e0b; }
+    .score-grade-d      { color:#ef4444; }
+    .score-grade-f      { color:#b91c1c; }
+    @keyframes ring-fill { from { stroke-dashoffset: 251; } }
+  </style>
+
+  <!-- ── AGENCY/SUPERADMIN HOME ── -->
   <div id="home-full-view" style="display:none">
-    <!-- Greeting -->
-    <div style="margin-bottom:18px">
+    <div style="margin-bottom:16px">
       <div id="home-greeting" style="font-size:22px;font-weight:900;color:var(--ink);font-family:'Barlow Condensed',sans-serif;letter-spacing:-.3px">Good morning</div>
-      <div id="home-sub" style="font-size:13px;color:var(--muted);font-weight:600;margin-top:2px">Here's your reviews snapshot</div>
+      <div id="home-sub" style="font-size:13px;color:var(--muted);font-weight:600;margin-top:2px">Here's your reviews overview</div>
     </div>
 
-    <!-- Star rating hero -->
-    <div style="background:linear-gradient(135deg,var(--blue) 0%,#1a2f5a 100%);border-radius:18px;padding:24px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <div style="font-size:11px;font-weight:900;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Average Rating</div>
-        <div style="display:flex;align-items:baseline;gap:8px">
-          <div id="home-avg-rating" style="font-size:52px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
-          <div style="color:rgba(255,255,255,.7);font-size:16px;font-weight:700">/ 5.0</div>
+    <!-- Grade + Rating Hero -->
+    <div style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border-radius:20px;padding:22px 20px;margin-bottom:14px;display:flex;align-items:center;gap:20px">
+      <!-- Grade ring -->
+      <div style="flex-shrink:0;text-align:center">
+        <div class="grade-ring" style="width:96px;height:96px">
+          <svg width="96" height="96" viewBox="0 0 96 96">
+            <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>
+            <circle id="home-grade-ring" cx="48" cy="48" r="40" fill="none" stroke="#f59e0b" stroke-width="8"
+              stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"
+              transform="rotate(-90 48 48)" style="transition:stroke-dashoffset 1s ease,stroke .4s"/>
+          </svg>
+          <div style="position:relative;z-index:1;text-align:center">
+            <div id="home-grade-score" class="grade-letter" style="font-size:30px;color:#fff">—</div>
+            <div id="home-grade-letter" class="grade-letter" style="font-size:14px;color:rgba(255,255,255,.6)"></div>
+          </div>
         </div>
-        <div id="home-rating-stars" style="margin-top:4px;font-size:18px;letter-spacing:2px">☆☆☆☆☆</div>
+        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;margin-top:6px">Review Score</div>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:11px;font-weight:900;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This Week</div>
-        <div id="home-week-count" style="font-size:36px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;margin-top:2px">new reviews</div>
-      </div>
-    </div>
-
-    <!-- KPI row -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px">
-      <div onclick="nav('reviews')" style="background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:16px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">
-        <div id="home-total-reviews" style="font-size:28px;font-weight:900;color:var(--ink);font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
-        <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Total Reviews</div>
-      </div>
-      <div onclick="nav('reviews')" style="background:var(--surface);border:1.5px solid rgba(244,185,66,.3);border-radius:14px;padding:16px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='rgba(244,185,66,.3)'">
-        <div id="home-pending-replies" style="font-size:28px;font-weight:900;color:var(--gold);font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
-        <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">Need Reply</div>
-      </div>
-      <div onclick="nav('leaderboard')" style="background:var(--surface);border:1.5px solid rgba(46,125,50,.2);border-radius:14px;padding:16px;cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='rgba(46,125,50,.2)'">
-        <div id="home-nfc-taps" style="font-size:28px;font-weight:900;color:var(--green);font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
-        <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">NFC Taps</div>
+      <!-- Stats column -->
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
+          <div id="home-avg-rating" style="font-size:38px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+          <div style="color:rgba(255,255,255,.5);font-size:14px;font-weight:700">/ 5.0</div>
+        </div>
+        <div id="home-rating-stars" style="font-size:16px;letter-spacing:2px;margin-bottom:10px">☆☆☆☆☆</div>
+        <div style="display:flex;gap:16px">
+          <div>
+            <div id="home-week-count" style="font-size:22px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;letter-spacing:.4px">This Week</div>
+          </div>
+          <div>
+            <div id="home-total-reviews" style="font-size:22px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Total</div>
+          </div>
+          <div>
+            <div id="home-nfc-taps" style="font-size:22px;font-weight:900;color:var(--gold);font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;letter-spacing:.4px">NFC Taps</div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Primary CTA -->
-    <button onclick="nav('reviews')" class="btn-primary" style="width:100%;height:48px;font-size:15px;border-radius:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
-      View All Reviews
+    <button onclick="nav('reviews')" class="btn-primary" style="width:100%;height:50px;font-size:16px;border-radius:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:900">
+      ⭐ View All Reviews
     </button>
 
-    <!-- Quick actions -->
-    <div class="grid g2" style="margin-bottom:14px">
-      <button class="card card-pad" onclick="nav('leaderboard')" style="text-align:left;border:none;cursor:pointer;background:var(--surface)">
-        <div style="width:36px;height:36px;border-radius:10px;background:rgba(244,185,66,.12);display:flex;align-items:center;justify-content:center;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg>
-        </div>
-        <div style="font-size:13px;font-weight:800;color:var(--ink)">Leaderboard</div>
-        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">Top drivers this month</div>
-      </button>
+    <!-- Quick tiles -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
       <button class="card card-pad" onclick="nav('drivers')" style="text-align:left;border:none;cursor:pointer;background:var(--surface)">
-        <div style="width:36px;height:36px;border-radius:10px;background:rgba(27,97,197,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
-        </div>
-        <div style="font-size:13px;font-weight:800;color:var(--ink)">Driver Cards</div>
-        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">Manage NFC cards</div>
+        <div style="font-size:22px;margin-bottom:6px">📱</div>
+        <div style="font-size:13px;font-weight:900;color:var(--ink)">Driver Cards</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Manage NFC cards</div>
       </button>
-      
-      <button class="card card-pad" onclick="nav('onboarding')" style="text-align:left;border:none;cursor:pointer;background:var(--surface)" id="home-onboarding-card">
-        <div style="width:36px;height:36px;border-radius:10px;background:rgba(27,97,197,.08);display:flex;align-items:center;justify-content:center;margin-bottom:10px">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22,4 12,14.01 9,11.01"/></svg>
-        </div>
-        <div style="font-size:13px;font-weight:800;color:var(--ink)">Onboarding</div>
-        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">Setup progress</div>
+      <button class="card card-pad" onclick="nav('leaderboard')" style="text-align:left;border:none;cursor:pointer;background:var(--surface)">
+        <div style="font-size:22px;margin-bottom:6px">🏆</div>
+        <div style="font-size:13px;font-weight:900;color:var(--ink)">Leaderboard</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Top drivers this month</div>
       </button>
     </div>
 
-    <!-- CAL Updates feed (agency posts to clients) -->
-    <div class="card card-pad" id="cal-updates-card">
-      <div class="card-head">
-        <span class="card-title">CAL Updates</span>
-        <span class="pill pill-blue" id="updates-role-badge">AGENCY</span>
+    <!-- Pending replies pill -->
+    <div id="home-pending-wrap" onclick="nav('reviews')" style="display:none;background:rgba(244,185,66,.1);border:1.5px solid rgba(244,185,66,.35);border-radius:14px;padding:14px 16px;cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div style="font-size:22px">⏳</div>
+      <div>
+        <span id="home-pending-replies" style="font-weight:900;color:var(--gold);font-size:16px">—</span>
+        <span style="font-size:13px;color:var(--muted);font-weight:700"> reviews need a reply</span>
       </div>
-      <div id="updates-post-row" style="display:none;margin-bottom:12px">
-        <div style="display:flex;gap:8px">
-          <input class="input-std" style="flex:1;height:38px" id="update-input" placeholder="Post an update to clients...">
-          <button class="btn-gold" style="flex:0;height:38px;padding:0 16px;white-space:nowrap" onclick="postUpdate()">Post</button>
-        </div>
-      </div>
-      <div id="updates-feed">
-        <div class="update-item"><div class="update-dot"></div><div><span class="update-text"><strong>CAL Team:</strong> Your NFC driver cards are live. Share links to start collecting reviews.</span></div><span class="update-time">Today</span></div>
-        <div class="update-item"><div class="update-dot" style="background:var(--green)"></div><div><span class="update-text"><strong>CAL Team:</strong> Review platform connections set up in Settings → Integrations.</span></div><span class="update-time">Yesterday</span></div>
-      </div>
+      <div style="margin-left:auto;color:var(--muted);font-size:18px">›</div>
     </div>
   </div>
 
   <!-- ── ADMIN / CLIENT HOME ── -->
   <div id="home-admin-view" style="display:none">
-    <div style="margin-bottom:18px">
+    <div style="margin-bottom:16px">
       <div id="home-greeting-admin" style="font-size:22px;font-weight:900;color:var(--ink);font-family:'Barlow Condensed',sans-serif">Good morning</div>
       <div style="font-size:13px;color:var(--muted);font-weight:600;margin-top:2px">Here's your reviews snapshot</div>
     </div>
 
-    <!-- Star rating hero -->
-    <div style="background:linear-gradient(135deg,var(--blue) 0%,#1a2f5a 100%);border-radius:18px;padding:24px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;gap:12px">
-      <div>
-        <div style="font-size:11px;font-weight:900;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">Average Rating</div>
-        <div style="display:flex;align-items:baseline;gap:8px">
-          <div id="home-avg-rating-admin" style="font-size:52px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
-          <div style="color:rgba(255,255,255,.7);font-size:16px;font-weight:700">/ 5.0</div>
+    <!-- Grade + Rating Hero (admin) -->
+    <div style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border-radius:20px;padding:22px 20px;margin-bottom:14px;display:flex;align-items:center;gap:20px">
+      <div style="flex-shrink:0;text-align:center">
+        <div class="grade-ring" style="width:96px;height:96px">
+          <svg width="96" height="96" viewBox="0 0 96 96">
+            <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>
+            <circle id="admin-grade-ring" cx="48" cy="48" r="40" fill="none" stroke="#f59e0b" stroke-width="8"
+              stroke-linecap="round" stroke-dasharray="251" stroke-dashoffset="251"
+              transform="rotate(-90 48 48)" style="transition:stroke-dashoffset 1s ease,stroke .4s"/>
+          </svg>
+          <div style="position:relative;z-index:1;text-align:center">
+            <div id="admin-grade-score" class="grade-letter" style="font-size:30px;color:#fff">—</div>
+            <div id="admin-grade-letter" class="grade-letter" style="font-size:14px;color:rgba(255,255,255,.6)"></div>
+          </div>
         </div>
-        <div id="home-rating-stars-admin" style="margin-top:4px;font-size:18px;letter-spacing:2px">☆☆☆☆☆</div>
+        <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.6px;margin-top:6px">Review Score</div>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:11px;font-weight:900;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px">This Week</div>
-        <div id="home-week-count-admin" style="font-size:36px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
-        <div style="font-size:11px;color:rgba(255,255,255,.6);font-weight:700;margin-top:2px">new reviews</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
+          <div id="home-avg-rating-admin" style="font-size:38px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+          <div style="color:rgba(255,255,255,.5);font-size:14px;font-weight:700">/ 5.0</div>
+        </div>
+        <div id="home-rating-stars-admin" style="font-size:16px;letter-spacing:2px;margin-bottom:10px">☆☆☆☆☆</div>
+        <div style="display:flex;gap:16px">
+          <div>
+            <div id="home-week-count-admin" style="font-size:22px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;letter-spacing:.4px">This Week</div>
+          </div>
+          <div>
+            <div id="home-total-admin" style="font-size:22px;font-weight:900;color:#fff;font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.5);font-weight:700;text-transform:uppercase;letter-spacing:.4px">Total</div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <button onclick="nav('reviews')" class="btn-primary" style="width:100%;height:48px;font-size:15px;border-radius:14px;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:8px">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/></svg>
-      View All Reviews
+    <button onclick="nav('reviews')" class="btn-primary" style="width:100%;height:50px;font-size:16px;border-radius:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:900">
+      ⭐ View All Reviews
     </button>
-
-    <div class="grid g2" style="margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="card card-pad" onclick="nav('drivers')" style="text-align:left;border:none;cursor:pointer">
+        <div style="font-size:22px;margin-bottom:6px">📱</div>
+        <div style="font-size:13px;font-weight:900;color:var(--ink)">Driver Cards</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600">NFC tap links</div>
+      </button>
       <button class="card card-pad" onclick="nav('leaderboard')" style="text-align:left;border:none;cursor:pointer">
-        <div style="width:36px;height:36px;border-radius:10px;background:rgba(244,185,66,.12);display:flex;align-items:center;justify-content:center;margin-bottom:10px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"/><path d="M5 5H3v2a4 4 0 0 0 4 4"/><path d="M19 5h2v2a4 4 0 0 1-4 4"/></svg></div>
-        <div style="font-size:13px;font-weight:800;color:var(--ink)">Leaderboard</div>
-        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">Top drivers</div>
+        <div style="font-size:22px;margin-bottom:6px">🏆</div>
+        <div style="font-size:13px;font-weight:900;color:var(--ink)">Leaderboard</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Top drivers</div>
       </button>
-      
-      <button class="card card-pad" onclick="nav('billing')" style="text-align:left;border:none;cursor:pointer">
-        <div style="width:36px;height:36px;border-radius:10px;background:rgba(46,125,50,.1);display:flex;align-items:center;justify-content:center;margin-bottom:10px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--green)" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-        <div style="font-size:13px;font-weight:800;color:var(--ink)">Billing</div>
-        <div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:2px">Invoices &amp; plan</div>
+    </div>
+  </div>
+
+  <!-- ── DRIVER HOME ── -->
+  <div id="home-driver-view" style="display:none">
+    <div style="text-align:center;padding:8px 0 20px">
+      <div id="driver-home-greeting" style="font-size:20px;font-weight:900;color:var(--ink);font-family:'Barlow Condensed',sans-serif">Hey, Driver!</div>
+      <div style="font-size:13px;color:var(--muted);font-weight:600;margin-top:2px">Your review collection card</div>
+    </div>
+
+    <!-- Driver score ring -->
+    <div style="text-align:center;margin-bottom:20px">
+      <div class="grade-ring" style="width:120px;height:120px;margin:0 auto">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="9"/>
+          <circle id="driver-grade-ring" cx="60" cy="60" r="50" fill="none" stroke="#f59e0b" stroke-width="9"
+            stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="314"
+            transform="rotate(-90 60 60)" style="transition:stroke-dashoffset 1.2s ease,stroke .4s"/>
+        </svg>
+        <div style="position:relative;z-index:1;text-align:center">
+          <div id="driver-grade-score" class="grade-letter" style="font-size:38px;color:var(--ink)">—</div>
+          <div id="driver-grade-letter" class="grade-letter" style="font-size:16px;color:var(--muted)"></div>
+        </div>
+      </div>
+      <div style="font-size:11px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-top:8px">Your Review Score</div>
+    </div>
+
+    <!-- Driver tap stats -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px">
+      <div class="card card-pad" style="text-align:center">
+        <div id="driver-stat-today" style="font-size:28px;font-weight:900;color:var(--ink);font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+        <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">Today</div>
+      </div>
+      <div class="card card-pad" style="text-align:center">
+        <div id="driver-stat-week" style="font-size:28px;font-weight:900;color:var(--blue);font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+        <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">This Week</div>
+      </div>
+      <div class="card card-pad" style="text-align:center">
+        <div id="driver-stat-total" style="font-size:28px;font-weight:900;color:var(--gold);font-family:'Barlow Condensed',sans-serif;line-height:1">—</div>
+        <div style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:4px">All Time</div>
+      </div>
+    </div>
+
+    <!-- QR / Tap link -->
+    <div class="card card-pad" style="text-align:center;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">Your Review Link</div>
+      <div id="driver-qr-wrap" style="margin:0 auto 14px;width:160px;height:160px;background:var(--bg);border-radius:12px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--muted)">Loading QR…</div>
+      <div id="driver-tap-url" style="font-size:12px;color:var(--blue);font-weight:700;word-break:break-all;margin-bottom:12px"></div>
+      <button onclick="driverCopyLink()" class="btn-primary" style="width:100%;height:44px;font-size:14px;font-weight:900">
+        📋 Copy My Link
       </button>
-      
+    </div>
+
+    <div style="text-align:center;font-size:12px;color:var(--muted);font-weight:600;padding-bottom:8px">
+      Share this link or tap your NFC card after each job to collect a Google review
+    </div>
   </div>
 
   <!-- Home setup onboarding view -->
   <div id="home-setup-view" style="display:none"></div>
-</div>
+
 
 <!-- ============ SCREEN: ONBOARDING (CAL Journey) ============ -->
 <div class="screen" id="s-onboarding">
@@ -11556,10 +11628,10 @@ function sendWaReply() {
     var userRole=(role==='user');
     var av=document.getElementById('home-admin-view');
     var fv=document.getElementById('home-full-view');
-    var uv=document.getElementById('home-user-view');
+    var dv=document.getElementById('home-driver-view');
     if(av) av.style.display=admin?'block':'none';
     if(fv) fv.style.display=(admin||userRole)?'none':'block';
-    if(uv) uv.style.display=userRole?'block':'none';
+    if(dv) dv.style.display=userRole?'block':'none';
     if(admin){
       var hs=document.getElementById('h-score');
       var ahs=document.getElementById('admin-health-score');
@@ -12175,14 +12247,14 @@ function sendWaReply() {
     var av=document.getElementById('home-admin-view');
     var fv=document.getElementById('home-full-view');
     var sv=document.getElementById('home-setup-view');
+    var dv=document.getElementById('home-driver-view');
     _applyAgencyViewingBanner();
     window._hsReadOnly=false;
-    var uv=document.getElementById('home-user-view');
     // Show correct view by role
     if(isAgency){
       if(fv) fv.style.display='block';
       if(av) av.style.display='none';
-      if(uv) uv.style.display='none';
+      if(dv) dv.style.display='none';
       if(sv) sv.style.display='none';
       renderHomeStats();
       return;
@@ -12190,15 +12262,15 @@ function sendWaReply() {
     if(admin){
       if(fv) fv.style.display='none';
       if(av) av.style.display='block';
-      if(uv) uv.style.display='none';
+      if(dv) dv.style.display='none';
       if(sv) sv.style.display='none';
       renderHomeStatsAdmin();
       return;
     }
-    // Field user / driver / operator
+    // Driver / field user
     if(fv) fv.style.display='none';
     if(av) av.style.display='none';
-    if(uv) uv.style.display='block';
+    if(dv) dv.style.display='block';
     if(sv) sv.style.display='none';
     renderHomeUserGreeting();
   };
@@ -16451,127 +16523,203 @@ function htmlEsc(str) {
 })();
 
 /* ── Home screen stats renderer ── */
-function renderHomeStats(){
-  var hour=new Date().getHours();
-  var greet=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
-  var u=window.currentUser||{};
-  var name=(u.name||'').split(' ')[0];
-  var gEl=document.getElementById('home-greeting');
-  if(gEl) gEl.textContent=name?greet+', '+name:greet;
-  // Set skeleton placeholders
-  ['home-avg-rating','home-week-count','home-total-reviews','home-pending-replies','home-nfc-taps'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.textContent='—';
-  });
-  var acct=window.currentAcctId||'';
-  var token=localStorage.getItem('cal-meta-session-token')||'';
-  fetch('/api/home/stats?account='+encodeURIComponent(acct),{headers:{'Authorization':'Bearer '+token}})
-  .then(function(r){return r.json();})
-  .then(function(d){
-    var avg=d.avgRating?d.avgRating.toFixed(1):'—';
-    var els={
-      'home-avg-rating': avg,
-      'home-week-count': d.weekReviews||'0',
-      'home-total-reviews': d.totalReviews||'0',
-      'home-pending-replies': d.pendingReplies||'0',
-      'home-nfc-taps': d.nfcTapsTotal||'0'
-    };
-    Object.keys(els).forEach(function(id){
-      var el=document.getElementById(id); if(el) el.textContent=els[id];
-    });
-    // Stars
-    var starsEl=document.getElementById('home-rating-stars');
-    if(starsEl){
-      var r=parseFloat(d.avgRating)||0;
-      var full=Math.floor(r); var half=r-full>=0.5?1:0; var empty=5-full-half;
-      starsEl.textContent='★'.repeat(full)+( half?'½':'')+('☆'.repeat(empty));
-    }
-  })
-  .catch(function(){
-    // fallback: localStorage
-    var key='cal-reviews-'+(window.currentAcctId||'local');
-    var reviews=[];
-    try{reviews=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
-    var total=reviews.length;
-    var avgRaw=total?reviews.reduce(function(s,r){return s+(r.rating||0);},0)/total:0;
-    var avg=avgRaw?avgRaw.toFixed(1):'—';
-    var weekAgo=Date.now()-7*24*60*60*1000;
-    var weekCount=reviews.filter(function(r){return new Date(r.date||0).getTime()>weekAgo;}).length;
-    var pending=reviews.filter(function(r){return !r.reply;}).length;
-    var els={'home-avg-rating':avg,'home-week-count':weekCount||'0','home-total-reviews':total||'0','home-pending-replies':pending||'0','home-nfc-taps':'0'};
-    Object.keys(els).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=els[id];});
-  });
+
+// ── Scoring helpers ──
+function calcScore(avgRating, weekReviews, totalReviews) {
+  // 0-100 score: rating weight 70%, recency weight 30%
+  var ratingScore = avgRating > 0 ? ((avgRating - 1) / 4) * 100 : 0;
+  // recency bonus: 3+ reviews/week = full 30pts
+  var recencyScore = Math.min(1, (weekReviews || 0) / 3) * 30;
+  var raw = (ratingScore * 0.7) + recencyScore;
+  return Math.round(Math.min(100, Math.max(0, raw)));
 }
 
-function renderHomeStatsAdmin(){
-  var hour=new Date().getHours();
-  var greet=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
-  var u=window.currentUser||{};
-  var name=(u.name||'').split(' ')[0];
-  var gEl=document.getElementById('home-greeting-admin');
-  if(gEl) gEl.textContent=name?greet+', '+name:greet;
-  ['home-avg-rating','home-week-count','home-total-reviews','home-pending-replies'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.textContent='—';
-  });
-  var acct=window.currentAcctId||'';
-  var token=localStorage.getItem('cal-meta-session-token')||'';
-  fetch('/api/home/stats?account='+encodeURIComponent(acct),{headers:{'Authorization':'Bearer '+token}})
-  .then(function(r){return r.json();})
-  .then(function(d){
-    var avg=d.avgRating?d.avgRating.toFixed(1):'—';
-    var els={
-      'home-avg-rating': avg,
-      'home-week-count': d.weekReviews||'0',
-      'home-total-reviews': d.totalReviews||'0',
-      'home-pending-replies': d.pendingReplies||'0'
-    };
-    Object.keys(els).forEach(function(id){
-      var el=document.getElementById(id); if(el) el.textContent=els[id];
-    });
-    var starsEl=document.getElementById('home-rating-stars');
-    if(starsEl){
-      var r=parseFloat(d.avgRating)||0;
-      var full=Math.floor(r); var half=r-full>=0.5?1:0; var empty=5-full-half;
-      starsEl.textContent='★'.repeat(full)+(half?'½':'')+('☆'.repeat(empty));
-    }
-  })
-  .catch(function(){
-    var key='cal-reviews-'+(window.currentAcctId||'local');
-    var reviews=[];
-    try{reviews=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
-    var total=reviews.length;
-    var avgRaw=total?reviews.reduce(function(s,r){return s+(r.rating||0);},0)/total:0;
-    var avg=avgRaw?avgRaw.toFixed(1):'—';
-    var weekAgo=Date.now()-7*24*60*60*1000;
-    var weekCount=reviews.filter(function(r){return new Date(r.date||0).getTime()>weekAgo;}).length;
-    var pending=reviews.filter(function(r){return !r.reply;}).length;
-    var els={'home-avg-rating':avg,'home-week-count':weekCount||'0','home-total-reviews':total||'0','home-pending-replies':pending||'0'};
-    Object.keys(els).forEach(function(id){var el=document.getElementById(id);if(el)el.textContent=els[id];});
-  });
+function scoreToGrade(score) {
+  if (score >= 97) return 'A+';
+  if (score >= 93) return 'A';
+  if (score >= 90) return 'A-';
+  if (score >= 87) return 'B+';
+  if (score >= 83) return 'B';
+  if (score >= 80) return 'B-';
+  if (score >= 77) return 'C+';
+  if (score >= 73) return 'C';
+  if (score >= 70) return 'C-';
+  if (score >= 67) return 'D+';
+  if (score >= 60) return 'D';
+  return 'F';
 }
 
-function renderHomeUserGreeting(){
-  var hour=new Date().getHours();
-  var greet=hour<12?'Good morning':hour<17?'Good afternoon':'Good evening';
-  var u=window.currentUser||{};
-  var name=(u.name||'').split(' ')[0];
-  var gEl=document.getElementById('field-greeting');
-  if(gEl) gEl.textContent=name?greet+', '+name:greet;
-  var rc=document.getElementById('field-review-count');
-  if(rc) rc.textContent='—';
-  var acct=window.currentAcctId||'';
-  var token=localStorage.getItem('cal-meta-session-token')||'';
-  fetch('/api/home/stats?account='+encodeURIComponent(acct),{headers:{'Authorization':'Bearer '+token}})
-  .then(function(r){return r.json();})
-  .then(function(d){
-    if(rc) rc.textContent=d.totalReviews||'0';
-  })
-  .catch(function(){
-    var key='cal-reviews-'+(window.currentAcctId||'local');
-    var reviews=[];
-    try{reviews=JSON.parse(localStorage.getItem(key)||'[]');}catch(e){}
-    if(rc) rc.textContent=reviews.length||'0';
-  });
+function scoreColor(score) {
+  if (score >= 90) return '#16a34a';
+  if (score >= 80) return '#22c55e';
+  if (score >= 70) return '#84cc16';
+  if (score >= 60) return '#f59e0b';
+  if (score >= 50) return '#ef4444';
+  return '#b91c1c';
 }
+
+function animateGradeRing(ringId, scoreId, letterId, score) {
+  var ring = document.getElementById(ringId);
+  var scoreEl = document.getElementById(scoreId);
+  var letterEl = document.getElementById(letterId);
+  if (!ring || !scoreEl) return;
+  var circumference = parseFloat(ring.getAttribute('stroke-dasharray')) || 251;
+  var offset = circumference - (score / 100) * circumference;
+  var color = scoreColor(score);
+  ring.style.strokeDashoffset = offset;
+  ring.style.stroke = color;
+  scoreEl.textContent = score;
+  scoreEl.style.color = '#fff';
+  if (letterEl) {
+    letterEl.textContent = scoreToGrade(score);
+    letterEl.style.color = color;
+  }
+}
+
+function renderStars(rating) {
+  var filled = Math.round(rating);
+  var stars = '';
+  for (var i = 1; i <= 5; i++) stars += i <= filled ? '⭐' : '☆';
+  return stars;
+}
+
+// ── Agency/superadmin home ──
+function renderHomeStats() {
+  var hour = new Date().getHours();
+  var greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  var u = window.currentUser || {};
+  var name = (u.name || '').split(' ')[0];
+  var gEl = document.getElementById('home-greeting');
+  if (gEl) gEl.textContent = name ? greet + ', ' + name + '!' : greet;
+  var acct = window.currentAcctId || localStorage.getItem('cal-acct-id') || '';
+  var token = localStorage.getItem('cal-meta-session-token') || '';
+  fetch('/api/home/stats?account=' + encodeURIComponent(acct), { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var avg = parseFloat(d.avgRating) || 0;
+      var score = calcScore(avg, d.weekReviews, d.totalReviews);
+      animateGradeRing('home-grade-ring', 'home-grade-score', 'home-grade-letter', score);
+      var rEl = document.getElementById('home-avg-rating');
+      if (rEl) rEl.textContent = avg > 0 ? avg.toFixed(1) : '—';
+      var sEl = document.getElementById('home-rating-stars');
+      if (sEl) sEl.textContent = avg > 0 ? renderStars(avg) : '☆☆☆☆☆';
+      var wEl = document.getElementById('home-week-count');
+      if (wEl) wEl.textContent = d.weekReviews != null ? d.weekReviews : '—';
+      var tEl = document.getElementById('home-total-reviews');
+      if (tEl) tEl.textContent = d.totalReviews != null ? d.totalReviews : '—';
+      var nEl = document.getElementById('home-nfc-taps');
+      if (nEl) nEl.textContent = d.nfcTapsWeek != null ? d.nfcTapsWeek : '—';
+      var pWrap = document.getElementById('home-pending-wrap');
+      var pEl = document.getElementById('home-pending-replies');
+      if (pEl) pEl.textContent = d.pendingReplies || 0;
+      if (pWrap) pWrap.style.display = (d.pendingReplies > 0) ? 'flex' : 'none';
+    })
+    .catch(function() {
+      // fallback from localStorage
+      try {
+        var cached = JSON.parse(localStorage.getItem('cal-reviews-' + acct) || '[]');
+        if (cached.length) {
+          var sum = cached.reduce(function(a, r) { return a + (r.rating || 0); }, 0);
+          var avg = sum / cached.length;
+          var score = calcScore(avg, 0, cached.length);
+          animateGradeRing('home-grade-ring', 'home-grade-score', 'home-grade-letter', score);
+          var rEl = document.getElementById('home-avg-rating');
+          if (rEl) rEl.textContent = avg.toFixed(1);
+          var tEl = document.getElementById('home-total-reviews');
+          if (tEl) tEl.textContent = cached.length;
+        }
+      } catch(e) {}
+    });
+}
+
+// ── Admin/client home ──
+function renderHomeStatsAdmin() {
+  var hour = new Date().getHours();
+  var greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  var u = window.currentUser || {};
+  var name = (u.name || '').split(' ')[0];
+  var gEl = document.getElementById('home-greeting-admin');
+  if (gEl) gEl.textContent = name ? greet + ', ' + name + '!' : greet;
+  var acct = window.currentAcctId || localStorage.getItem('cal-acct-id') || '';
+  var token = localStorage.getItem('cal-meta-session-token') || '';
+  fetch('/api/home/stats?account=' + encodeURIComponent(acct), { headers: { 'Authorization': 'Bearer ' + token } })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var avg = parseFloat(d.avgRating) || 0;
+      var score = calcScore(avg, d.weekReviews, d.totalReviews);
+      animateGradeRing('admin-grade-ring', 'admin-grade-score', 'admin-grade-letter', score);
+      var rEl = document.getElementById('home-avg-rating-admin');
+      if (rEl) rEl.textContent = avg > 0 ? avg.toFixed(1) : '—';
+      var sEl = document.getElementById('home-rating-stars-admin');
+      if (sEl) sEl.textContent = avg > 0 ? renderStars(avg) : '☆☆☆☆☆';
+      var wEl = document.getElementById('home-week-count-admin');
+      if (wEl) wEl.textContent = d.weekReviews != null ? d.weekReviews : '—';
+      var tEl = document.getElementById('home-total-admin');
+      if (tEl) tEl.textContent = d.totalReviews != null ? d.totalReviews : '—';
+    })
+    .catch(function() {});
+}
+
+// ── Driver home ──
+function renderHomeUserGreeting() {
+  var u = window.currentUser || {};
+  var name = (u.name || 'Driver').split(' ')[0];
+  var hour = new Date().getHours();
+  var greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  var gEl = document.getElementById('driver-home-greeting');
+  if (gEl) gEl.textContent = greet + ', ' + name + '!';
+
+  var acct  = window.currentAcctId || localStorage.getItem('cal-acct-id') || '';
+  var token = localStorage.getItem('cal-meta-session-token') || '';
+  var cardName = u.name || u.username || '';
+
+  // Load driver tap stats
+  if (cardName) {
+    fetch('/api/nfc/stats?accountId=' + encodeURIComponent(acct) + '&cardId=' + encodeURIComponent(cardName), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(s) {
+      var tEl = document.getElementById('driver-stat-today');
+      if (tEl) tEl.textContent = s.today || 0;
+      var wEl = document.getElementById('driver-stat-week');
+      if (wEl) wEl.textContent = s.week || 0;
+      var aEl = document.getElementById('driver-stat-total');
+      if (aEl) aEl.textContent = s.total || 0;
+      // Rough driver score based on weekly taps
+      var driverScore = Math.min(100, Math.round((s.week || 0) * 10 + (s.total || 0) * 2));
+      driverScore = Math.max(driverScore, 1);
+      animateGradeRing('driver-grade-ring', 'driver-grade-score', 'driver-grade-letter', driverScore);
+    })
+    .catch(function() {});
+
+    // Tap URL and QR
+    var tapUrl = location.origin + '/tap/' + encodeURIComponent(cardName);
+    var urlEl = document.getElementById('driver-tap-url');
+    if (urlEl) urlEl.textContent = tapUrl;
+    // QR code using Google Charts API (no key needed)
+    var qrWrap = document.getElementById('driver-qr-wrap');
+    if (qrWrap) {
+      var qrUrl = 'https://chart.googleapis.com/chart?chs=160x160&cht=qr&chl=' + encodeURIComponent(tapUrl) + '&choe=UTF-8';
+      qrWrap.innerHTML = '<img src="' + qrUrl + '" width="140" height="140" style="border-radius:8px" alt="QR Code">';
+    }
+  }
+}
+
+function driverCopyLink() {
+  var u = window.currentUser || {};
+  var cardName = u.name || u.username || '';
+  var url = location.origin + '/tap/' + encodeURIComponent(cardName);
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(function() { showToast('Link copied!'); });
+  } else {
+    var el = document.createElement('textarea');
+    el.value = url; document.body.appendChild(el); el.select();
+    document.execCommand('copy'); document.body.removeChild(el);
+    showToast('Link copied!');
+  }
+}
+
 </script>
 
 </body>

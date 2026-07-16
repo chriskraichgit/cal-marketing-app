@@ -1499,6 +1499,63 @@ async function handleNfcCardsPost(req, res) {
   jsonResponse(res, 200, { ok: true, card: cards[cards.length - 1], tapUrl: `/tap/${encodeURIComponent(name)}` });
 }
 
+async function handleNfcCardsDelete(req, res) {
+  const rawToken = extractBearerToken(req);
+  const payload = rawToken ? verifyMetaToken(rawToken) : null;
+  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+  const raw = await readRequestBody(req, 8*1024);
+  let body = {};
+  try { body = JSON.parse(raw); } catch(e) {}
+  const account = body.account || payload.email;
+  const name = (body.name || '').trim();
+  if (!name) { jsonResponse(res, 400, { error: 'name required' }); return; }
+  const store = loadMetaStore();
+  const cards = (store[`nfc_cards_${account}`] || []).filter(c => c.name !== name);
+  store[`nfc_cards_${account}`] = cards;
+  saveMetaStoreQueued(store);
+  jsonResponse(res, 200, { ok: true, remaining: cards.length });
+}
+
+async function handleNfcStats(req, res, qs) {
+  const rawToken = extractBearerToken(req);
+  const payload = rawToken ? verifyMetaToken(rawToken) : null;
+  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+  const accountId = qs.accountId || qs.account || payload.email;
+  const cardId = qs.cardId || '';
+  if (!cardId) { jsonResponse(res, 400, { error: 'cardId required' }); return; }
+  const stats = getNfcCardStats(cardId, accountId);
+  jsonResponse(res, 200, stats);
+}
+
+async function handleDriversStats(req, res, qs) {
+  const rawToken = extractBearerToken(req);
+  const payload = rawToken ? verifyMetaToken(rawToken) : null;
+  if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
+  const account = qs.account || payload.email;
+  const period = qs.period || 'month';
+  const store = loadMetaStore();
+  const cards = store[`nfc_cards_${account}`] || [];
+  const drivers = cards.map(card => {
+    const stats = getNfcCardStats(card.name, account);
+    return {
+      name: card.name,
+      reviewUrl: card.reviewUrl || null,
+      lastTap: stats.lastTap || null,
+      taps: {
+        today: stats.today || 0,
+        week: stats.week || 0,
+        month: stats.month || 0,
+        alltime: stats.total || 0
+      }
+    };
+  });
+  // Sort by selected period
+  const key = period === 'week' ? 'week' : period === 'alltime' ? 'alltime' : 'month';
+  drivers.sort((a, b) => (b.taps[key] || 0) - (a.taps[key] || 0));
+  jsonResponse(res, 200, { drivers, period });
+}
+
+
 // ============ NFC TAP LANDING PAGE ============
 function logNfcTap(person, accountId, req) {
   try {
@@ -2035,6 +2092,9 @@ window.location.replace('/');
   if (urlPath === '/api/nfc/taps' && req.method === 'GET') { await handleNfcTapsGet(req, res, qs); return; }
   if (urlPath === '/api/nfc/cards' && req.method === 'GET') { await handleNfcCardsGet(req, res, qs); return; }
   if (urlPath === '/api/nfc/cards' && req.method === 'POST') { await handleNfcCardsPost(req, res); return; }
+  if (urlPath === '/api/nfc/cards' && req.method === 'DELETE') { await handleNfcCardsDelete(req, res); return; }
+  if (urlPath === '/api/nfc/stats' && req.method === 'GET') { await handleNfcStats(req, res, qs); return; }
+  if (urlPath === '/api/drivers/stats' && req.method === 'GET') { await handleDriversStats(req, res, qs); return; }
 
   // ── NFC Click Tracking ──
   if (urlPath === '/api/nfc/click' && req.method === 'POST') {
