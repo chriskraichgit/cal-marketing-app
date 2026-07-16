@@ -70,6 +70,12 @@ web_modules/
 .env.*
 !.env.example
 
+# runtime secrets/tokens persisted to disk by server.js — never commit these
+.cal-meta-secret
+.cal-meta-store.json
+.gdrive-tokens.json
+.google-tokens.json
+
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache

@@ -20,6 +20,7 @@ const HOST = '0.0.0.0';
 const TOKEN_FILE = path.join(__dirname, '.gdrive-tokens.json');
 const GOOGLE_TOKEN_FILE = path.join(__dirname, '.google-tokens.json');
 const META_STORE_FILE = path.join(__dirname, '.cal-meta-store.json');
+const META_SECRET_FILE = path.join(__dirname, '.cal-meta-secret');
 
 // ── Place IDs per account (no OAuth needed — uses Places API) ──
 const ACCOUNT_PLACE_IDS = {
@@ -54,8 +55,19 @@ const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days (non-driver)
 const DRIVER_TOKEN_TTL_MS = 365 * 24 * 60 * 60 * 1000; // 1 year for drivers
 
 // Secret is sourced from the environment (set CAL_META_SECRET in production for persistence).
-// If absent, a random ephemeral secret is generated at startup — tokens will not survive a restart.
-const META_SECRET = process.env.CAL_META_SECRET || crypto.randomBytes(32).toString('hex');
+// If absent, fall back to a secret persisted on disk so restarts reuse the same value instead
+// of invalidating every issued session token; only as a last resort generate + persist a new one.
+function loadOrCreateMetaSecret() {
+  if (process.env.CAL_META_SECRET) return process.env.CAL_META_SECRET;
+  try {
+    const existing = fs.readFileSync(META_SECRET_FILE, 'utf8').trim();
+    if (existing) return existing;
+  } catch (e) {}
+  const generated = crypto.randomBytes(32).toString('hex');
+  try { fs.writeFileSync(META_SECRET_FILE, generated, { mode: 0o600 }); } catch (e) {}
+  return generated;
+}
+const META_SECRET = loadOrCreateMetaSecret();
 
 function signMetaToken(payload) {
   const b64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
