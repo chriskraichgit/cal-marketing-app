@@ -1424,10 +1424,12 @@ function getNfcCardStats(person, accountId) {
     const now = new Date();
     const todayStr = now.toISOString().slice(0,10);
     const weekAgo = new Date(now - 7*24*60*60*1000).toISOString();
+    const monthAgo = new Date(now - 30*24*60*60*1000).toISOString();
     const today = cardTaps.filter(t => t.ts && t.ts.startsWith(todayStr)).length;
     const week = cardTaps.filter(t => t.ts && t.ts >= weekAgo).length;
+    const month = cardTaps.filter(t => t.ts && t.ts >= monthAgo).length;
     const lastTap = cardTaps.length ? cardTaps[cardTaps.length-1].ts : null;
-    return { total, today, week, clicks, conversion: total ? Math.round(clicks/total*100) : 0, lastTap };
+    return { total, today, week, month, clicks, conversion: total ? Math.round(clicks/total*100) : 0, lastTap };
   } catch(e) { return { total:0, today:0, week:0, clicks:0, conversion:0, lastTap:null }; }
 }
 

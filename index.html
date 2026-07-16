@@ -1676,6 +1676,16 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </button>
     </div>
 
+    <!-- ═══ DRIVER NAV (stripped-down: Home + Profile only) ═══ -->
+    <div id="nav-driver" style="display:none">
+      <button class="nav-btn" onclick="nav('home')" style="background:var(--surface)">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>Home
+      </button>
+      <button class="nav-btn" onclick="nav('profile')">
+        <svg class="nav-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+      </button>
+    </div>
+
     <!-- ═══ TEST/ADVANCED NAV (shown for test role — everything) ═══ -->
     <div id="nav-test" style="display:none">
       <button class="nav-btn" onclick="nav('home')">
@@ -1910,7 +1920,18 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
       </div>
       <div style="margin-left:auto;color:var(--muted);font-size:18px">›</div>
     </div>
-  </div>
+  
+    <!-- Client Account Grade Cards -->
+    <div style="margin-top:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div style="font-size:12px;font-weight:900;color:var(--muted);text-transform:uppercase;letter-spacing:.6px">Client Accounts</div>
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Tap to switch</div>
+      </div>
+      <div id="agency-acct-cards" style="display:flex;flex-direction:column;gap:8px">
+        <div class="card card-pad" style="text-align:center;color:var(--muted);font-size:13px;padding:20px">Loading accounts…</div>
+      </div>
+    </div>
+</div>
 
   <!-- ── ADMIN / CLIENT HOME ── -->
   <div id="home-admin-view" style="display:none">
@@ -6128,7 +6149,18 @@ function setupRoleUI(){
   var navAgency=document.getElementById('nav-agency');
   var navAdmin=document.getElementById('nav-admin');
   var navTest=document.getElementById('nav-test');
-  if(currentRole==='user'){
+  if(currentRole==='driver'){
+    // Driver gets sidebar-full but with only the nav-driver section visible
+    if(sbFull) sbFull.style.display='flex';
+    if(sbUser) sbUser.style.display='none';
+    var cn=document.getElementById('sb-company-name'); if(cn) cn.textContent=u.company||'Driver';
+    // hide all nav sections, show only nav-driver
+    ['nav-agency','nav-admin','nav-test'].forEach(function(id){
+      var el=document.getElementById(id); if(el) el.style.display='none';
+    });
+    var nd=document.getElementById('nav-driver'); if(nd) nd.style.display='';
+    var sbAg=document.getElementById('sb-agency-section'); if(sbAg) sbAg.style.display='none';
+  } else if(currentRole==='user'){
     if(sbFull) sbFull.style.display='none';
     if(sbUser) sbUser.style.display='flex';
     var cn=document.getElementById('sb-company-name-user'); if(cn) cn.textContent=u.company||'Staff';
@@ -6156,9 +6188,11 @@ function setupRoleUI(){
     if(sbFull) sbFull.style.display='flex';
     if(sbUser) sbUser.style.display='none';
     var cn2=document.getElementById('sb-company-name'); if(cn2) cn2.textContent=u.company||(currentRole==='agency'?'CAL Marketing':'Portal');
+    var navDriver=document.getElementById('nav-driver');
     if(navAgency) navAgency.style.display=(currentRole==='agency')?'':'none';
     if(navAdmin)  navAdmin.style.display =(currentRole==='admin') ?'':'none';
     if(navTest)   navTest.style.display  =(currentRole==='test')  ?'':'none';
+    if(navDriver) navDriver.style.display=(currentRole==='driver')?'':'none';
   }
   // ── Account switcher ──
   var accWrap=document.getElementById('acct-switcher-wrap');
@@ -16584,6 +16618,50 @@ function renderStars(rating) {
 }
 
 // ── Agency/superadmin home ──
+// ── Agency account grade cards ──
+function renderAgencyAcctCards() {
+  var wrap = document.getElementById('agency-acct-cards');
+  if (!wrap) return;
+  var accts = (window.accounts && window.accounts.length) ? window.accounts : (window.DEFAULT_ACCOUNTS || []);
+  var clientAccts = accts.filter(function(a) { return !a.isMaster; });
+  var token = localStorage.getItem('cal-meta-session-token') || '';
+  wrap.innerHTML = clientAccts.map(function(a) {
+    return '<div class="card card-pad" id="agcard-' + a.id + '" onclick="setCurrentAcct('' + a.id + '');nav('home')" style="display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s;border:1.5px solid var(--border)" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">' +
+      '<div style="width:40px;height:40px;border-radius:12px;background:' + (a.color||'#2a3f5f') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:900;color:#fff">' + (a.initials||'??') + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13px;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.name + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);font-weight:600;margin-top:1px">' + (a.plan||'Standard') + ' · <span id="agcard-sub-' + a.id + '">Loading…</span></div>' +
+      '</div>' +
+      '<div style="text-align:center;flex-shrink:0">' +
+        '<div id="agcard-score-' + a.id + '" style="font-size:22px;font-weight:900;font-family:'Barlow Condensed',sans-serif;color:var(--muted)">—</div>' +
+        '<div id="agcard-grade-' + a.id + '" style="font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px"></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  // Fetch stats for each account
+  clientAccts.forEach(function(a) {
+    var serverKey = a.serverKey || a.id;
+    fetch('/api/home/stats?account=' + encodeURIComponent(serverKey), { headers: { 'Authorization': 'Bearer ' + token } })
+      .then(function(r) { return r.json(); })
+      .then(function(d) {
+        var avg = parseFloat(d.avgRating) || 0;
+        var score = calcScore(avg, d.weekReviews, d.totalReviews);
+        var grade = scoreToGrade(score);
+        var color = scoreColor(score);
+        var scoreEl = document.getElementById('agcard-score-' + a.id);
+        var gradeEl = document.getElementById('agcard-grade-' + a.id);
+        var subEl   = document.getElementById('agcard-sub-' + a.id);
+        if (scoreEl) { scoreEl.textContent = score; scoreEl.style.color = color; }
+        if (gradeEl) { gradeEl.textContent = grade; gradeEl.style.color = color; }
+        if (subEl)   { subEl.textContent = avg > 0 ? avg.toFixed(1) + '★ · ' + (d.totalReviews||0) + ' reviews' : 'No data yet'; }
+      })
+      .catch(function() {
+        var subEl = document.getElementById('agcard-sub-' + a.id);
+        if (subEl) subEl.textContent = 'No data';
+      });
+  });
+}
+
 function renderHomeStats() {
   var hour = new Date().getHours();
   var greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -16591,6 +16669,7 @@ function renderHomeStats() {
   var name = (u.name || '').split(' ')[0];
   var gEl = document.getElementById('home-greeting');
   if (gEl) gEl.textContent = name ? greet + ', ' + name + '!' : greet;
+  renderAgencyAcctCards();
   var acct = window.currentAcctId || localStorage.getItem('cal-acct-id') || '';
   var token = localStorage.getItem('cal-meta-session-token') || '';
   fetch('/api/home/stats?account=' + encodeURIComponent(acct), { headers: { 'Authorization': 'Bearer ' + token } })
