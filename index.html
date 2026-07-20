@@ -6287,7 +6287,7 @@ function setupRoleUI(){
 var SECTION_LABELS={
   'home':'Home','onboarding':'Onboarding','maintenance':'Maintenance',
   'reviews':'Reviews & NFC','leads':'Leads',
-  'files':'Files','billing':'Billing','reports':'Reports':'Inbox',
+  'files':'Files','billing':'Billing','reports':'Reports','inbox':'Inbox',
   'schedule':'Schedule','todos':'To-Dos','nps':'Satisfaction (NPS)',
   'settings':'Settings','notifications':'Notifications',
   'help':'Help & Support','profile':'Profile Settings','analytics':'Analytics',
@@ -8064,8 +8064,10 @@ function submitVideoTestimonial(file){
   var items; try{ items=JSON.parse(localStorage.getItem(key)||'[]'); }catch(e){ items=[]; }
   items.unshift({name:name,date:dateStr});
   localStorage.setItem(key,JSON.stringify(items));
-  closeModal('video-testimonial-modal');
-  showToast('Video saved!','success');},80);
+  setTimeout(function(){
+    closeModal('video-testimonial-modal');
+    showToast('Video saved!','success');
+  },80);
 }
 function openVideoPlayer(title){ var el=document.getElementById('video-player-title'); if(el) el.textContent=title; openModal('video-player-modal'); }
 function startVideoUpload() {
@@ -11558,7 +11560,7 @@ function sendWaReply() {
           .then(function(r){return r.json();})
           .then(function(d){
             if(d.totalReviews>0){
-              if(list) list.innerHTML='<p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;padding:16px 0">Google Business Profile not connected — showing cached data.<br><a href="#" onclick="nav('settings');return false;" style="color:var(--gold)">Connect in Settings</a></p>';
+              if(list) list.innerHTML='<p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;padding:16px 0">Google Business Profile not connected.</p>';
             } else {
               window._rvGoogleReviews=[];
               rvRebuildReviewsList();
@@ -14592,7 +14594,7 @@ function renderPermScreenGrid(acctId){
     return '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;align-items:center;justify-content:space-between;gap:8px">'
       + '<span style="font-size:13px;font-weight:700;color:var(--ink)">'+label+'</span>'
       + '<label style="display:flex;align-items:center;gap:6px;cursor:pointer">'
-      + '<input type="checkbox" '+(blocked?'':'checked')+' onchange="toggleAcctScreen(''+acctId+'',''+sc+'',this.checked)" style="width:16px;height:16px;cursor:pointer">'
+      + '<input type="checkbox" '+(blocked?'':'checked')+' onchange="toggleAcctScreen('"+acctId+"','"+sc+"',this.checked)" style="width:16px;height:16px;cursor:pointer">';
       + '<span style="font-size:11px;font-weight:700;color:'+(blocked?'var(--muted)':'var(--green,#22c55e)')+'">'+( blocked?'Off':'On')+'</span>'
       + '</label></div>';
   }).join('');
@@ -15715,7 +15717,7 @@ function htmlEsc(str) {
           +(m.roas    ? '<span style="font-size:12px;font-weight:700;color:var(--blue)">'+m.roas+'× ROAS</span>' : '')
         +'</div>'
         +'<div style="display:flex;gap:8px;margin-top:12px;justify-content:flex-end">'
-          +(item.status==='draft' ? '<button class="btn-gold" style="font-size:12px;padding:6px 14px" onclick="publishExistingReport(''+item.accountId+'',''+item.id+'')">Publish →</button>' : '')
+          +(item.status==='draft' ? '<button class="btn-gold" style="font-size:12px;padding:6px 14px" onclick="publishExistingReport('"+item.accountId+"','"+item.id+"')">&rarr;</button>' : '');
           +'<button class="btn-ghost" style="font-size:12px;padding:6px 14px;color:var(--red)" onclick="deleteReport(''+item.accountId+'',''+item.id+'')">Delete</button>'
         +'</div>'
         +'</div>';
@@ -16079,7 +16081,7 @@ function htmlEsc(str) {
     section.style.display='';
     list.innerHTML = items.map(function(item){
       var d = item.publishedAt ? new Date(item.publishedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-      return '<div class="note-list-item" onclick="openSharedNote(''+item.id+'')" data-shared-id="'+item.id+'">'
+      return '<div class="note-list-item" onclick="openSharedNote('"+item.id+"')" data-shared-id="'+item.id+'">';
         +'<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'
           +'<div style="width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0"></div>'
           +'<p class="note-item-title">'+item.title+'</p>'
@@ -16666,7 +16668,7 @@ function renderAgencyAcctCards() {
   var clientAccts = accts.filter(function(a) { return !a.isMaster; });
   var token = localStorage.getItem('cal-meta-session-token') || '';
   wrap.innerHTML = clientAccts.map(function(a) {
-    return '<div class="card card-pad" id="agcard-' + a.id + '" onclick="setCurrentAcct('' + a.id + '');nav('home')" style="display:flex;align-items:center;gap:14px;cursor:pointer;transition:border-color .15s;border:1.5px solid var(--border)" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='var(--border)'">' +
+    return '<div class="card card-pad" id="agcard-'+a.id+'" onclick="setCurrentAcct('"+a.id+"');nav('home')" style="display:flex;align-items:center;gap:14px;cursor:pointer">' +
       '<div style="width:40px;height:40px;border-radius:12px;background:' + (a.color||'#2a3f5f') + ';display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:900;color:#fff">' + (a.initials||'??') + '</div>' +
       '<div style="flex:1;min-width:0">' +
         '<div style="font-size:13px;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + a.name + '</div>' +
