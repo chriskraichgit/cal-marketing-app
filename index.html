@@ -1507,7 +1507,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Account</label>
         <select id="au-account" class="input-std" style="margin-top:4px">
           <option value="info@unitedsewerservice.com">United Sewer</option>
-          <option value="greencollаr">Green Collar</option>
+          <option value="greencollar">Green Collar</option>
           <option value="willydiamond">Willy Diamond</option>
         </select>
       </div>
@@ -3609,7 +3609,7 @@ var TITLES = {
 var DEFAULT_ACCOUNTS = [
   {id:'cal',name:'CAL Marketing',initials:'CM',plan:'Master',color:'#c9a84c',serverKey:'cal-marketing',isMaster:true},
   {id:'a1',name:'Apex Legal Group',initials:'AL',plan:'Deluxe',color:'#1b3a6b',serverKey:'apexlegal'},
-  {id:'a2',name:'Green Collar Roofing',initials:'GC',plan:'Standard',color:'#2e7d32',serverKey:'greencollаr'},
+  {id:'a2',name:'Green Collar Roofing',initials:'GC',plan:'Standard',color:'#2e7d32',serverKey:'greencollar'},
   {id:'a3',name:'Willy Diamond Tree Care',initials:'WD',plan:'Premium',color:'#c9a84c',serverKey:'willydiamond'},
   {id:'a4',name:'Houses Auto Body',initials:'HA',plan:'Deluxe',color:'#7c3aed',onboarding:true,serverKey:'housesautobody'},
   {id:'a5',name:'United Sewer and Septic',initials:'US',plan:'Standard',color:'#0052cc',onboarding:true,serverKey:'info@unitedsewerservice.com'}
@@ -4264,7 +4264,11 @@ function auCreate(){
     ['au-email','au-drivername','au-displayname','au-password'].forEach(function(id){
       var el = document.getElementById(id); if(el) el.value='';
     });
-    if (succEl) { succEl.textContent='✓ Account created for ' + email; succEl.style.display='block'; }
+    if (succEl) {
+      var autoLink=result.data.tapUrl ? location.origin+result.data.tapUrl : '';
+      succEl.textContent='✓ Account created for ' + email + (autoLink ? ' · NFC link: ' + autoLink : '');
+      succEl.style.display='block';
+    }
     auLoadUsers();
 
     // Send onboarding email if checked
@@ -8203,7 +8207,7 @@ function switchReviewsTab(tab){
   });
   if(tab==='heatmap') setTimeout(initHeatMap,60);
 }
-function registerNfcCard(){
+function registerNfcCardLegacy(){
   var name=(document.getElementById('nfc-reg-name')||{value:''}).value.trim();
   var staff=(document.getElementById('nfc-reg-staff')||{value:''}).value.trim();
   var location=(document.getElementById('nfc-reg-location')||{value:''}).value.trim();
@@ -11476,6 +11480,13 @@ function sendWaReply() {
 
       if(googleConnected){
         loadLiveReviewsForReviewsScreen();
+        if(!window._rvLiveRefreshTimer){
+          window._rvLiveRefreshTimer=setInterval(function(){
+            if(window.currentScreen==='reviews'&&window._rvGoogleConnected){
+              loadLiveReviewsForReviewsScreen();
+            }
+          },60000);
+        }
       } else {
         window._rvGoogleReviews=[];
         rvRebuildReviewsList();
@@ -11563,7 +11574,8 @@ function sendWaReply() {
             rating:rvRatingValue(rv.starRating),
             ago:rvAgo(ts),
             platform:'google',
-            recent:isFinite(t)?(now-t)<=30*24*3600000:true
+            recent:isFinite(t)?(now-t)<=30*24*3600000:true,
+            ts:ts||null
           };
         });
         rvRebuildReviewsList();
@@ -13747,7 +13759,8 @@ function sendWaReply() {
           var ratingMap={FIVE:5,FOUR:4,THREE:3,TWO:2,ONE:1};
           var stars=function(n){return [1,2,3,4,5].map(function(i){return '<span style="color:'+(i<=Math.round(n)?'#f59e0b':'#d1d5db')+'">&#9733;</span>';}).join('');};
           var avg=parseFloat(data.averageRating)||0;
-          el.innerHTML='<div style="width:100%"><div style="display:flex;align-items:center;gap:14px;padding:10px 0 12px;border-bottom:1px solid var(--border);margin-bottom:10px"><div style="text-align:center;flex-shrink:0"><p style="font-size:30px;font-weight:900;color:var(--ink);margin:0;line-height:1">'+avg.toFixed(1)+'</p><div style="font-size:15px;margin:2px 0">'+stars(avg)+'</div><p style="font-size:10px;color:var(--muted);font-weight:700;margin:0">'+reviews.length+' reviews</p></div><div style="flex:1">'+reviews.slice(0,3).map(function(rv){var name=(rv.reviewer&&rv.reviewer.displayName)||'Anonymous';var rating=ratingMap[rv.starRating]||3;var comment=rv.comment||'';return '<div style="margin-bottom:7px"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;font-weight:800;color:var(--ink)">'+escHtml(name)+'</span><span style="font-size:11px">'+stars(rating)+'</span></div>'+(comment?'<p style="font-size:11px;color:var(--muted);font-weight:600;margin:1px 0 0;line-height:1.5">'+escHtml(comment.length>90?comment.slice(0,90)+'...':comment)+'</p>':'')+'</div>';}).join('')+'</div></div></div>';
+          var total=parseInt(data.totalReviewCount,10)||reviews.length;
+          el.innerHTML='<div style="width:100%"><div style="display:flex;align-items:center;gap:14px;padding:10px 0 12px;border-bottom:1px solid var(--border);margin-bottom:10px"><div style="text-align:center;flex-shrink:0"><p style="font-size:30px;font-weight:900;color:var(--ink);margin:0;line-height:1">'+avg.toFixed(1)+'</p><div style="font-size:15px;margin:2px 0">'+stars(avg)+'</div><p style="font-size:10px;color:var(--muted);font-weight:700;margin:0">'+total+' reviews</p></div><div style="flex:1">'+reviews.slice(0,3).map(function(rv){var name=(rv.reviewer&&rv.reviewer.displayName)||'Anonymous';var rating=ratingMap[rv.starRating]||3;var comment=rv.comment||'';return '<div style="margin-bottom:7px"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;font-weight:800;color:var(--ink)">'+escHtml(name)+'</span><span style="font-size:11px">'+stars(rating)+'</span></div>'+(comment?'<p style="font-size:11px;color:var(--muted);font-weight:600;margin:1px 0 0;line-height:1.5">'+escHtml(comment.length>90?comment.slice(0,90)+'...':comment)+'</p>':'')+'</div>';}).join('')+'</div></div></div>';
         })
         .catch(function(){
           if(el) el.innerHTML='<p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;padding:16px">Could not load reviews for the selected profile.</p>';
@@ -15077,7 +15090,7 @@ async function loadNfcCards() {
     var data = await r.json();
     if (!data.cards || data.cards.length === 0) { el.textContent = 'No cards registered yet.'; return; }
     el.innerHTML = data.cards.map(function(c) {
-      var tapUrl = location.origin + '/tap/' + encodeURIComponent(c.name);
+      var tapUrl = location.origin + '/tap/' + encodeURIComponent(c.id || c.name);
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #0f172a;">'
         + '<span>👷 ' + c.name + '</span>'
         + '<a href="' + tapUrl + '" target="_blank" style="color:#3b82f6;font-size:12px;">' + tapUrl + '</a>'
@@ -15274,6 +15287,11 @@ function submitAddDriver() {
     if (d.error) { alert('Error: ' + d.error); return; }
     closeModal('add-driver-modal');
     loadDriverStats();
+    if(d.tapUrl){
+      var fullUrl=location.origin+d.tapUrl;
+      if(navigator.clipboard) navigator.clipboard.writeText(fullUrl).catch(function(){});
+      showToast('Tracking link created and copied: '+fullUrl,'green');
+    }
   })
   .catch(function() { alert('Failed to add driver. Check your connection.'); });
 }
@@ -16888,4 +16906,3 @@ function driverCopyLink() {
 
 </body>
 </html>
-
