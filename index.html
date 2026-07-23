@@ -1507,7 +1507,7 @@ select.input-std{appearance:none;background-image:url("data:image/svg+xml,%3Csvg
         <label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase">Account</label>
         <select id="au-account" class="input-std" style="margin-top:4px">
           <option value="info@unitedsewerservice.com">United Sewer</option>
-          <option value="greencollаr">Green Collar</option>
+          <option value="greencollar">Green Collar</option>
           <option value="willydiamond">Willy Diamond</option>
         </select>
       </div>
@@ -3609,7 +3609,7 @@ var TITLES = {
 var DEFAULT_ACCOUNTS = [
   {id:'cal',name:'CAL Marketing',initials:'CM',plan:'Master',color:'#c9a84c',serverKey:'cal-marketing',isMaster:true},
   {id:'a1',name:'Apex Legal Group',initials:'AL',plan:'Deluxe',color:'#1b3a6b',serverKey:'apexlegal'},
-  {id:'a2',name:'Green Collar Roofing',initials:'GC',plan:'Standard',color:'#2e7d32',serverKey:'greencollаr'},
+  {id:'a2',name:'Green Collar Roofing',initials:'GC',plan:'Standard',color:'#2e7d32',serverKey:'greencollar'},
   {id:'a3',name:'Willy Diamond Tree Care',initials:'WD',plan:'Premium',color:'#c9a84c',serverKey:'willydiamond'},
   {id:'a4',name:'Houses Auto Body',initials:'HA',plan:'Deluxe',color:'#7c3aed',onboarding:true,serverKey:'housesautobody'},
   {id:'a5',name:'United Sewer and Septic',initials:'US',plan:'Standard',color:'#0052cc',onboarding:true,serverKey:'info@unitedsewerservice.com'}
@@ -3894,6 +3894,103 @@ var _selectedBookingTime = '';
 var _invoiceSendClient = '';
 var _invoiceSendEmail = '';
 
+function dismissScreenLoading(){
+  if(window._calBootstrapTimer){
+    clearTimeout(window._calBootstrapTimer);
+    window._calBootstrapTimer=null;
+  }
+  var sl=document.getElementById('screen-loading');
+  if(!sl) return;
+  sl.classList.add('fade-out');
+  setTimeout(function(){ sl.style.display='none'; },350);
+}
+
+function showLoginView(){
+  var lv=document.getElementById('login-view');
+  if(lv) lv.style.display='';
+  dismissScreenLoading();
+}
+
+function createSimplifiedNavGroup(containerId, group, buttonsByScreen){
+  var available=group.screens.map(function(screen){ return buttonsByScreen[screen]; }).filter(Boolean);
+  if(!available.length) return null;
+  var btn=document.createElement('button');
+  btn.className='nav-group-btn';
+  btn.type='button';
+  btn.setAttribute('aria-expanded','false');
+  btn.setAttribute('aria-controls',containerId);
+  btn.innerHTML=
+    '<span class="nav-group-inner">'+
+      '<svg class="nav-icon" viewBox="0 0 24 24">'+group.icon+'</svg>'+
+      '<span>'+group.label+'</span>'+
+    '</span>'+
+    '<svg class="nav-chevron" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>';
+  btn.onclick=function(){ toggleNavGroup(containerId,btn); };
+  var sub=document.createElement('div');
+  sub.className='nav-sub-group';
+  sub.id=containerId;
+  available.forEach(function(item){ sub.appendChild(item); });
+  return {button:btn,sub:sub};
+}
+
+function simplifySidebarNavigation(){
+  var configs={
+    'nav-agency':[
+      {label:'Reviews & NFC',screens:['reviews','drivers','leaderboard'],icon:'<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>'},
+      {label:'Accounts',screens:['onboarding','users','team','permissions'],icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/>'},
+      {label:'Settings',screens:['billing','settings'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0"/>'}
+    ],
+    'nav-admin':[
+      {label:'Reviews & NFC',screens:['reviews','drivers','leaderboard'],icon:'<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>'},
+      {label:'Accounts',screens:['onboarding'],icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/>'},
+      {label:'Settings',screens:['billing','settings'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0"/>'}
+    ],
+    'nav-test':[
+      {label:'Reviews & NFC',screens:['reviews','drivers','leaderboard'],icon:'<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>'},
+      {label:'Accounts',screens:['onboarding','team','permissions'],icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/>'},
+      {label:'Settings',screens:['billing','settings'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0"/>'}
+    ],
+    'sidebar-user':[
+      {label:'Reviews & NFC',screens:['reviews'],icon:'<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>'},
+      {label:'Settings',screens:['billing','settings','profile'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0"/>'}
+    ]
+  };
+  Object.keys(configs).forEach(function(navId){
+    var root=document.getElementById(navId);
+    if(!root||root.dataset.simplified==='1') return;
+    var host=navId==='sidebar-user'?root.querySelector('.nav-scroll'):root;
+    if(!host) return;
+    var buttonsByScreen={};
+    host.querySelectorAll('.nav-btn').forEach(function(button){
+      var match=(button.getAttribute('onclick')||'').match(/nav\('([^']+)'\)/);
+      if(match&&!buttonsByScreen[match[1]]) buttonsByScreen[match[1]]=button;
+    });
+    var home=buttonsByScreen.home;
+    if(home){
+      Array.from(home.childNodes).forEach(function(node){
+        if(node.nodeType===3&&node.nodeValue.trim()) node.nodeValue='Dashboard';
+      });
+    }
+    var fragments=[];
+    configs[navId].forEach(function(group,index){
+      var built=createSimplifiedNavGroup('simple-nav-'+navId+'-'+index,group,buttonsByScreen);
+      if(built) fragments.push(built);
+    });
+    Array.from(host.children).forEach(function(child){
+      if(child!==home) host.removeChild(child);
+    });
+    if(home){
+      while(host.firstChild&&host.firstChild!==home) host.removeChild(host.firstChild);
+      if(home.parentNode!==host) host.appendChild(home);
+    }
+    fragments.forEach(function(built){
+      host.appendChild(built.button);
+      host.appendChild(built.sub);
+    });
+    root.dataset.simplified='1';
+  });
+}
+
 // ============ LOCALSTORAGE PERSISTENCE ============
 function saveState(key, value){
   try{
@@ -3911,6 +4008,15 @@ function loadState(key, def){
 
 // ============ INIT ============
 window.addEventListener('DOMContentLoaded',function(){
+  simplifySidebarNavigation();
+  // Never leave users trapped behind the startup overlay if auth is slow or unavailable.
+  window._calBootstrapTimer=setTimeout(function(){
+    var app=document.getElementById('app');
+    var driver=document.getElementById('s-driver-home');
+    var appVisible=app&&app.style.display==='block';
+    var driverVisible=driver&&driver.style.display==='block';
+    if(!appVisible&&!driverVisible) showLoginView();
+  },8000);
   applyUserRoleOverrides();
   var theme=loadState('theme',localStorage.getItem('cal-theme')||'light');
   if(theme==='dark') document.documentElement.setAttribute('data-theme','dark');
@@ -3963,7 +4069,7 @@ window.addEventListener('DOMContentLoaded',function(){
               if (payload.accounts && payload.accounts[0]) {
                 try { localStorage.setItem('cal-current-acct', payload.accounts[0]); } catch(e){}
               }
-              document.addEventListener('DOMContentLoaded', function(){ showDriverDashboard(); });
+              showDriverDashboard();
               return; // skip Replit auth check
             }
             if (calRole === 'superadmin' || calRole === 'agency') {
@@ -3988,22 +4094,20 @@ window.addEventListener('DOMContentLoaded',function(){
                 // accounts array has server keys — map first one to a1
                 savedAcctId = 'a1';
               }
-              document.addEventListener('DOMContentLoaded', function(){
-                if (typeof launchApp === 'function') {
-                  launchApp();
-                  // Restore last known account after launch — refreshTenantContext reads from storage
-                  setTimeout(function(){
-                    var acctId = null;
-                    try { acctId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
-                    if (typeof refreshTenantContext === 'function') {
-                      refreshTenantContext(acctId || 'a1');
-                    } else if (typeof setCurrentAcct === 'function') {
-                      setCurrentAcct(acctId || 'a1');
-                    }
-                    if (typeof nav === 'function') nav('home');
-                  }, 100);
-                }
-              });
+              if (typeof launchApp === 'function') {
+                launchApp();
+                // Restore last known account after launch — refreshTenantContext reads from storage
+                setTimeout(function(){
+                  var acctId = null;
+                  try { acctId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
+                  if (typeof refreshTenantContext === 'function') {
+                    refreshTenantContext(acctId || 'a1');
+                  } else if (typeof setCurrentAcct === 'function') {
+                    setCurrentAcct(acctId || 'a1');
+                  }
+                  if (typeof nav === 'function') nav('home');
+                }, 100);
+              }
               return; // skip Replit auth check
             }
           } else {
@@ -4033,43 +4137,33 @@ window.addEventListener('DOMContentLoaded',function(){
         window.currentCompanyId = currentCompanyId;
         if(role === 'agency' || role === 'superadmin'){
           // Agency: launch directly, set up accounts
-          document.addEventListener('DOMContentLoaded', function(){
-            if(typeof launchApp==='function'){
-              launchApp();
-              setTimeout(function(){
-                var savedId = null;
-                try { savedId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
-                if(typeof refreshTenantContext==='function') {
-                  refreshTenantContext(savedId||'a1');
-                } else if(typeof setCurrentAcct==='function') {
-                  setCurrentAcct(savedId||'a1');
-                }
-                if(typeof nav==='function') nav('home');
-              }, 150);
-            }
-          });
+          if(typeof launchApp==='function'){
+            launchApp();
+            setTimeout(function(){
+              var savedId = null;
+              try { savedId = localStorage.getItem('cal-current-acct-id'); } catch(e){}
+              if(typeof refreshTenantContext==='function') {
+                refreshTenantContext(savedId||'a1');
+              } else if(typeof setCurrentAcct==='function') {
+                setCurrentAcct(savedId||'a1');
+              }
+              if(typeof nav==='function') nav('home');
+            }, 150);
+          }
         } else {
-          document.addEventListener('DOMContentLoaded', function(){
-            if(typeof window._loginToMetaServer==='function'){
-              window._loginToMetaServer('','',function(){ launchApp(); });
-            } else {
-              launchApp();
-            }
-          });
+          if(typeof window._loginToMetaServer==='function'){
+            window._loginToMetaServer('','',function(){ launchApp(); });
+          } else {
+            launchApp();
+          }
         }
         return;
       }
       // No valid CAL token — show login screen
-      document.addEventListener('DOMContentLoaded', function(){
-        var lv = document.getElementById('login-view');
-        if(lv) lv.style.display='';
-      });
+      showLoginView();
     })
     .catch(function(){
-      document.addEventListener('DOMContentLoaded', function(){
-        var lv = document.getElementById('login-view');
-        if(lv) lv.style.display='';
-      });
+      showLoginView();
     });
   })();
   // End of bootstrap
@@ -4264,7 +4358,11 @@ function auCreate(){
     ['au-email','au-drivername','au-displayname','au-password'].forEach(function(id){
       var el = document.getElementById(id); if(el) el.value='';
     });
-    if (succEl) { succEl.textContent='✓ Account created for ' + email; succEl.style.display='block'; }
+    if (succEl) {
+      var autoLink=result.data.tapUrl ? location.origin+result.data.tapUrl : '';
+      succEl.textContent='✓ Account created for ' + email + (autoLink ? ' · NFC link: ' + autoLink : '');
+      succEl.style.display='block';
+    }
     auLoadUsers();
 
     // Send onboarding email if checked
@@ -4334,6 +4432,7 @@ function showDriverDashboard(){
   document.querySelectorAll('.screen, #app, #app-shell, #nav-sidebar, #msg-fab, #login-view, #onboarding, #ob-loading, #s-admin-users').forEach(function(el){ if(el) el.style.display='none'; });
   var dh = document.getElementById('s-driver-home');
   if (dh) dh.style.display = 'block';
+  dismissScreenLoading();
   loadDriverHome();
 }
 
@@ -6112,9 +6211,7 @@ function launchApp(){
   ['login-view','onboarding','user-onboarding','ob-loading'].forEach(function(id){
     var el=document.getElementById(id); if(el) el.style.display='none';
   });
-  // Dismiss loading overlay
-  var sl=document.getElementById('screen-loading');
-  if(sl){ sl.classList.add('fade-out'); setTimeout(function(){ sl.style.display='none'; },350); }
+  dismissScreenLoading();
   accounts=JSON.parse(localStorage.getItem('cal-accounts')||'null')||DEFAULT_ACCOUNTS.slice();
   agencyPermissions=JSON.parse(localStorage.getItem('cal-agency-perms')||'null')||{};
   setupRoleUI();
@@ -6401,7 +6498,18 @@ function nav(screen){
   document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
   document.querySelectorAll('.nav-btn').forEach(function(b){
     var oc=b.getAttribute('onclick')||'';
-    if(oc.indexOf("nav('"+screen+"')")>=0) b.classList.add('active');
+    if(oc.indexOf("nav('"+screen+"')")>=0){
+      b.classList.add('active');
+      var sub=b.parentElement;
+      if(sub&&sub.classList.contains('nav-sub-group')){
+        sub.classList.add('open');
+        var groupBtn=sub.previousElementSibling;
+        if(groupBtn&&groupBtn.classList.contains('nav-group-btn')){
+          groupBtn.classList.add('open');
+          groupBtn.setAttribute('aria-expanded','true');
+        }
+      }
+    }
   });
   document.querySelectorAll('.m-tab').forEach(function(t){ t.classList.remove('active'); });
   var mMap={home:'m-home',leads:'m-leads',content:'m-content',inbox:'m-inbox'};
@@ -6447,8 +6555,25 @@ function initHomeScreen(){
 function toggleNavGroup(subId, btn){
   var sub=document.getElementById(subId);
   if(!sub) return;
-  var isOpen=sub.classList.toggle('open');
-  if(btn) btn.classList.toggle('open', isOpen);
+  var wasOpen=sub.classList.contains('open');
+  var scope=btn&&btn.parentElement?btn.parentElement:null;
+  if(scope){
+    scope.querySelectorAll('.nav-sub-group.open').forEach(function(other){
+      if(other!==sub) other.classList.remove('open');
+    });
+    scope.querySelectorAll('.nav-group-btn.open').forEach(function(otherBtn){
+      if(otherBtn!==btn){
+        otherBtn.classList.remove('open');
+        otherBtn.setAttribute('aria-expanded','false');
+      }
+    });
+  }
+  var isOpen=!wasOpen;
+  sub.classList.toggle('open',isOpen);
+  if(btn){
+    btn.classList.toggle('open',isOpen);
+    btn.setAttribute('aria-expanded',isOpen?'true':'false');
+  }
 }
 function showSalesTab(tab){
   var salesPanel=document.getElementById('sales-tab-panel-'+tab);
@@ -8203,7 +8328,7 @@ function switchReviewsTab(tab){
   });
   if(tab==='heatmap') setTimeout(initHeatMap,60);
 }
-function registerNfcCard(){
+function registerNfcCardLegacy(){
   var name=(document.getElementById('nfc-reg-name')||{value:''}).value.trim();
   var staff=(document.getElementById('nfc-reg-staff')||{value:''}).value.trim();
   var location=(document.getElementById('nfc-reg-location')||{value:''}).value.trim();
@@ -11476,6 +11601,13 @@ function sendWaReply() {
 
       if(googleConnected){
         loadLiveReviewsForReviewsScreen();
+        if(!window._rvLiveRefreshTimer){
+          window._rvLiveRefreshTimer=setInterval(function(){
+            if(window.currentScreen==='reviews'&&window._rvGoogleConnected){
+              loadLiveReviewsForReviewsScreen();
+            }
+          },60000);
+        }
       } else {
         window._rvGoogleReviews=[];
         rvRebuildReviewsList();
@@ -11563,7 +11695,8 @@ function sendWaReply() {
             rating:rvRatingValue(rv.starRating),
             ago:rvAgo(ts),
             platform:'google',
-            recent:isFinite(t)?(now-t)<=30*24*3600000:true
+            recent:isFinite(t)?(now-t)<=30*24*3600000:true,
+            ts:ts||null
           };
         });
         rvRebuildReviewsList();
@@ -13747,7 +13880,8 @@ function sendWaReply() {
           var ratingMap={FIVE:5,FOUR:4,THREE:3,TWO:2,ONE:1};
           var stars=function(n){return [1,2,3,4,5].map(function(i){return '<span style="color:'+(i<=Math.round(n)?'#f59e0b':'#d1d5db')+'">&#9733;</span>';}).join('');};
           var avg=parseFloat(data.averageRating)||0;
-          el.innerHTML='<div style="width:100%"><div style="display:flex;align-items:center;gap:14px;padding:10px 0 12px;border-bottom:1px solid var(--border);margin-bottom:10px"><div style="text-align:center;flex-shrink:0"><p style="font-size:30px;font-weight:900;color:var(--ink);margin:0;line-height:1">'+avg.toFixed(1)+'</p><div style="font-size:15px;margin:2px 0">'+stars(avg)+'</div><p style="font-size:10px;color:var(--muted);font-weight:700;margin:0">'+reviews.length+' reviews</p></div><div style="flex:1">'+reviews.slice(0,3).map(function(rv){var name=(rv.reviewer&&rv.reviewer.displayName)||'Anonymous';var rating=ratingMap[rv.starRating]||3;var comment=rv.comment||'';return '<div style="margin-bottom:7px"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;font-weight:800;color:var(--ink)">'+escHtml(name)+'</span><span style="font-size:11px">'+stars(rating)+'</span></div>'+(comment?'<p style="font-size:11px;color:var(--muted);font-weight:600;margin:1px 0 0;line-height:1.5">'+escHtml(comment.length>90?comment.slice(0,90)+'...':comment)+'</p>':'')+'</div>';}).join('')+'</div></div></div>';
+          var total=parseInt(data.totalReviewCount,10)||reviews.length;
+          el.innerHTML='<div style="width:100%"><div style="display:flex;align-items:center;gap:14px;padding:10px 0 12px;border-bottom:1px solid var(--border);margin-bottom:10px"><div style="text-align:center;flex-shrink:0"><p style="font-size:30px;font-weight:900;color:var(--ink);margin:0;line-height:1">'+avg.toFixed(1)+'</p><div style="font-size:15px;margin:2px 0">'+stars(avg)+'</div><p style="font-size:10px;color:var(--muted);font-weight:700;margin:0">'+total+' reviews</p></div><div style="flex:1">'+reviews.slice(0,3).map(function(rv){var name=(rv.reviewer&&rv.reviewer.displayName)||'Anonymous';var rating=ratingMap[rv.starRating]||3;var comment=rv.comment||'';return '<div style="margin-bottom:7px"><div style="display:flex;align-items:center;gap:6px"><span style="font-size:11px;font-weight:800;color:var(--ink)">'+escHtml(name)+'</span><span style="font-size:11px">'+stars(rating)+'</span></div>'+(comment?'<p style="font-size:11px;color:var(--muted);font-weight:600;margin:1px 0 0;line-height:1.5">'+escHtml(comment.length>90?comment.slice(0,90)+'...':comment)+'</p>':'')+'</div>';}).join('')+'</div></div></div>';
         })
         .catch(function(){
           if(el) el.innerHTML='<p style="font-size:12px;color:var(--muted);font-weight:600;text-align:center;padding:16px">Could not load reviews for the selected profile.</p>';
@@ -15077,7 +15211,7 @@ async function loadNfcCards() {
     var data = await r.json();
     if (!data.cards || data.cards.length === 0) { el.textContent = 'No cards registered yet.'; return; }
     el.innerHTML = data.cards.map(function(c) {
-      var tapUrl = location.origin + '/tap/' + encodeURIComponent(c.name);
+      var tapUrl = location.origin + '/tap/' + encodeURIComponent(c.id || c.name);
       return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #0f172a;">'
         + '<span>👷 ' + c.name + '</span>'
         + '<a href="' + tapUrl + '" target="_blank" style="color:#3b82f6;font-size:12px;">' + tapUrl + '</a>'
@@ -15274,6 +15408,11 @@ function submitAddDriver() {
     if (d.error) { alert('Error: ' + d.error); return; }
     closeModal('add-driver-modal');
     loadDriverStats();
+    if(d.tapUrl){
+      var fullUrl=location.origin+d.tapUrl;
+      if(navigator.clipboard) navigator.clipboard.writeText(fullUrl).catch(function(){});
+      showToast('Tracking link created and copied: '+fullUrl,'green');
+    }
   })
   .catch(function() { alert('Failed to add driver. Check your connection.'); });
 }
@@ -16888,4 +17027,3 @@ function driverCopyLink() {
 
 </body>
 </html>
-

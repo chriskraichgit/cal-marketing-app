@@ -24,14 +24,14 @@ const META_STORE_FILE = path.join(__dirname, '.cal-meta-store.json');
 // ── Place IDs per account (no OAuth needed — uses Places API) ──
 const ACCOUNT_PLACE_IDS = {
   'info@unitedsewerservice.com': { placeId: 'ChIJvX0LSNPQ3IkRdma8QADGAhY', name: 'United Sewer and Septic' },
-  'greencollар': { placeId: 'ChIJJ8-biosyw4kR738ilrfxrbU', name: 'Green Collar Roofing & Exteriors' },
+  'greencollar': { placeId: 'ChIJJ8-biosyw4kR738ilrfxrbU', name: 'Green Collar Roofing & Exteriors' },
   'willydiamond': { placeId: 'ChIJqcP1Ry7XwokRmaR_t8kedZM', name: 'Willy Diamond Property Management' },
 };
 
 // ── Per-account feature flags ──
 const ACCOUNT_FEATURES = {
   'info@unitedsewerservice.com': { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false, placeId: 'ChIJvX0LSNPQ3IkRdma8QADGAhY' },
-  'greencollаr':                 { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false, placeId: 'ChIJJ8-biosyw4kR738ilrfxrbU' },
+  'greencollar':                 { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false, placeId: 'ChIJJ8-biosyw4kR738ilrfxrbU' },
   'willydiamond':                { nfc: true, reviews: true, drive: false, calendar: false, stripe: false, searchConsole: false, placeId: 'ChIJqcP1Ry7XwokRmaR_t8kedZM' },
 };
 const DEFAULT_FEATURES = { nfc: true, reviews: true, drive: true, calendar: true, stripe: true, searchConsole: true };
@@ -40,10 +40,10 @@ const DEFAULT_FEATURES = { nfc: true, reviews: true, drive: true, calendar: true
 // Passwords are stored as SHA-256 hashes only — never plaintext.
 // Agency/test roles may access any account key; admin/user roles may only access their own email key.
 const SERVER_USERS = {
-  'chris@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollаr','willydiamond'] },
-  'james@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollаr','willydiamond'] },
-  'matt@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollаr','willydiamond'] },
-  'info@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'test',       calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollаr','willydiamond'] },
+  'chris@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollar','willydiamond'] },
+  'james@cal.marketing':           { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollar','willydiamond'] },
+  'matt@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'superadmin', calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollar','willydiamond'] },
+  'info@cal.marketing':            { pwHash: '7558d21cd40326eb0d89abd3d35ca3f1a207d1b6f82c07023ea49e4e42d13029', role: 'test',       calRole: 'superadmin', accounts: ['info@unitedsewerservice.com','greencollar','willydiamond'] },
   'client@apexlegal.com':          { pwHash: '7e166f079a275064a2118127d7102a9471f671acb67a65a2c628684606b5e11f', role: 'admin',       calRole: 'client',     accounts: ['client@apexlegal.com'] },
   'staff@apexlegal.com':           { pwHash: '7df64b2903b0ac2dc591ee097c36f4acdae759753bd197eaf11008093e2966ca', role: 'user',        calRole: 'client',     accounts: ['client@apexlegal.com'] },
   'info@unitedsewerservice.com':   { pwHash: 'c87b71ef7b9882f404028ae7d5431cc6fdb73b64cfe52e9dc0501ff3dbe1a580', role: 'admin',       calRole: 'client',     accounts: ['info@unitedsewerservice.com'] },
@@ -157,6 +157,24 @@ function clearLoginAttempts(email) { delete _loginAttempts[email]; }
 // ── Simple password hash (SHA-256) ──
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
+}
+
+function secureStringEqual(left, right) {
+  const leftHash = crypto.createHash('sha256').update(String(left)).digest();
+  const rightHash = crypto.createHash('sha256').update(String(right)).digest();
+  return crypto.timingSafeEqual(leftHash, rightHash);
+}
+
+function createNfcCardId() {
+  return 'card_' + crypto.randomBytes(6).toString('hex');
+}
+
+function normalizeDestinationUrl(value) {
+  if (!value) return null;
+  try {
+    const parsed = new URL(String(value).trim());
+    return (parsed.protocol === 'https:' || parsed.protocol === 'http:') ? parsed.toString() : null;
+  } catch (e) { return null; }
 }
 
 // ── Helper: metaGet ──
@@ -603,7 +621,7 @@ async function handleCreateDriver(req, res, payload) {
     const raw = await readRequestBody(req, 32 * 1024);
     body = JSON.parse(raw.toString('utf8'));
   } catch (e) { return jsonResponse(res, 400, { error: 'INVALID_BODY' }); }
-  const { email, password, displayName, account, driverName } = body || {};
+  const { email, password, displayName, account, driverName, destinationUrl } = body || {};
   if (!email || !password || !account || !driverName) {
     return jsonResponse(res, 400, { error: 'MISSING_FIELDS' });
   }
@@ -624,8 +642,31 @@ async function handleCreateDriver(req, res, payload) {
     createdAt: new Date().toISOString()
   };
   store['_users'] = users;
+  const cardKey = `nfc_cards_${account}`;
+  const cards = store[cardKey] || [];
+  let card = cards.find(c => (c.personEmail || '').toLowerCase() === email.toLowerCase());
+  if (!card) {
+    card = {
+      id: createNfcCardId(),
+      name: driverName,
+      personEmail: email.toLowerCase(),
+      destinationUrl: normalizeDestinationUrl(destinationUrl),
+      placeId: null,
+      cid: null,
+      active: true,
+      createdAt: new Date().toISOString()
+    };
+    cards.push(card);
+    store[cardKey] = cards;
+  }
   saveMetaStoreQueued(store);
-  return jsonResponse(res, 200, { ok: true, email: email.toLowerCase(), role: 'driver' });
+  return jsonResponse(res, 200, {
+    ok: true,
+    email: email.toLowerCase(),
+    role: 'driver',
+    card,
+    tapUrl: `/tap/${encodeURIComponent(card.id)}`
+  });
 }
 
 // ── My Driver Stats (driver role only) ──
@@ -1138,6 +1179,10 @@ async function handleGBPAccounts(res) {
   if (!oauth2) { jsonResponse(res, 200, { error: 'NOT_CONNECTED', accounts: [] }); return; }
   try {
     const r = await googleApiGet(oauth2, 'https://mybusinessaccountmanagement.googleapis.com/v1/accounts');
+    if (r.status < 200 || r.status >= 300) {
+      jsonResponse(res, r.status || 502, { error: r.body?.error?.message || 'GOOGLE_API_ERROR', accounts: [] });
+      return;
+    }
     jsonResponse(res, 200, { accounts: r.body.accounts || [] });
   } catch (e) { jsonResponse(res, 200, { error: e.message, accounts: [] }); }
 }
@@ -1149,6 +1194,10 @@ async function handleGBPLocations(res, qs) {
   if (!account) { jsonResponse(res, 400, { error: 'MISSING_ACCOUNT' }); return; }
   try {
     const r = await googleApiGet(oauth2, `https://mybusinessbusinessinformation.googleapis.com/v1/${account}/locations?readMask=name,title,storefrontAddress,websiteUri`);
+    if (r.status < 200 || r.status >= 300) {
+      jsonResponse(res, r.status || 502, { error: r.body?.error?.message || 'GOOGLE_API_ERROR', locations: [] });
+      return;
+    }
     jsonResponse(res, 200, { locations: r.body.locations || [] });
   } catch (e) { jsonResponse(res, 200, { error: e.message, locations: [] }); }
 }
@@ -1159,8 +1208,18 @@ async function handleGBPReviews(res, qs) {
   const location = qs.location;
   if (!location) { jsonResponse(res, 400, { error: 'MISSING_LOCATION' }); return; }
   try {
-    const r = await googleApiGet(oauth2, `https://mybusiness.googleapis.com/v4/${location}/reviews`);
-    jsonResponse(res, 200, { reviews: r.body.reviews || [], averageRating: r.body.averageRating || null });
+    const r = await googleApiGet(oauth2, `https://mybusiness.googleapis.com/v4/${location}/reviews?pageSize=50&orderBy=${encodeURIComponent('updateTime desc')}`);
+    if (r.status < 200 || r.status >= 300) {
+      jsonResponse(res, r.status || 502, { error: r.body?.error?.message || 'GOOGLE_API_ERROR', reviews: [] });
+      return;
+    }
+    jsonResponse(res, 200, {
+      reviews: r.body.reviews || [],
+      averageRating: r.body.averageRating || null,
+      totalReviewCount: r.body.totalReviewCount || 0,
+      nextPageToken: r.body.nextPageToken || null,
+      fetchedAt: new Date().toISOString()
+    });
   } catch (e) { jsonResponse(res, 200, { error: e.message, reviews: [] }); }
 }
 
@@ -1486,7 +1545,7 @@ async function handleNfcCardsPost(req, res) {
   if (!payload) { jsonResponse(res, 401, { error: 'UNAUTHORIZED' }); return; }
   let body;
   try { const raw = await readRequestBody(req, 32*1024); body = JSON.parse(raw.toString('utf8')); } catch(e) { jsonResponse(res, 400, { error: 'INVALID_BODY' }); return; }
-  const { name, account, placeId, cid } = body || {};
+  const { name, account, placeId, cid, destinationUrl, reviewUrl } = body || {};
   if (!name) { jsonResponse(res, 400, { error: 'MISSING_NAME' }); return; }
   const acct = account || payload.email;
   const store = loadMetaStore();
@@ -1495,10 +1554,19 @@ async function handleNfcCardsPost(req, res) {
   if (cards.find(c => c.name.toLowerCase() === name.toLowerCase())) {
     jsonResponse(res, 409, { error: 'Card with this name already exists' }); return;
   }
-  cards.push({ name, placeId: placeId || null, cid: cid || null, createdAt: new Date().toISOString() });
+  const card = {
+    id: createNfcCardId(),
+    name,
+    destinationUrl: normalizeDestinationUrl(destinationUrl || reviewUrl),
+    placeId: placeId || null,
+    cid: cid || null,
+    active: true,
+    createdAt: new Date().toISOString()
+  };
+  cards.push(card);
   store[key] = cards;
   saveMetaStoreQueued(store);
-  jsonResponse(res, 200, { ok: true, card: cards[cards.length - 1], tapUrl: `/tap/${encodeURIComponent(name)}` });
+  jsonResponse(res, 200, { ok: true, card, tapUrl: `/tap/${encodeURIComponent(card.id)}` });
 }
 
 async function handleNfcCardsDelete(req, res) {
@@ -1817,33 +1885,30 @@ const server = http.createServer(async (req, res) => {
     await new Promise(r => req.on('end', r));
     let pin = '';
     try { pin = JSON.parse(body).pin || ''; } catch(e) {}
-    const AGENCY_PIN = process.env.AGENCY_PIN || '1234';
-    if (pin !== AGENCY_PIN) {
+    const rateKey = '__agency_pin__';
+    const rateCheck = checkLoginRateLimit(rateKey);
+    if (rateCheck.locked) {
+      jsonResponse(res, 429, { ok: false, error: 'Too many attempts', remaining: rateCheck.remaining });
+      return;
+    }
+    const AGENCY_PIN = process.env.AGENCY_PIN || '2026';
+    if (!secureStringEqual(pin, AGENCY_PIN)) {
+      recordLoginFailure(rateKey);
       jsonResponse(res, 401, { ok: false, error: 'Invalid PIN' });
       return;
     }
-    const serverAccounts = ['apexlegal', 'greencollаr', 'willydiamond', 'housesautobody', 'info@unitedsewerservice.com'];
+    clearLoginAttempts(rateKey);
+    const serverAccounts = ['apexlegal', 'greencollar', 'willydiamond', 'housesautobody', 'info@unitedsewerservice.com'];
     const payload = { email: 'admin@cal.marketing', role: 'superadmin', calRole: 'superadmin', accounts: serverAccounts, displayName: 'Agency Admin', exp: Date.now() + TOKEN_TTL_MS };
     const sessionToken = signMetaToken(payload);
     jsonResponse(res, 200, { ok: true, token: sessionToken, role: 'superadmin', displayName: 'Agency Admin', email: 'admin@cal.marketing' });
     return;
   }
 
-  // ── Agency login — direct superadmin session (Replit-hosted, owner only) ──
+  // Legacy endpoint: never issue an unauthenticated superadmin session.
   if (urlPath === '/api/login' && req.method === 'GET') {
-    const serverAccounts = ['apexlegal', 'greencollаr', 'willydiamond', 'housesautobody', 'info@unitedsewerservice.com'];
-    const payload = { email: 'admin@cal.marketing', role: 'superadmin', calRole: 'superadmin', accounts: serverAccounts, displayName: 'Agency Admin', exp: Date.now() + TOKEN_TTL_MS };
-    const sessionToken = signMetaToken(payload);
-    const html = `<!DOCTYPE html><html><head><title>Signing in...</title></head><body style="background:#0a0a0a">
-<script>
-try{localStorage.setItem('cal-meta-session-token',${JSON.stringify(sessionToken)});}catch(e){}
-try{localStorage.setItem('cal-user-role','superadmin');}catch(e){}
-try{localStorage.setItem('cal-display-name','Agency Admin');}catch(e){}
-try{localStorage.setItem('cal-user-email','admin@cal.marketing');}catch(e){}
-window.location.replace('/');
-</script></body></html>`;
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(html);
+    res.writeHead(302, { Location: '/', 'Cache-Control': 'no-store' });
+    res.end();
     return;
   }
 
@@ -2148,7 +2213,8 @@ window.location.replace('/');
   }
 
   if (urlPath.startsWith('/tap/')) {
-    const person = decodeURIComponent(urlPath.slice(5)) || 'Your Driver';
+    const identifier = decodeURIComponent(urlPath.slice(5)) || '';
+    let person = identifier || 'Your Driver';
     let reviewUrl = null;
     let resolvedAccountId = 'unknown';
     try {
@@ -2156,10 +2222,13 @@ window.location.replace('/');
       for (const key of Object.keys(store)) {
         if (key.startsWith('nfc_cards_')) {
           const cards = store[key] || [];
-          const card = cards.find(c => c.name.toLowerCase() === person.toLowerCase());
+          const card = cards.find(c => c.id === identifier || (c.name || '').toLowerCase() === identifier.toLowerCase());
           if (card) {
+            if (card.active === false) break;
+            person = card.name || person;
             resolvedAccountId = key.replace('nfc_cards_', '');
-            if (card.placeId) reviewUrl = 'https://search.google.com/local/writereview?placeid=' + card.placeId;
+            if (card.destinationUrl) reviewUrl = card.destinationUrl;
+            else if (card.placeId) reviewUrl = 'https://search.google.com/local/writereview?placeid=' + card.placeId;
             else if (card.cid) reviewUrl = 'https://www.google.com/maps?cid=' + card.cid;
             break;
           }
