@@ -3911,6 +3911,86 @@ function showLoginView(){
   dismissScreenLoading();
 }
 
+function createSimplifiedNavGroup(containerId, group, buttonsByScreen){
+  var available=group.screens.map(function(screen){ return buttonsByScreen[screen]; }).filter(Boolean);
+  if(!available.length) return null;
+  var btn=document.createElement('button');
+  btn.className='nav-group-btn';
+  btn.type='button';
+  btn.setAttribute('aria-expanded','false');
+  btn.setAttribute('aria-controls',containerId);
+  btn.innerHTML=
+    '<span class="nav-group-inner">'+
+      '<svg class="nav-icon" viewBox="0 0 24 24">'+group.icon+'</svg>'+
+      '<span>'+group.label+'</span>'+
+    '</span>'+
+    '<svg class="nav-chevron" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>';
+  btn.onclick=function(){ toggleNavGroup(containerId,btn); };
+  var sub=document.createElement('div');
+  sub.className='nav-sub-group';
+  sub.id=containerId;
+  available.forEach(function(item){ sub.appendChild(item); });
+  return {button:btn,sub:sub};
+}
+
+function simplifySidebarNavigation(){
+  var configs={
+    'nav-agency':[
+      {label:'Reviews & NFC',screens:['reviews','drivers','leaderboard'],icon:'<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>'},
+      {label:'Accounts',screens:['onboarding','users','team','permissions'],icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/>'},
+      {label:'Settings',screens:['billing','settings'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0"/>'}
+    ],
+    'nav-admin':[
+      {label:'Reviews & NFC',screens:['reviews','drivers','leaderboard'],icon:'<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>'},
+      {label:'Accounts',screens:['onboarding'],icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/>'},
+      {label:'Settings',screens:['billing','settings'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0"/>'}
+    ],
+    'nav-test':[
+      {label:'Reviews & NFC',screens:['reviews','drivers','leaderboard'],icon:'<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>'},
+      {label:'Accounts',screens:['onboarding','team','permissions'],icon:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/>'},
+      {label:'Settings',screens:['billing','settings'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0"/>'}
+    ],
+    'sidebar-user':[
+      {label:'Reviews & NFC',screens:['reviews'],icon:'<polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26 12,2"/>'},
+      {label:'Settings',screens:['billing','settings','profile'],icon:'<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 11-14 0 7 7 0 0114 0"/>'}
+    ]
+  };
+  Object.keys(configs).forEach(function(navId){
+    var root=document.getElementById(navId);
+    if(!root||root.dataset.simplified==='1') return;
+    var host=navId==='sidebar-user'?root.querySelector('.nav-scroll'):root;
+    if(!host) return;
+    var buttonsByScreen={};
+    host.querySelectorAll('.nav-btn').forEach(function(button){
+      var match=(button.getAttribute('onclick')||'').match(/nav\('([^']+)'\)/);
+      if(match&&!buttonsByScreen[match[1]]) buttonsByScreen[match[1]]=button;
+    });
+    var home=buttonsByScreen.home;
+    if(home){
+      Array.from(home.childNodes).forEach(function(node){
+        if(node.nodeType===3&&node.nodeValue.trim()) node.nodeValue='Dashboard';
+      });
+    }
+    var fragments=[];
+    configs[navId].forEach(function(group,index){
+      var built=createSimplifiedNavGroup('simple-nav-'+navId+'-'+index,group,buttonsByScreen);
+      if(built) fragments.push(built);
+    });
+    Array.from(host.children).forEach(function(child){
+      if(child!==home) host.removeChild(child);
+    });
+    if(home){
+      while(host.firstChild&&host.firstChild!==home) host.removeChild(host.firstChild);
+      if(home.parentNode!==host) host.appendChild(home);
+    }
+    fragments.forEach(function(built){
+      host.appendChild(built.button);
+      host.appendChild(built.sub);
+    });
+    root.dataset.simplified='1';
+  });
+}
+
 // ============ LOCALSTORAGE PERSISTENCE ============
 function saveState(key, value){
   try{
@@ -3928,6 +4008,7 @@ function loadState(key, def){
 
 // ============ INIT ============
 window.addEventListener('DOMContentLoaded',function(){
+  simplifySidebarNavigation();
   // Never leave users trapped behind the startup overlay if auth is slow or unavailable.
   window._calBootstrapTimer=setTimeout(function(){
     var app=document.getElementById('app');
@@ -6417,7 +6498,18 @@ function nav(screen){
   document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
   document.querySelectorAll('.nav-btn').forEach(function(b){
     var oc=b.getAttribute('onclick')||'';
-    if(oc.indexOf("nav('"+screen+"')")>=0) b.classList.add('active');
+    if(oc.indexOf("nav('"+screen+"')")>=0){
+      b.classList.add('active');
+      var sub=b.parentElement;
+      if(sub&&sub.classList.contains('nav-sub-group')){
+        sub.classList.add('open');
+        var groupBtn=sub.previousElementSibling;
+        if(groupBtn&&groupBtn.classList.contains('nav-group-btn')){
+          groupBtn.classList.add('open');
+          groupBtn.setAttribute('aria-expanded','true');
+        }
+      }
+    }
   });
   document.querySelectorAll('.m-tab').forEach(function(t){ t.classList.remove('active'); });
   var mMap={home:'m-home',leads:'m-leads',content:'m-content',inbox:'m-inbox'};
@@ -6463,8 +6555,25 @@ function initHomeScreen(){
 function toggleNavGroup(subId, btn){
   var sub=document.getElementById(subId);
   if(!sub) return;
-  var isOpen=sub.classList.toggle('open');
-  if(btn) btn.classList.toggle('open', isOpen);
+  var wasOpen=sub.classList.contains('open');
+  var scope=btn&&btn.parentElement?btn.parentElement:null;
+  if(scope){
+    scope.querySelectorAll('.nav-sub-group.open').forEach(function(other){
+      if(other!==sub) other.classList.remove('open');
+    });
+    scope.querySelectorAll('.nav-group-btn.open').forEach(function(otherBtn){
+      if(otherBtn!==btn){
+        otherBtn.classList.remove('open');
+        otherBtn.setAttribute('aria-expanded','false');
+      }
+    });
+  }
+  var isOpen=!wasOpen;
+  sub.classList.toggle('open',isOpen);
+  if(btn){
+    btn.classList.toggle('open',isOpen);
+    btn.setAttribute('aria-expanded',isOpen?'true':'false');
+  }
 }
 function showSalesTab(tab){
   var salesPanel=document.getElementById('sales-tab-panel-'+tab);
